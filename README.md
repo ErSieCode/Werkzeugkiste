@@ -23,6 +23,8 @@
 6. [Anpassungsmöglichkeiten](#anpassungsmöglichkeiten)
 7. [Installation und Nutzung](#installation-und-nutzung)
 
+![Python Module Explorer Screenshot Mobil](https://raw.githubusercontent.com/ErSieCode/Werkzeugkiste/main/Importus_web/IMG/P_explor_Mob.png)
+
 ## Übersicht
 
 Der Python Module Explorer ist eine interaktive Web-Anwendung, die Entwicklern dabei hilft, Python-Module zu entdecken, auszuwählen und zu installieren. Die Anwendung organisiert Python-Module in thematische Kategorien und bietet umfangreiche Funktionalitäten zur Modulverwaltung, zum Testen von Importierbarkeit und zur Generierung von Installations- und Import-Code.
