@@ -73,7 +73,7 @@ Jede Kategorie wird als Karte dargestellt. Beim Klick auf eine Kategorie öffnet
 
 ### Modulauswahl
 
-![Python Module Explorer Screenshot](https://raw.githubusercontent.com/ErSieCode/Werkzeugkiste/main/Importus_web/IMG/P_explor_3.jpg)
+![Python Module Explorer Screenshot](https://raw.githubusercontent.com/ErSieCode/Werkzeugkiste/main/Importus_web/IMG/P_explor_2.jpg)
 
 Es gibt mehrere Wege, Module zur persönlichen Auswahlliste hinzuzufügen:
 
@@ -179,6 +179,8 @@ python3 -m pip install numpy pandas matplotlib
 # Aktiviere zuerst deine virtuelle Umgebung, dann:
 pip install numpy pandas matplotlib
 ```
+
+![Python Module Explorer Screenshot](https://raw.githubusercontent.com/ErSieCode/Werkzeugkiste/main/Importus_web/IMG/P_explor_3.jpg)
 
 #### Einzelmodul-Übersicht
 
