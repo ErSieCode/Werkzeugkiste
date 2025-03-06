@@ -1,5 +1,7 @@
 # Python Module Explorer - Dokumentation
 
+![Python Module Explorer Screenshot](https://raw.githubusercontent.com/ErSieCode/Werkzeugkiste/main/Importus_web/IMG/P_explor_1.jpg)
+
 ## Inhaltsverzeichnis
 
 1. [Übersicht](#übersicht)
@@ -70,6 +72,8 @@ Die Anwendung enthält über 60 vordefinierte Kategorien, die verschiedene Berei
 Jede Kategorie wird als Karte dargestellt. Beim Klick auf eine Kategorie öffnet sich ein Modal mit allen Modulen dieser Kategorie.
 
 ### Modulauswahl
+
+![Python Module Explorer Screenshot](https://raw.githubusercontent.com/ErSieCode/Werkzeugkiste/main/Importus_web/IMG/P_explor_3.jpg)
 
 Es gibt mehrere Wege, Module zur persönlichen Auswahlliste hinzuzufügen:
 
@@ -147,6 +151,8 @@ else:
 - Spezifische Befehle für CMD, PowerShell und Terminal
 - Anweisungen für virtuelle Umgebungen
 
+![Python Module Explorer Screenshot](https://raw.githubusercontent.com/ErSieCode/Werkzeugkiste/main/Importus_web/IMG/P_explor_4.jpg)
+
 Beispiel für generierte Installationsbefehle:
 
 ```bash
@@ -154,6 +160,8 @@ Beispiel für generierte Installationsbefehle:
 
 # INSTALLATIONSBEFEHLE FÜR MODULE
 ========================================
+
+### env. pythonPath = "C:\\Users\\Username\\AppData\\Local\\Programs\\Python\\Python312\\python.exe"; ###
 
 ### WINDOWS (CMD) ###
 pip install numpy pandas matplotlib
