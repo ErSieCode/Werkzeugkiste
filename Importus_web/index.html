@@ -2394,8 +2394,11 @@ else:
             let installCommands = `${platformNote}# INSTALLATIONSBEFEHLE FÜR MODULE\n${'='.repeat(40)}\n\n`;
 
             // Windows commands
-            installCommands += `### WINDOWS (CMD) ###\npip install ${moduleString}\n\n`;
-            installCommands += `### WINDOWS (PowerShell) ###\n& pip install ${moduleString}\n\n`;
+            const pythonPath = "C:\\Users\\Username\\AppData\\Local\\Programs\\Python\\Python312\\python.exe";
+            installCommands += `### WINDOWS (CMD) ###\n`;
+            installCommands += `"${pythonPath}" -m pip install ${moduleString}\n\n`;
+            installCommands += `### WINDOWS (PowerShell) ###\n`;
+            installCommands += `& "${pythonPath}" -m pip install ${moduleString}\n\n`;
 
             // Linux commands
             installCommands += `### LINUX ###\npython3 -m pip install ${moduleString}\n\n`;
