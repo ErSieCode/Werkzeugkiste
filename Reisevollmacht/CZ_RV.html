@@ -1,1 +1,571 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reisevollmacht für Auslandsreise</title>
 
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/de.js" defer></script>
+
+    <style>
+        /* CSS von Ihrer vorherigen Version - für die Webseite */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #2c3e50; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh; }
+        .container { max-width: 800px; margin: 0 auto; background: white; min-height: 100vh; box-shadow: 0 0 30px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.8rem 1.5rem; text-align: center; position: relative; }
+        .header::after { content: ''; position: absolute; bottom: -18px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 18px solid transparent; border-right: 18px solid transparent; border-top: 18px solid #764ba2; }
+        .header h1 { font-size: 1.7rem; font-weight: 600; margin-bottom: 0.3rem; }
+        .header p.subtitle { font-size: 0.95rem; opacity: 0.85; margin-top: 0; font-weight: 300; }
+        .content { padding: 2.5rem 1.5rem; }
+        .main-form-content {}
+        .form-group label { display: block; font-weight: 600; color: #34495e; margin-bottom: 0.5rem; font-size: 0.95rem; }
+        .form-group input, .form-group select, .date-input-modern { width: 100%; padding: 0.8rem; border: 1px solid #d1d9e6; border-radius: 8px; font-size: 0.95rem; transition: border-color 0.3s ease, box-shadow 0.3s ease; background: #fdfdff; }
+        .form-group input:focus, .form-group select:focus, .date-input-modern:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+        .signature-pad { background: #fdfdff; border: 2px dashed #a8b5c8; border-radius: 10px; margin: 0.5rem 0 0 0; position: relative; min-height: 140px; touch-action: none; }
+        .signature-pad:hover { border-color: #667eea; }
+        .signature-canvas { display: block; width: 100%; height: 140px; border-radius: 8px; cursor: crosshair; }
+        .signature-controls { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 1rem; background: #f0f3f7; border-top: 1px solid #e0e6ed; border-radius: 0 0 8px 8px; margin-top: -2px; }
+        .signature-controls span { font-size: 0.85rem; }
+        .btn-secondary.btn-small { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+        .btn-success { background: #27ae60; color: white; width: 100%; padding: 0.9rem; font-size: 1.05rem; margin-top: 2rem; }
+        .form-row-signature-place-date { display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; margin-top: 0.5rem; }
+        @media (max-width: 600px) { .form-row-signature-place-date { grid-template-columns: 1fr; } }
+        .checkbox-group { display: flex; align-items: center; gap: 0.5rem; margin: 1rem 0; padding: 1rem; background: #e8f4fd; border-radius: 8px; }
+        .checkbox-group input[type="checkbox"] { width: auto; transform: scale(1.2); }
+        .children-table { width: 100%; border-collapse: collapse; margin: 1rem 0; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .children-table th { background: #667eea; color: white; padding: 1rem; text-align: left; font-weight: 600; }
+        .children-table td { padding: 1rem; border-bottom: 1px solid #e0e6ed; }
+        .children-table input { border: none; background: transparent; width: 100%; padding: 0.5rem; font-size: 0.9rem; }
+        .children-table input:focus { background: #f8f9fb; border-radius: 5px; }
+        .section { background: #f8f9fb; border-radius: 15px; padding: 2rem; margin-bottom: 2rem; border-left: 5px solid #667eea; transition: all 0.3s ease; }
+        .section:hover { box-shadow: 0 5px 20px rgba(102, 126, 234, 0.1); transform: translateY(-2px); }
+        .section h2 { color: #667eea; font-size: 1.4rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
+        .info-box { background: linear-gradient(135deg, #74b9ff, #0984e3); color: white; padding: 1.5rem; border-radius: 10px; margin: 2rem 0; }
+        .info-box h3 { margin-bottom: 1rem; font-size: 1.2rem; }
+        .warning-box { background: #fff3cd; border: 1px solid #ffeaa7; color: #856404; padding: 1.5rem; border-radius: 10px; margin: 1rem 0; }
+        .legal-section { background: #f1f3f4; border-radius: 10px; padding: 2rem; margin-top: 3rem; }
+        .legal-section h3 { color: #2d3436; margin-bottom: 1rem; border-bottom: 2px solid #667eea; padding-bottom: 0.5rem; }
+        .legal-item { background: white; padding: 1rem; margin: 1rem 0; border-radius: 8px; border-left: 4px solid #667eea; }
+        .floating-help { position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; background: #667eea; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3); z-index: 1000; font-size: 1.5rem; }
+        .help-popup { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 1001; max-width: 90vw; max-height: 80vh; overflow-y: auto; }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; }
+
+        /* --- PRINT STYLES - FOKUS AUF KOMPAKTHEIT --- */
+        @media print {
+            body {
+                background: white;
+                font-family: Arial, Helvetica, sans-serif; /* Standardschrift für gute Lesbarkeit */
+                font-size: 8.5pt; /* Kleinere Basisschrift */
+                line-height: 1.25; /* Kompakter */
+                color: #000;
+                margin: 0;
+            }
+            .container { box-shadow: none; margin: 0; max-width: 100%; }
+            .print-main-container {
+                margin: 12mm 15mm 10mm 15mm; /* Oben, Rechts, Unten, Links Seitenränder (kompakter) */
+                /* height: 270mm; */ /* Versuch die Höhe zu begrenzen - kann problematisch sein */
+                /* overflow: hidden; */ /* Verhindert Scrollbalken im Druck, wenn Inhalt überläuft */
+            }
+
+            /* Alle Elemente der Webseite ausblenden, die nicht gedruckt werden sollen */
+            .header, .floating-help, .step-navigation, .btn, .signature-controls button,
+            .info-box:not(.print-info), .warning-box:not(.print-warning),
+            .progress-bar, .help-popup, .overlay, .main-form-content {
+                display: none !important;
+            }
+
+            .print-header {
+                text-align: center;
+                border-bottom: 1px solid #000; /* Dünnere Linie */
+                padding-bottom: 5px; /* Kompakter */
+                margin-bottom: 10px; /* Kompakter */
+            }
+            .print-header h1 {
+                font-size: 13pt; /* Leicht reduziert */
+                margin: 0 0 1px 0;
+                font-weight: bold;
+            }
+            .print-header h2 {
+                font-size: 9pt; /* Leicht reduziert */
+                margin: 0;
+                font-weight: normal;
+                color: #222; /* Etwas dunkler für Kontrast */
+                line-height: 1.2;
+            }
+            .print-issued-date { /* Neuer Selektor für das Ausstellungsdatum */
+                font-size: 8pt;
+                text-align: right;
+                margin-bottom: 8px;
+            }
+
+            .print-section {
+                margin-bottom: 8px; /* Kompakter */
+                padding: 0;
+            }
+            .print-section h3 {
+                font-size: 10pt; /* Leicht reduziert */
+                margin-top: 0;
+                margin-bottom: 4px; /* Kompakter */
+                border-bottom: 0.5px solid #555; /* Dünnere Linie */
+                padding-bottom: 2px;
+                font-weight: bold;
+            }
+
+            p.print-p { /* Generelle Absätze im Druck */
+                margin: 1px 0 3px 0;
+                font-size: 8.5pt;
+            }
+            .data-pair {
+                margin-bottom: 1px; /* Sehr kompakt */
+                display: flex;
+                font-size: 8.5pt;
+                line-height: 1.2;
+            }
+            .data-pair strong {
+                min-width: 120px; /* Ausreichend für die meisten Labels, anpassbar */
+                /* max-width: 130px; */ /* Optional, um Umbruch bei Labels zu erzwingen */
+                display: inline-block;
+                font-weight: bold;
+                padding-right: 4px;
+                flex-shrink: 0; /* Verhindert, dass das Label schrumpft */
+            }
+            .data-pair span {
+                flex-grow: 1;
+                word-break: break-word; /* Erlaubt Umbruch langer Wörter in der Wert-Spalte */
+            }
+
+            table.print-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 3px;
+                margin-bottom: 6px;
+            }
+            table.print-table th, table.print-table td {
+                border: 0.5px solid #777; /* Dünnere Linien */
+                padding: 2px 4px; /* Sehr kompakt */
+                text-align: left;
+                font-size: 7.5pt; /* Sehr klein für Tabelle */
+                vertical-align: top;
+            }
+            table.print-table th {
+                background-color: #f0f0f0;
+                font-weight: bold;
+            }
+            /* Spaltenbreiten für Kindertabelle (Anpassung je nach längstem Inhalt) */
+            table.print-table th:nth-child(1), table.print-table td:nth-child(1) { width: 35%; } /* Name */
+            table.print-table th:nth-child(2), table.print-table td:nth-child(2) { width: 25%; } /* Geb.datum */
+            table.print-table th:nth-child(3), table.print-table td:nth-child(3) { width: 40%; } /* Ausweis-Nr. */
+
+
+            .signature-block {
+                margin-top: 8px; /* Kompakter */
+                 /* page-break-inside: avoid; */ /* Verhindern, dass Unterschriftsblöcke umbrechen, kann aber Platzprobleme verursachen */
+            }
+            .consent-text {
+                margin-top: 3px;
+                margin-bottom: 3px;
+                font-style: italic;
+                font-size: 8pt; /* Kompakter */
+            }
+            .signature-image {
+                width: 160px; /* Kleiner */
+                height: 50px; /* Kleiner */
+                border: 0.5px solid #888; /* Dünner */
+                display: block;
+                margin-top: 2px;
+                background-color: #fdfdfd;
+            }
+            .signature-placeholder {
+                font-style: italic;
+                color: #555;
+                font-size: 7.5pt;
+                width: 160px;
+                height: 50px;
+                border: 0.5px dashed #888; /* Dünner */
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-top: 2px;
+            }
+            .place-date-line {
+                margin-top: 4px;
+                font-size: 8.5pt;
+            }
+
+            .legal-footer {
+                font-size: 7pt; /* Sehr klein */
+                color: #222;
+                margin-top: 10px; /* Kompakter */
+                padding-top: 5px;
+                border-top: 0.5px solid #aaa; /* Dünner */
+                text-align: justify;
+                line-height: 1.1;
+            }
+
+            .page-break {
+                page-break-before: always;
+                /* margin-top: 15mm; */ /* Reduziert oder entfernt, da Container schon Ränder hat */
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛂 Digitale Reisevollmacht</h1>
+            <p class="subtitle">Deutschland → Tschechische Republik</p>
+        </div>
+
+        <div class="content main-form-content">
+            <div class="info-box">
+                <h3>📋 Was ist eine Reisevollmacht?</h3>
+                <p>Eine Reisevollmacht ist ein Dokument, das bestätigt, dass der andere sorgeberechtigte Elternteil der Auslandsreise eines Kindes mit nur einem Elternteil zustimmt. Wichtig bei Grenzkontrollen zur Verhinderung von Kindesentführungen.</p>
+            </div>
+
+            <!-- Schritt 1: Mutter-Daten -->
+            <div class="section">
+                <h2><span class="section-icon">👩</span> Angaben zur reisenden Mutter</h2>
+                <div class="form-row">
+                    <div class="form-group"><label for="mother-firstname">Vorname *</label><input type="text" id="mother-firstname" required></div>
+                    <div class="form-group"><label for="mother-lastname">Nachname *</label><input type="text" id="mother-lastname" required></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label for="mother-birthdate">Geburtsdatum *</label><input type="text" id="mother-birthdate" class="date-input-modern" placeholder="TT.MM.JJJJ" required></div>
+                    <div class="form-group"><label for="mother-id">Personalausweis-Nr. *</label><input type="text" id="mother-id" required></div>
+                </div>
+                <div class="form-group"><label for="mother-address">Vollständige Anschrift *</label><input type="text" id="mother-address" placeholder="Straße, Hausnummer, PLZ, Ort" required></div>
+                <div class="form-group"><label for="mother-phone">Telefonnummer (für Notfälle)</label><input type="tel" id="mother-phone"></div>
+            </div>
+
+            <!-- Schritt 2: Kinder-Daten -->
+            <div class="section">
+                <h2><span class="section-icon">👶</span> Angaben zu den mitreisenden Kindern</h2>
+                <div class="warning-box"><strong>Wichtig:</strong> Alle Kinder benötigen gültige Reisedokumente. Gültigkeit prüfen!</div>
+                <table class="children-table">
+                    <thead><tr><th>Vorname</th><th>Nachname</th><th>Geburtsdatum</th><th>Ausweis-Nr.</th></tr></thead>
+                    <tbody>
+                        <tr><td><input type="text" placeholder="Max" id="child1-firstname"></td><td><input type="text" placeholder="Mustermann" id="child1-lastname"></td><td><input type="text" class="date-input-modern" placeholder="TT.MM.JJJJ" id="child1-birthdate"></td><td><input type="text" placeholder="T0000000X" id="child1-id"></td></tr>
+                        <tr><td><input type="text" placeholder="Anna" id="child2-firstname"></td><td><input type="text" placeholder="Mustermann" id="child2-lastname"></td><td><input type="text" class="date-input-modern" placeholder="TT.MM.JJJJ" id="child2-birthdate"></td><td><input type="text" placeholder="T0000001Y" id="child2-id"></td></tr>
+                        <tr><td><input type="text" placeholder="Optional" id="child3-firstname"></td><td><input type="text" placeholder="Optional" id="child3-lastname"></td><td><input type="text" class="date-input-modern" placeholder="TT.MM.JJJJ" id="child3-birthdate"></td><td><input type="text" placeholder="Optional" id="child3-id"></td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Schritt 3: Reisedaten -->
+            <div class="section">
+                <h2><span class="section-icon">✈️</span> Reisedaten</h2>
+                <div class="form-row">
+                    <div class="form-group"><label for="travel-from">Reisebeginn *</label><input type="text" id="travel-from" class="date-input-modern" placeholder="TT.MM.JJJJ" required></div>
+                    <div class="form-group"><label for="travel-to">Reiseende *</label><input type="text" id="travel-to" class="date-input-modern" placeholder="TT.MM.JJJJ" required></div>
+                </div>
+                <div class="form-group"><label for="travel-destination">Reiseziel (Ort/Region in Tschechien)</label><input type="text" id="travel-destination" placeholder="z.B. Prag, Karlsbad, Böhmerwald"></div>
+                <div class="form-group"><label for="travel-purpose">Zweck der Reise</label><select id="travel-purpose"><option value="urlaub">Urlaubsreise</option><option value="verwandtenbesuch">Verwandtenbesuch</option><option value="bildung">Bildungsreise / Ausflug</option><option value="sport">Sportveranstaltung</option><option value="sonstige">Sonstige</option></select></div>
+            </div>
+
+            <!-- Schritt 4: Vater-Daten -->
+            <div class="section">
+                <h2><span class="section-icon">👨</span> Angaben zum Vater (Zustimmende Person)</h2>
+                <div class="form-row">
+                    <div class="form-group"><label for="father-firstname">Vorname *</label><input type="text" id="father-firstname" required></div>
+                    <div class="form-group"><label for="father-lastname">Nachname *</label><input type="text" id="father-lastname" required></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label for="father-birthdate">Geburtsdatum *</label><input type="text" id="father-birthdate" class="date-input-modern" placeholder="TT.MM.JJJJ" required></div>
+                    <div class="form-group"><label for="father-id">Personalausweis-Nr. *</label><input type="text" id="father-id" required></div>
+                </div>
+                <div class="form-group"><label for="father-address">Vollständige Anschrift *</label><input type="text" id="father-address" placeholder="Straße, Hausnummer, PLZ, Ort" required></div>
+            </div>
+
+            <!-- Schritt 5: Unterschriften -->
+            <div class="section">
+                <h2><span class="section-icon">✍️</span> Digitale Unterschriften & Bestätigungen</h2>
+                <div class="info-box"><h3>📝 Anleitung</h3><p>Bitte unterschreiben Sie in den Feldern. Mit "Löschen" korrigieren. Geben Sie Ort und Datum der Unterzeichnung an.</p></div>
+
+                <div class="form-group">
+                    <label>Unterschrift der Mutter *</label>
+                    <div class="signature-pad"><canvas class="signature-canvas" id="mother-signature"></canvas></div>
+                    <div class="signature-controls">
+                        <span id="mother-sig-status">Nicht unterschrieben</span>
+                        <button type="button" class="btn btn-secondary btn-small" onclick="clearSignature('mother-signature')">Löschen</button>
+                    </div>
+                    <div class="form-row-signature-place-date">
+                        <div class="form-group"><label for="mother-signature-place">Ort der Unterzeichnung *</label><input type="text" id="mother-signature-place" placeholder="z.B. Berlin" required></div>
+                        <div class="form-group"><label for="mother-signature-date">Datum der Unterzeichnung *</label><input type="text" id="mother-signature-date" class="date-input-modern" placeholder="TT.MM.JJJJ" required></div>
+                    </div>
+                </div>
+                <div class="checkbox-group"><input type="checkbox" id="mother-consent" required><label for="mother-consent">Ich bestätige die Richtigkeit meiner Angaben und stimme der Reise zu.</label></div>
+
+                <div style="height: 20px;"></div>
+
+                <div class="form-group">
+                    <label>Einverständniserklärung und Unterschrift des Vaters *</label>
+                    <div class="warning-box"><strong>Rechtliche Bedeutung:</strong> Mit dieser Unterschrift erklärt der Vater ausdrücklich sein Einverständnis zur Reise.</div>
+                    <div class="signature-pad"><canvas class="signature-canvas" id="father-signature"></canvas></div>
+                    <div class="signature-controls">
+                        <span id="father-sig-status">Nicht unterschrieben</span>
+                        <button type="button" class="btn btn-secondary btn-small" onclick="clearSignature('father-signature')">Löschen</button>
+                    </div>
+                     <div class="form-row-signature-place-date">
+                        <div class="form-group"><label for="father-signature-place">Ort der Unterzeichnung *</label><input type="text" id="father-signature-place" placeholder="z.B. München" required></div>
+                        <div class="form-group"><label for="father-signature-date">Datum der Unterzeichnung *</label><input type="text" id="father-signature-date" class="date-input-modern" placeholder="TT.MM.JJJJ" required></div>
+                    </div>
+                </div>
+                <div class="checkbox-group"><input type="checkbox" id="father-consent" required><label for="father-consent">Ich erkläre hiermit ausdrücklich mein Einverständnis zur beschriebenen Reise.</label></div>
+            </div>
+
+            <div class="legal-section">
+                 <h3>⚖️ Rechtliche Hinweise</h3>
+                <div class="legal-item">Diese Reisevollmacht dient als Nachweis der Zustimmung. Empfohlen: Kopien der Ausweise beider Eltern und Geburtsurkunden der Kinder mitführen.</div>
+                 <div class="legal-item">Gültigkeit aller Reisedokumente prüfen. Über spezifische Einreisebestimmungen des Ziellandes informieren.</div>
+                 <div class="info-box print-info"><h3>🌍 Anerkennung</h3><p>Innerhalb EU/Schengen (inkl. Tschechien) i.d.R. anerkannt. Außerhalb evtl. Beglaubigung nötig.</p></div>
+            </div>
+
+            <button type="button" class="btn btn-success" onclick="generateDocument()">📄 Vollmacht DE/CZ als PDF erstellen & Drucken</button>
+        </div> <!-- Ende .main-form-content -->
+    </div> <!-- Ende .container -->
+
+    <div class="floating-help" onclick="toggleHelp()">❓</div>
+    <div class="overlay" onclick="toggleHelp()"></div>
+    <div class="help-popup">
+        <h3>🆘 Hilfe & FAQ</h3>
+        <p><strong>Wann benötige ich eine Reisevollmacht?</strong><br>Wenn ein minderjähriges Kind mit nur einem sorgeberechtigten Elternteil oder mit anderen Personen (z.B. Großeltern) ins Ausland reist.</p>
+        <p><strong>Digitale Unterschrift gültig?</strong><br>Oft akzeptiert, besonders mit Ausweiskopien. Ausdruck mit Originalunterschriften ist am sichersten.</p>
+        <p><strong>Fehler gemacht?</strong><br>Eingabefelder korrigieren. Unterschriften mit "Löschen" erneuern. PDF wird mit aktuellen Daten erstellt.</p>
+        <p><strong>Weitere Dokumente?</strong><br>Kopien der Ausweise beider Eltern und Geburtsurkunde(n) der Kinder mitführen.</p>
+        <button class="btn btn-primary" onclick="toggleHelp()">Schließen</button>
+    </div>
+
+    <script>
+        const translations = {
+            pdfTitle: { de: "REISEVOLLMACHT", cs: "CESTOVNÍ PLNOMOC" },
+            pdfSubtitle: { de: "für eine Auslandsreise eines minderjährigen Kindes<br>Deutschland → Tschechische Republik", cs: "pro cestu nezletilého dítěte do zahraničí<br>Německo → Česká republika" },
+            createdOn: { de: "Ausgestellt am:", cs: "Vystaveno dne:" },
+            travelingMotherSection: { de: "Angaben zur reisenden sorgeberechtigten Person (Mutter)", cs: "Údaje o cestující osobě s rodičovskou odpovědností (matka)" },
+            childrenSection: { de: "Angaben zum mitreisenden minderjährigen Kind / zu den Kindern", cs: "Údaje o spolucestujícím nezletilém dítěti / dětech" },
+            travelDataSection: { de: "Angaben zur Reise", cs: "Údaje o cestě" },
+            consentingFatherSection: { de: "Angaben zur zustimmenden sorgeberechtigten Person (Vater)", cs: "Údaje o souhlasící osobě s rodičovskou odpovědností (otec)" },
+            motherSignatureSection: { de: "Zustimmung und Unterschrift der reisenden Mutter", cs: "Souhlas a podpis cestující matky" },
+            fatherSignatureSection: { de: "Einverständniserklärung und Unterschrift des zustimmenden Vaters", cs: "Prohlášení o souhlasu a podpis souhlasícího otce" },
+            nameLastFirst: { de: "Name, Vorname:", cs: "Příjmení, Jméno:" },
+            birthDate: { de: "Geburtsdatum:", cs: "Datum narození:" },
+            address: { de: "Anschrift:", cs: "Adresa:" },
+            idNumber: { de: "Ausweis-Nr.:", cs: "Číslo OP/pasu:" },
+            phoneEmergency: { de: "Tel. (Notfall):", cs: "Tel. (nouzové):" },
+            childNameHeader: { de: "Name, Vorname", cs: "Příjmení, Jméno" },
+            childBirthDateHeader: { de: "Geburtsdatum", cs: "Datum narození" },
+            childIdNumberHeader: { de: "Ausweis-Nr.", cs: "Číslo OP/pasu" },
+            travelPeriod: { de: "Reisezeitraum:", cs: "Doba cesty:" },
+            destinationCountry: { de: "Reiseziel (Land):", cs: "Cílová země:" },
+            destinationDetail: { de: "Genaueres Ziel/Ort:", cs: "Přesnější cíl/místo:" },
+            travelPurpose: { de: "Zweck der Reise:", cs: "Účel cesty:" },
+            motherConsent: { de: "Ich, ${motherFirstname} ${motherLastname}, bestätige die Richtigkeit meiner Angaben und die der Reise. Ich bin sorgeberechtigt für das/die oben genannte(n) Kind(er).", cs: "Já, ${motherFirstname} ${motherLastname}, potvrzuji správnost svých údajů a údajů o cestě. Mám rodičovskou odpovědnost za výše uvedené dítě/děti." },
+            fatherConsent: { de: "Ich, ${fatherFirstname} ${fatherLastname}, erkläre hiermit ausdrücklich mein Einverständnis zur oben beschriebenen Reise meines/unseres Kindes/unserer Kinder mit der oben genannten Mutter. Ich bin sorgeberechtigt und über alle Details der Reise informiert.", cs: "Já, ${fatherFirstname} ${fatherLastname}, tímto výslovně prohlašuji svůj souhlas s výše popsanou cestou mého/našeho dítěte/dětí s výše uvedenou matkou. Mám rodičovskou odpovědnost a jsem informován/a o všech podrobnostech cesty." },
+            signatureImageAltMother: { de: "Unterschrift Mutter", cs: "Podpis matky" },
+            signatureImageAltFather: { de: "Unterschrift Vater", cs: "Podpis otce" },
+            noDigitalSignature: { de: "(Keine digitale Unterschrift erfasst)", cs: "(Nebyl zaznamenán žádný digitální podpis)" },
+            placeDateSignature: { de: "Ort, Datum der Unterzeichnung:", cs: "Místo, Datum podpisu:" },
+            legalFooter: { de: "<strong>Wichtiger Hinweis:</strong> Es wird dringend empfohlen, dieser Reisevollmacht Kopien der gültigen Personalausweise oder Reisepässe beider sorgeberechtigter Elternteile sowie eine Kopie der Geburtsurkunde(n) des Kindes/der Kinder beizufügen. Die Gültigkeit aller Reisedokumente ist vor Antritt der Reise zu überprüfen. Diese Vollmacht ersetzt nicht eventuell erforderliche Visa oder andere Einreisedokumente.", cs: "<strong>Důležité upozornění:</strong> Důrazně se doporučuje přiložit k této cestovní plné moci kopie platných občanských průkazů nebo cestovních pasů obou rodičů s rodičovskou odpovědností, jakož i kopii rodného listu/listů dítěte/dětí. Platnost všech cestovních dokladů je třeba zkontrolovat před zahájením cesty. Tato plná moc nenahrazuje případně potřebná víza nebo jiné vstupní dokumenty." },
+            noChildrenEntered: { de: "<em>Keine Kinderdaten erfasst.</em>", cs: "<em>Nebyly zadány žádné údaje o dětech.</em>" }
+        };
+
+        function getText(key, lang, replacements = {}) {
+            if (translations[key] && translations[key][lang]) {
+                let text = translations[key][lang];
+                for (const placeholder in replacements) { text = text.replace(new RegExp(`\\$\\{${placeholder}\\}`, 'g'), replacements[placeholder]); }
+                return text;
+            }
+            console.warn(`Translation key "${key}" for lang "${lang}" not found.`);
+            return `[${key} NOT FOUND FOR ${lang}]`;
+        }
+
+        class SignaturePad {
+            constructor(canvasId) { this.canvas = document.getElementById(canvasId); if (!this.canvas) { console.error(`Canvas mit ID ${canvasId} nicht gefunden.`); return; } this.ctx = this.canvas.getContext('2d'); this.isDrawing = false; this.hasSigned = false; this.isEmpty = true; this.lastPos = { x: 0, y: 0 }; this.resizeCanvas = this.resizeCanvas.bind(this); window.addEventListener('resize', this.resizeCanvas); this.resizeCanvas(); this.bindEvents(); }
+            resizeCanvas() { const dpr = window.devicePixelRatio || 1; const rect = this.canvas.getBoundingClientRect(); let imageData = null; if (!this.isEmpty && this.canvas.width > 0 && this.canvas.height > 0) { try { imageData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height); } catch (e) { console.warn("Konnte ImageData nicht speichern beim Resize:", e); imageData = null; } } this.canvas.width = rect.width * dpr; this.canvas.height = rect.height * dpr; this.ctx.scale(dpr, dpr); this.ctx.lineWidth = 2.5; this.ctx.lineCap = 'round'; this.ctx.lineJoin = 'round'; this.ctx.strokeStyle = '#2c3e50'; if (imageData) { this.ctx.putImageData(imageData, 0, 0); this.isEmpty = false; } else { this.isEmpty = true; } }
+            _getEventPosition(event) { const rect = this.canvas.getBoundingClientRect(); let clientX, clientY; if (event.touches && event.touches.length > 0) { clientX = event.touches[0].clientX; clientY = event.touches[0].clientY; } else { clientX = event.clientX; clientY = event.clientY; } return { x: clientX - rect.left, y: clientY - rect.top }; }
+            bindEvents() { this.canvas.addEventListener('mousedown', (e) => this.startDrawing(e)); this.canvas.addEventListener('mousemove', (e) => this.draw(e)); this.canvas.addEventListener('mouseup', () => this.stopDrawing()); this.canvas.addEventListener('mouseleave', () => this.stopDrawing()); this.canvas.addEventListener('touchstart', (e) => { if (e.touches.length === 1) { e.preventDefault(); this.startDrawing(e); } }, { passive: false }); this.canvas.addEventListener('touchmove', (e) => { if (e.touches.length === 1) { e.preventDefault(); this.draw(e); } }, { passive: false }); this.canvas.addEventListener('touchend', () => this.stopDrawing()); }
+            startDrawing(e) { this.isDrawing = true; this.lastPos = this._getEventPosition(e); this.isEmpty = false; }
+            draw(e) { if (!this.isDrawing) return; const currentPos = this._getEventPosition(e); this.ctx.beginPath(); this.ctx.moveTo(this.lastPos.x, this.lastPos.y); this.ctx.lineTo(currentPos.x, currentPos.y); this.ctx.stroke(); this.lastPos = currentPos; if (!this.hasSigned) { this.hasSigned = true; this.updateStatus(); } }
+            stopDrawing() { this.isDrawing = false; this.canvas.dispatchEvent(new CustomEvent('signaturechange', { bubbles: true, detail: { isEmpty: this.isEmpty, hasSigned: this.hasSigned } })); }
+            clear() { this.ctx.clearRect(0, 0, this.canvas.width / (window.devicePixelRatio || 1), this.canvas.height / (window.devicePixelRatio || 1)); this.hasSigned = false; this.isEmpty = true; this.updateStatus(); this.canvas.dispatchEvent(new CustomEvent('signaturechange', { bubbles: true, detail: { isEmpty: this.isEmpty, hasSigned: this.hasSigned } })); }
+            updateStatus() { const statusId = this.canvas.id.replace('-signature', '-sig-status'); const statusElement = document.getElementById(statusId); if (statusElement) { statusElement.textContent = this.hasSigned ? '✅ Gezeichnet' : 'Nicht unterschrieben'; statusElement.style.color = this.hasSigned ? '#27ae60' : '#e74c3c'; } }
+            getDataURL() { return !this.isEmpty ? this.canvas.toDataURL('image/png') : ''; }
+            async loadDataURL(dataURL) { if (!dataURL) { this.clear(); return Promise.resolve(); } return new Promise((resolve, reject) => { const img = new Image(); img.onload = () => { this.clear(); const dpr = window.devicePixelRatio || 1; this.ctx.drawImage(img, 0, 0, this.canvas.width / dpr, this.canvas.height / dpr); this.hasSigned = true; this.isEmpty = false; this.updateStatus(); resolve(); }; img.onerror = (err) => { console.error("Fehler beim Laden der Unterschrift aus dataURL:", err); this.clear(); reject(err); }; img.src = dataURL; }); }
+            destroy() { window.removeEventListener('resize', this.resizeCanvas); }
+        }
+
+        let motherSignature, fatherSignature;
+        window.addEventListener('load', async () => {
+            motherSignature = new SignaturePad('mother-signature');
+            fatherSignature = new SignaturePad('father-signature');
+            const flatpickrOptions = { dateFormat: "d.m.Y", locale: "de", allowInput: true };
+            document.querySelectorAll('.date-input-modern').forEach(el => { flatpickr(el, flatpickrOptions); });
+            try {
+                const motherSigDateEl = document.getElementById('mother-signature-date');
+                const fatherSigDateEl = document.getElementById('father-signature-date');
+                if(motherSigDateEl && !motherSigDateEl.value) { flatpickr(motherSigDateEl, flatpickrOptions).setDate(new Date()); }
+                if(fatherSigDateEl && !fatherSigDateEl.value) { flatpickr(fatherSigDateEl, flatpickrOptions).setDate(new Date()); }
+            } catch (e) { console.warn("Fehler beim Setzen der Unterschriftsdaten:", e); }
+
+            const savedDataString = localStorage.getItem('reisevollmacht_draft');
+            if (savedDataString) {
+                try {
+                    const formData = JSON.parse(savedDataString);
+                    Object.keys(formData).forEach(id => {
+                        const element = document.getElementById(id);
+                        if (element) {
+                            if (element.type === 'checkbox') { element.checked = formData[id]; }
+                            else if (id !== 'motherSignatureData' && id !== 'fatherSignatureData') { element.value = formData[id]; }
+                        }
+                    });
+                    if (formData.motherSignatureData && motherSignature) { try { await motherSignature.loadDataURL(formData.motherSignatureData); } catch(e) { console.error("Mutter Unterschrift laden fehlgeschlagen", e); } }
+                    if (formData.fatherSignatureData && fatherSignature) { try { await fatherSignature.loadDataURL(formData.fatherSignatureData); } catch(e) { console.error("Vater Unterschrift laden fehlgeschlagen", e); } }
+                } catch (error) { console.error("Fehler localStorage:", error); localStorage.removeItem('reisevollmacht_draft'); }
+            }
+            if (motherSignature && motherSignature.canvas) { motherSignature.canvas.addEventListener('signaturechange', scheduleSave); }
+            if (fatherSignature && fatherSignature.canvas) { fatherSignature.canvas.addEventListener('signaturechange', scheduleSave); }
+        });
+
+        function clearSignature(canvasId) { if (canvasId === 'mother-signature' && motherSignature) motherSignature.clear(); else if (canvasId === 'father-signature' && fatherSignature) fatherSignature.clear(); }
+        function toggleHelp() { const overlay = document.querySelector('.overlay'); const popup = document.querySelector('.help-popup'); const isVisible = overlay.style.display === 'block'; overlay.style.display = isVisible ? 'none' : 'block'; popup.style.display = isVisible ? 'none' : 'block'; }
+
+        function validateForm() {
+            const requiredFields = [ 'mother-firstname', 'mother-lastname', 'mother-birthdate', 'mother-id', 'mother-address', 'father-firstname', 'father-lastname', 'father-birthdate', 'father-id', 'father-address', 'travel-from', 'travel-to', 'mother-signature-place', 'mother-signature-date', 'father-signature-place', 'father-signature-date' ];
+            let isValid = true; let missingFieldsMessages = [];
+            requiredFields.forEach(fieldId => { const field = document.getElementById(fieldId); const fieldContainer = field.closest('.form-group') || field.parentElement; if (!field.value.trim()) { isValid = false; const label = fieldContainer.querySelector('label'); missingFieldsMessages.push(label ? label.textContent.replace('*', '').trim() : fieldId); field.style.borderColor = '#e74c3c'; } else { field.style.borderColor = ''; } });
+            if (!motherSignature || !motherSignature.hasSigned) { isValid = false; missingFieldsMessages.push('Unterschrift der Mutter'); if(document.getElementById('mother-signature')) document.getElementById('mother-signature').closest('.signature-pad').style.borderColor = '#e74c3c'; } else { if(document.getElementById('mother-signature')) document.getElementById('mother-signature').closest('.signature-pad').style.borderColor = ''; }
+            if (!fatherSignature || !fatherSignature.hasSigned) { isValid = false; missingFieldsMessages.push('Unterschrift des Vaters'); if(document.getElementById('father-signature')) document.getElementById('father-signature').closest('.signature-pad').style.borderColor = '#e74c3c'; } else { if(document.getElementById('father-signature')) document.getElementById('father-signature').closest('.signature-pad').style.borderColor = ''; }
+            if (!document.getElementById('mother-consent').checked) { isValid = false; missingFieldsMessages.push('Zustimmung der Mutter (Checkbox)'); }
+            if (!document.getElementById('father-consent').checked) { isValid = false; missingFieldsMessages.push('Zustimmung des Vaters (Checkbox)'); }
+            if (!isValid) { alert('Bitte korrigieren Sie die hervorgehobenen Pflichtfelder und Bestätigungen:\n\n• ' + missingFieldsMessages.join('\n• ')); }
+            return isValid;
+        }
+        function formatDateForDisplay(dateString) { return dateString || ''; }
+
+        function generateDocument() {
+            if (!validateForm()) return;
+            const newWindow = window.open('', '_blank');
+            if (!newWindow) { alert("Popup-Blocker aktiv? Bitte Popups für diese Seite erlauben."); return; }
+            const germanDocumentHTML = createPrintableDocument('de');
+            const czechDocumentHTML = createPrintableDocument('cs');
+            const printCSS = `
+                body { font-family: Arial, Helvetica, sans-serif; font-size: 8.5pt; line-height: 1.25; color: #000; margin:0; }
+                .print-main-container { margin: 12mm 15mm 10mm 15mm; }
+                .print-header { text-align: center; border-bottom: 1px solid #000; padding-bottom: 5px; margin-bottom: 10px; }
+                .print-header h1 { font-size: 13pt; margin: 0 0 1px 0; font-weight: bold; }
+                .print-header h2 { font-size: 9pt; margin: 0; font-weight: normal; color: #222; line-height: 1.2;}
+                .print-issued-date { font-size: 8pt; text-align: right; margin-bottom: 8px; }
+                .print-section { margin-bottom: 8px; padding: 0; }
+                .print-section h3 { font-size: 10pt; margin-top: 0; margin-bottom: 4px; border-bottom: 0.5px solid #555; padding-bottom: 2px; font-weight: bold; }
+                p.print-p { margin: 1px 0 3px 0; font-size: 8.5pt; }
+                .data-pair { margin-bottom: 1px; display: flex; font-size: 8.5pt; line-height: 1.2; }
+                .data-pair strong { min-width: 120px; display: inline-block; font-weight: bold; padding-right: 4px; flex-shrink: 0; }
+                .data-pair span { flex-grow: 1; word-break: break-word; }
+                table.print-table { width: 100%; border-collapse: collapse; margin-top: 3px; margin-bottom: 6px; }
+                table.print-table th, table.print-table td { border: 0.5px solid #777; padding: 2px 4px; text-align: left; font-size: 7.5pt; vertical-align: top; }
+                table.print-table th { background-color: #f0f0f0; font-weight: bold; }
+                table.print-table th:nth-child(1), table.print-table td:nth-child(1) { width: 35%; }
+                table.print-table th:nth-child(2), table.print-table td:nth-child(2) { width: 25%; }
+                table.print-table th:nth-child(3), table.print-table td:nth-child(3) { width: 40%; }
+                .signature-block { margin-top: 8px; }
+                .consent-text { margin-top: 3px; margin-bottom: 3px; font-style: italic; font-size: 8pt; }
+                .signature-image { width: 160px; height: 50px; border: 0.5px solid #888; display: block; margin-top: 2px; background-color: #fdfdfd; }
+                .signature-placeholder { font-style: italic; color: #555; font-size: 7.5pt; width: 160px; height: 50px; border: 0.5px dashed #888; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+                .place-date-line { margin-top: 4px; font-size: 8.5pt; }
+                .legal-footer { font-size: 7pt; color: #222; margin-top: 10px; padding-top: 5px; border-top: 0.5px solid #aaa; text-align: justify; line-height: 1.1;}
+                .page-break { page-break-before: always; }
+            `;
+            const finalHTML = `<!DOCTYPE html><html lang="de-CS"><head><meta charset="UTF-8"><title>Reisevollmacht / Cestovní plnomoc</title><style>${printCSS}</style></head><body>${germanDocumentHTML}<div class="page-break"></div>${czechDocumentHTML}</body></html>`;
+            newWindow.document.open(); newWindow.document.write(finalHTML); newWindow.document.close();
+            setTimeout(() => { newWindow.focus(); newWindow.print(); }, 800); // Etwas mehr Zeit für komplexes Rendering
+        }
+
+        function createPrintableDocument(lang) {
+            const getVal = id => document.getElementById(id) ? document.getElementById(id).value : '';
+            const getSelectedText = id => { const el = document.getElementById(id); return el ? el.options[el.selectedIndex].text : ''; }
+            const motherFirstname = getVal('mother-firstname'), motherLastname = getVal('mother-lastname');
+            const fatherFirstname = getVal('father-firstname'), fatherLastname = getVal('father-lastname');
+            const travelFrom = formatDateForDisplay(getVal('travel-from')), travelTo = formatDateForDisplay(getVal('travel-to'));
+            const children = [];
+            for (let i = 1; i <= 3; i++) { const firstname = getVal(`child${i}-firstname`); if (firstname) children.push({ firstname, lastname: getVal(`child${i}-lastname`), birthdate: formatDateForDisplay(getVal(`child${i}-birthdate`)), id: getVal(`child${i}-id`) }); }
+            const motherSigDataUrl = motherSignature ? motherSignature.getDataURL() : '', fatherSigDataUrl = fatherSignature ? fatherSignature.getDataURL() : '';
+            const motherSigPlace = getVal('mother-signature-place'), motherSigDate = formatDateForDisplay(getVal('mother-signature-date'));
+            const fatherSigPlace = getVal('father-signature-place'), fatherSigDate = formatDateForDisplay(getVal('father-signature-date'));
+
+            return `
+            <div class="print-main-container">
+                <div class="print-header"><h1>${getText('pdfTitle', lang)}</h1><h2>${getText('pdfSubtitle', lang)}</h2></div>
+                <p class="print-issued-date">${getText('createdOn', lang)} ${new Date().toLocaleDateString(lang === 'cs' ? 'cs-CZ' : 'de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}</p>
+
+                <div class="print-section"><h3>${getText('travelingMotherSection', lang)}</h3>
+                    <div class="data-pair"><strong>${getText('nameLastFirst', lang)}</strong><span>${motherLastname}, ${motherFirstname}</span></div>
+                    <div class="data-pair"><strong>${getText('birthDate', lang)}</strong><span>${formatDateForDisplay(getVal('mother-birthdate'))}</span></div>
+                    <div class="data-pair"><strong>${getText('address', lang)}</strong><span>${getVal('mother-address')}</span></div>
+                    <div class="data-pair"><strong>${getText('idNumber', lang)}</strong><span>${getVal('mother-id')}</span></div>
+                    ${getVal('mother-phone') ? `<div class="data-pair"><strong>${getText('phoneEmergency', lang)}</strong><span>${getVal('mother-phone')}</span></div>` : ''}
+                </div>
+
+                ${children.length > 0 ? `
+                <div class="print-section"><h3>${getText('childrenSection', lang)}</h3>
+                    <table class="print-table"><thead><tr><th>${getText('childNameHeader', lang)}</th><th>${getText('childBirthDateHeader', lang)}</th><th>${getText('childIdNumberHeader', lang)}</th></tr></thead><tbody>
+                    ${children.map(child => `<tr><td>${child.lastname}, ${child.firstname}</td><td>${child.birthdate}</td><td>${child.id}</td></tr>`).join('')}</tbody></table>
+                </div>` : `<p class="print-p">${getText('noChildrenEntered', lang)}</p>`}
+
+                <div class="print-section"><h3>${getText('travelDataSection', lang)}</h3>
+                    <div class="data-pair"><strong>${getText('travelPeriod', lang)}</strong><span>${travelFrom} ${lang === 'cs' ? 'do' : 'bis'} ${travelTo}</span></div>
+                    <div class="data-pair"><strong>${getText('destinationCountry', lang)}</strong><span>${lang === 'cs' ? 'Česká republika' : 'Tschechische Republik'}</span></div>
+                    ${getVal('travel-destination') ? `<div class="data-pair"><strong>${getText('destinationDetail', lang)}</strong><span>${getVal('travel-destination')}</span></div>` : ''}
+                    <div class="data-pair"><strong>${getText('travelPurpose', lang)}</strong><span>${getSelectedText('travel-purpose')}</span></div>
+                </div>
+
+                <div class="print-section"><h3>${getText('consentingFatherSection', lang)}</h3>
+                    <div class="data-pair"><strong>${getText('nameLastFirst', lang)}</strong><span>${fatherLastname}, ${fatherFirstname}</span></div>
+                    <div class="data-pair"><strong>${getText('birthDate', lang)}</strong><span>${formatDateForDisplay(getVal('father-birthdate'))}</span></div>
+                    <div class="data-pair"><strong>${getText('address', lang)}</strong><span>${getVal('father-address')}</span></div>
+                    <div class="data-pair"><strong>${getText('idNumber', lang)}</strong><span>${getVal('father-id')}</span></div>
+                </div>
+
+                <div class="print-section signature-block"><h3>${getText('motherSignatureSection', lang)}</h3>
+                    <p class="consent-text">${getText('motherConsent', lang, { motherFirstname, motherLastname })}</p>
+                    ${motherSigDataUrl ? `<img src="${motherSigDataUrl}" alt="${getText('signatureImageAltMother', lang)}" class="signature-image">` : `<div class="signature-placeholder">${getText('noDigitalSignature', lang)}</div>`}
+                    <p class="place-date-line">${getText('placeDateSignature', lang)} ${motherSigPlace ? motherSigPlace : '___________________'}, ${motherSigDate ? motherSigDate : '___________________'}</p>
+                </div>
+
+                <div class="print-section signature-block"><h3>${getText('fatherSignatureSection', lang)}</h3>
+                    <p class="consent-text">${getText('fatherConsent', lang, { fatherFirstname, fatherLastname })}</p>
+                    ${fatherSigDataUrl ? `<img src="${fatherSigDataUrl}" alt="${getText('signatureImageAltFather', lang)}" class="signature-image">` : `<div class="signature-placeholder">${getText('noDigitalSignature', lang)}</div>`}
+                    <p class="place-date-line">${getText('placeDateSignature', lang)} ${fatherSigPlace ? fatherSigPlace : '___________________'}, ${fatherSigDate ? fatherSigDate : '___________________'}</p>
+                </div>
+
+                <div class="legal-footer"><p>${getText('legalFooter', lang)}</p></div>
+            </div>`;
+        }
+
+        let saveTimeout;
+        function scheduleSave() {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                const formData = {};
+                document.querySelectorAll('.main-form-content input, .main-form-content select').forEach(input => {
+                    if (input.id) {
+                        if (input.type === 'checkbox') { formData[input.id] = input.checked; }
+                        else { formData[input.id] = input.value; }
+                    }
+                });
+                if (motherSignature) { formData.motherSignatureData = motherSignature.getDataURL(); } else { formData.motherSignatureData = '';}
+                if (fatherSignature) { formData.fatherSignatureData = fatherSignature.getDataURL(); } else { formData.fatherSignatureData = '';}
+                localStorage.setItem('reisevollmacht_draft', JSON.stringify(formData));
+                console.log("Formular und Unterschriften automatisch gespeichert.");
+            }, 1800);
+        }
+        const formContent = document.querySelector('.main-form-content');
+        if (formContent) {
+            formContent.addEventListener('input', scheduleSave);
+            formContent.addEventListener('change', scheduleSave);
+        }
+    </script>
+</body>
+</html>
