@@ -1,0 +1,98 @@
+<!DOCTYPE html><html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Adjektiv‑Output‑Explorer</title>
+<style>
+:root{
+  --bg:#111;--fg:#eee;--accent:#38d430;--muted:#888;
+  --radius:.6rem;--pad:.7rem
+}
+*{box-sizing:border-box;margin:0}
+body{font-family:system-ui,Roboto,Arial,sans-serif;background:var(--bg);color:var(--fg);padding:2rem;display:flex;flex-direction:column;gap:1.2rem}
+h1{font-size:1.6rem;color:var(--accent)}
+.controls{display:flex;gap:1rem}
+input{flex:1;padding:var(--pad);border:none;border-radius:var(--radius);background:#222;color:var(--fg)}
+table{width:100%;border-collapse:collapse;font-size:.93rem}
+th,td{padding:.55rem .8rem;text-align:left;border-bottom:1px solid #222}
+th{background:#222;color:var(--accent);font-weight:600}
+tr:hover{background:#1b1b1b}
+.muted{color:var(--muted);font-size:.85rem}
+</style>
+</head>
+<body><h1>Adjektiv‑Output‑Explorer</h1><div class="controls">
+  <input id="search" placeholder="🔍 nach Adjektiv oder Wirkung suchen …" />
+</div><table id="table">
+  <thead>
+    <tr>
+      <th>Adjektiv</th><th>Wirkung (Stil / Ton)</th><th>Erwarteter Output</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table><script>
+/* --------- Datenbasis ------------------------------------------------- */
+const data=[
+ {adj:"blumig", impact:"verspielt, romantisch, ornamentreich", out:"Metaphernreiche Texte, florale Grafiken, Pastell‑Farben."},
+ {adj:"clean", impact:"klar, minimalistisch, strukturiert", out:"Große Weißräume, dezente Farbpalette, semantisches HTML."},
+ {adj:"organisch", impact:"weich, fließend, naturbezogen", out:"Kurvige Formen, natürliche Gradients, Hand‑drawn‑Icons."},
+ {adj:"technisch", impact:"präzise, funktional, rational", out:"Grid‑Layouts, Monospace‑Fonts, linienbasierte Icons."},
+ {adj:"verspielt", impact:"locker, humorvoll, kindlich", out:"Bunte Farben, animierte Hover‑Effekte, Comic‑Schriften."},
+ {adj:"seriös", impact:"formell, vertrauenerweckend", out:"Serifen‑Fonts, gedeckte Blau‑/Grautöne, strukturierte Infos."},
+ {adj:"luxuriös", impact:"edel, hochwertig, exklusiv", out:"Dunkle Hintergründe, Goldakzente, aufwändige Mikroanimationen."},
+ {adj:"futuristisch", impact:"innovativ, visionär, sci‑fi", out:"Neon‑Leuchteffekte, Glas‑Morphism, Parallax‑Scrolls."},
+ {adj:"retro", impact:"nostalgisch, vintage", out:"Pixel‑Art, Pastell oder Sepia, klassische 80er‑Typo."},
+ {adj:"freundlich", impact:"einladend, warm, empathisch", out:"Runde Buttons, Soft‑Shadows, warme Orange‑Töne."},
+ {adj:"nüchtern", impact:"sachlich, neutral, informativ", out:"Faktenorientierte Sprache, Tabellen, wenig dekoratives CSS."},
+ {adj:"avantgardistisch", impact:"experimentell, progressiv", out:"Asymmetrische Layouts, kräftige Kontraste, WebGL‑Spielereien."},
+ {adj:"rustikal", impact:"erdig, handgemacht, bodenständig", out:"Holz‑ oder Papiertexturen, grobe Serif‑Fonts, Naturtöne."},
+ {adj:"kreativ", impact:"ideenreich, inspirierend", out:"Interaktive Illustrationen, Farbverläufe, verspielte Animationen."},
+ {adj:"mächtig", impact:"dominant, imposant", out:"Große Headlines, tiefe Farbtöne, starke Kontraste."},
+ {adj:"kalt", impact:"distanziert, analytisch", out:"Blau‑graue Palette, scharfe Linien, reduzierte Rundungen."},
+ {adj:"warm", impact:"emotional, geborgen", out:"Rot‑/Orange‑Töne, weiche Schatten, Storytelling‑Elemente."},
+ {adj:"dynamisch", impact:"energiegeladen, beweglich", out:"Scroll‑Trigger‑Animationen, diagonale Linien, schnelle Transitions."},
+ {adj:"statisch", impact:"ruhig, stabil", out:"Fixe Raster, kaum Bewegung, klare Hierarchie."},
+ {adj:"elegant", impact:"raffiniert, stilvoll", out:"Feine Serifenschriften, dezente Linien, monochrome Schemen."},
+ {adj:"robust", impact:"stark, verlässlich", out:"Blockige Typografie, kräftige Buttons, dunkle Akzentfarben."},
+ {adj:"minimalistisch", impact:"reduziert, fokussiert", out:"Nur Kerninhalte, 1‑2 Primärfarben, üppiger Weißraum."},
+ {adj:"detailliert", impact:"präzise, informationsreich", out:"Feine Diagramme, Tooltip‑Infos, Microcopy."},
+ {adj:"experimentell", impact:"ungewöhnlich, erkundend", out:"Variable Fonts, GLSL‑Effekte, spielerische Interaktion."},
+ {adj:"kräftig", impact:"bold, auffällig, energisch", out:"Fette Headlines, starke Buttons, hohe Kontraste."},
+ {adj:"subtil", impact:"zurückhaltend, dezent", out:"Feine Farbnuancen, leichte Animationen, zarte Linien."},
+ {adj:"lebhaft", impact:"vital, spritzig", out:"Knallige Farben, schnelle Übergänge, verspielte Icons."},
+ {adj:"monochrom", impact:"einfarbig, klar", out:"Eine Hauptfarbe in Schattierungen, ikonische Silhouetten."},
+ {adj:"farbenfroh", impact:"bunt, vielfältig", out:"Regenbogenpaletten, Illustrationen, fröhlicher Ton."},
+ {adj:"pastell", impact:"weich, sanft", out:"Helle, gedeckte Farbtöne, luftige Layouts, freundliche Illustrationen."},
+ {adj:"neon", impact:"leuchtend, elektrisierend", out:"Grellbunte Akzente, Glow‑Effekte, Cyberpunk‑Feeling."},
+ {adj:"glänzend", impact:"glossy, poliert", out:"Reflexionen, Verlaufsglanz, Glass‑Buttons."},
+ {adj:"matt", impact:"gedämpft, ruhig", out:"Flache Flächen, Soft‑Shadows, zurückhaltende Farben."},
+ {adj:"handgezeichnet", impact:"skizzenhaft, persönlich", out:"Scribble‑Icons, Kritzel‑Schriften, ungerade Linien."},
+ {adj:"geometrisch", impact:"strukturiert, mathematisch", out:"Dreiecke, Sechsecke, diagonale Raster."},
+ {adj:"abstrakt", impact:"konzeptuell, non‑figurativ", out:"Flächenkompositionen, Shape‑Layer, experimentelle Formen."},
+ {adj:"grungy", impact:"rauchig, abgenutzt", out:"Gerissene Texturen, Splatter‑Brushes, kratzige Fonts."},
+ {adj:"flach", impact:"flat‑design, modern", out:"Einfache Icons, keine Tiefen‑Effekte, klare Farbflächen."},
+ {adj:"skeuomorph", impact:"realistisch, anfassbar", out:"3D‑Schatten, Texturen, realistische Objekte."},
+ {adj:"industrial", impact:"technisch, roh, urban", out:"Metall‑Texturen, Nieten‑Grafiken, Grautöne."},
+ {adj:"cozy", impact:"gemütlich, wohlig", out:"Holz‑Akzente, warme Pastelle, sanfte Animationen."},
+ {adj:"airy", impact:"luftig, leicht", out:"Große Abstände, feine Linien, helle Farbflächen."},
+ {adj:"busy", impact:"dicht, informationsreich", out:"Viele Cards, kleine Schriften, Multiple Widget‑Kacheln."},
+ {adj:"jugendlich", impact:"frisch, trendig", out:"Emoji‑Sprache, grelle Gradients, TikTok‑ähnliche Effekte."},
+ {adj:"sophistiziert", impact:"anspruchsvoll, kultiviert", out:"Serif‑Headlines, gedeckte Farbskala, diskrete Übergänge."},
+ {adj:"corporate", impact:"geschäftlich, markenkonform", out:"Markenblau, System‑Fonts, modulare Komponenten‑Library."},
+ {adj:"akademisch", impact:"lehrreich, formal", out:"Fußnoten, Zitate, helles Layout, Serifenschriften."},
+ {adj:"zugänglich", impact:"barrierefrei, inklusiv", out:"Hoher Kontrast, ARIA‑Labels, Keyboard‑Navigation."},
+ {adj:"sicher", impact:"vertrauenswürdig, geschützt", out:"Padlock‑Icons, beruhigende Blautöne, klare Datenschutzhinweise."},
+ {adj:"intuitiv", impact:"benutzerfreundlich, klar", out:"Selbsterklärende Icons, progressive Disclosure, Onboarding‑Tour."}
+];
+
+/* --------- Rendering -------------------------------------------------- */
+const tbody=document.querySelector('tbody');
+function render(filter=''){
+  const q=filter.toLowerCase();
+  const rows=data.filter(d=>
+    !q || d.adj.toLowerCase().includes(q) || d.impact.toLowerCase().includes(q) || d.out.toLowerCase().includes(q)
+  );
+  tbody.innerHTML=rows.map(d=>`<tr><td><strong>${d.adj}</strong></td><td>${d.impact}</td><td>${d.out}</td></tr>`).join('');
+}
+render();
+search.oninput=()=>render(search.value);
+</script></body>
+</html>
