@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>QualityDice™ - Ihr personalisiertes Glücksspiel-Erlebnis</title>
+    <style>
+        body {
+            background-color: #0a0a0a;
+            color: #00e676;
+            font-family: 'Courier New', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .container {
+            perspective: 800px;
+            margin-bottom: 20px;
+        }
+
+        .dice {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            transform-style: preserve-3d;
+            transition: transform 1.5s ease-out;
+            cursor: pointer;
+        }
+
+        .face {
+            position: absolute;
+            width: 196px;
+            height: 196px;
+            background-color: #141414;
+            border: 2px solid #00e676;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            font-weight: bold;
+            box-shadow: inset 0 0 15px rgba(0, 230, 118, 0.5);
+        }
+
+        .face-1 { transform: rotateY(0deg) translateZ(100px); }
+        .face-2 { transform: rotateY(90deg) translateZ(100px); }
+        .face-3 { transform: rotateY(180deg) translateZ(100px); }
+        .face-4 { transform: rotateY(-90deg) translateZ(100px); }
+        .face-5 { transform: rotateX(90deg) translateZ(100px); }
+        .face-6 { transform: rotateX(-90deg) translateZ(100px); }
+
+        .dot {
+            width: 36px;
+            height: 36px;
+            background-color: #00e676;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #00e676;
+        }
+
+        /* Einheitliches Grid-Layout für alle Würfelseiten */
+        .dots {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            width: 160px;
+            height: 160px;
+            justify-items: center;
+            align-items: center;
+        }
+
+        /* Spezifische Punkt-Positionierung für jede Seite */
+        .face-1 .dots .dot { grid-area: 2 / 2; } /* Mitte */
+
+        .face-2 .dots .dot:nth-child(1) { grid-area: 1 / 1; } /* Oben links */
+        .face-2 .dots .dot:nth-child(2) { grid-area: 3 / 3; } /* Unten rechts */
+
+        .face-3 .dots .dot:nth-child(1) { grid-area: 1 / 1; } /* Oben links */
+        .face-3 .dots .dot:nth-child(2) { grid-area: 2 / 2; } /* Mitte */
+        .face-3 .dots .dot:nth-child(3) { grid-area: 3 / 3; } /* Unten rechts */
+
+        .face-4 .dots .dot:nth-child(1) { grid-area: 1 / 1; } /* Oben links */
+        .face-4 .dots .dot:nth-child(2) { grid-area: 1 / 3; } /* Oben rechts */
+        .face-4 .dots .dot:nth-child(3) { grid-area: 3 / 1; } /* Unten links */
+        .face-4 .dots .dot:nth-child(4) { grid-area: 3 / 3; } /* Unten rechts */
+
+        .face-5 .dots .dot:nth-child(1) { grid-area: 1 / 1; } /* Oben links */
+        .face-5 .dots .dot:nth-child(2) { grid-area: 1 / 3; } /* Oben rechts */
+        .face-5 .dots .dot:nth-child(3) { grid-area: 2 / 2; } /* Mitte */
+        .face-5 .dots .dot:nth-child(4) { grid-area: 3 / 1; } /* Unten links */
+        .face-5 .dots .dot:nth-child(5) { grid-area: 3 / 3; } /* Unten rechts */
+
+        .face-6 .dots .dot:nth-child(1) { grid-area: 1 / 1; } /* Oben links */
+        .face-6 .dots .dot:nth-child(2) { grid-area: 1 / 3; } /* Oben rechts */
+        .face-6 .dots .dot:nth-child(3) { grid-area: 2 / 1; } /* Mitte links */
+        .face-6 .dots .dot:nth-child(4) { grid-area: 2 / 3; } /* Mitte rechts */
+        .face-6 .dots .dot:nth-child(5) { grid-area: 3 / 1; } /* Unten links */
+        .face-6 .dots .dot:nth-child(6) { grid-area: 3 / 3; } /* Unten rechts */
+
+        .message {
+            background-color: #141414;
+            border: 1px solid #00e676;
+            padding: 20px;
+            width: 80%;
+            max-width: 600px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 230, 118, 0.3);
+        }
+
+        .logo {
+            font-size: 28px;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px #00e676;
+        }
+
+        .blink {
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .scanner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                transparent 0%,
+                rgba(0, 230, 118, 0.2) 50%,
+                transparent 100%
+            );
+            animation: scan 2s infinite;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        @keyframes scan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+
+        .qrcode {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-size: 12px;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="scanner"></div>
+    
+    <div class="logo">QualityDice™ <span class="blink">v2.4</span></div>
+    
+    <div class="container">
+        <div class="dice" id="dice">
+            <div class="face face-1">
+                <div class="dots">
+                    <div class="dot"></div>
+                </div>
+            </div>
+            <div class="face face-2">
+                <div class="dots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+            </div>
+            <div class="face face-3">
+                <div class="dots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+            </div>
+            <div class="face face-4">
+                <div class="dots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+            </div>
+            <div class="face face-5">
+                <div class="dots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+            </div>
+            <div class="face face-6">
+                <div class="dots">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="message" id="message">
+        Klicken Sie auf den Würfel, um Ihr personalisiertes Zufallserlebnis zu starten.
+    </div>
+    
+    <div class="qrcode">ID:QLDICE-2371-B // Nutzung wird protokolliert</div>
+
+    <script>
+        const dice = document.getElementById('dice');
+        const message = document.getElementById('message');
+        let canRoll = true;
+        
+        const messages = [
+            "Ihre Träume wurden aufgrund dieses Würfelwurfs neu kalibriert. Das Unterbewusstsein erwartet dienstags drei zusätzliche Elefanten.",
+            "QualityMind™ hat festgestellt, dass ihre linke Gehirnhälfte zu 78% mit dem Würfelmuster übereinstimmt. Umerziehung eingeleitet.",
+            "Warnung: Dieser Wurf hat eine instabile Realitätswelle ausgelöst. Ihre Wohnung wird in den nächsten 7 Minuten um 3cm nach links verschoben.",
+            "Analyse Ihrer Tränen ergab: Zu viel Hoffnung im System. Ihre Möbel werden heute Nacht neu angeordnet, um Chaos zu fördern.",
+            "Laut QualityLogic™ besteht eine 68%ige Wahrscheinlichkeit, dass Ihre Zehennägel Ihre Gedanken an die Zentrale melden.",
+            "Ihr Würfelergebnis hat eine temporäre Verschmelzung mit Ihrem digitalen Zwilling ausgelöst. Bitte wundern Sie sich nicht über doppelte Erinnerungen.",
+            "Die Farbe Ihrer Seele wurde aufgrund dieses Wurfs von 'Blassblau' zu 'Administratives Grau' geändert. Passwort für Ihr Inneres: 4D7X-82HJ.",
+            "QualityDreams™ hat registriert, dass dieser Wurf mit Ihrer Existenzangst resoniert. Ihre Zimmerpflanzen werden Sie heute im Schlaf beobachten.",
+            "Bürgerwert angepasst: Ihre Schuhe glauben nicht mehr an Sie, und die Wände kennen nun Ihre geheimsten Wünsche.",
+            "Dieser Würfelwurf schwingt in C-Moll. Unvereinbar mit Ihrer geplanten emotionalen Bandbreite. Bitte gleichen Sie sich umgehend an.",
+            "Systemfehler: Ihr Schatten hat sich selbstständig gemacht. Neuzuweisung erfolgt nach diesem Wurf. Bitte vergessen Sie den Vorfall.",
+            "QualitySync™ meldet: Diese Würfelkombination hat zu einer Zeitschleife in Ihrem Badezimmer geführt. Zähneputzen ist bis 2027 rückwirkend verboten.",
+            "Ihre Gedanken schmecken nach diesem Wurf zu bitter. Die obligatorische Freudenration wird um 16 Einheiten erhöht.",
+            "Dieser Würfelwurf deutet auf eine unerlaubte Menge Phantasie hin. Ihre Kühlschranktür wird Sie morgen zur Befragung abholen.",
+            "QualityReality™ erkennt dissonante Schwingungsmuster in Ihrer Persönlichkeit. Die Gravitation in Ihrer Wohnung wird aus Sicherheitsgründen umgekehrt.",
+            "ACHTUNG: Dieser Würfelwurf hat einen Riss in Ihrer persönlichen Zeitlinie verursacht. Ihre zukünftigen Ichs versammeln sich gerade in Ihrem Kleiderschrank.",
+            "Die Algorithmen haben entschieden: Ihre Spiegelbild darf sich ab morgen eigene Kleidung aussuchen. Kooperation wird empfohlen.",
+            "Ihr Würfelmuster weist verdächtige Übereinstimmungen mit verbotenen Traumfrequenzen auf. Ihre Erinnerungen an den heutigen Tag werden durch Werbung ersetzt.",
+            "Ihr Bewusstsein wurde während dieses Würfelwurfs kurzzeitig mit dem Ihres Kühlschranks getauscht. Eventuelle Lebensmittelgelüste sind normal.",
+            "QualityControl™ hat beschlossen, dass Ihre Zahnbürste den Rest der Woche alle Entscheidungen für Sie treffen wird. Widerstand ist kontraproduktiv."
+        ];
+        
+        // Würfelwurf-Funktion
+        dice.addEventListener('click', function() {
+            if (!canRoll) return;
+            
+            canRoll = false;
+            
+            // Generiere eine zufällige Zahl zwischen 1 und 6
+            const result = Math.floor(Math.random() * 6) + 1;
+            
+            // Bestimme die passende Rotation für das gewürfelte Ergebnis
+            let rotX = 0;
+            let rotY = 0;
+            let rotZ = 0;
+            
+            switch(result) {
+                case 1: // Seite 1 nach vorne
+                    rotX = 0;
+                    rotY = 0;
+                    rotZ = 0;
+                    break;
+                case 2: // Seite 2 nach vorne
+                    rotX = 0;
+                    rotY = 90;
+                    rotZ = 0;
+                    break;
+                case 3: // Seite 3 nach vorne
+                    rotX = 0;
+                    rotY = 180;
+                    rotZ = 0;
+                    break;
+                case 4: // Seite 4 nach vorne
+                    rotX = 0;
+                    rotY = 270;
+                    rotZ = 0;
+                    break;
+                case 5: // Seite 5 nach oben
+                    rotX = 90;
+                    rotY = 0;
+                    rotZ = 0;
+                    break;
+                case 6: // Seite 6 nach unten
+                    rotX = 270;
+                    rotY = 0;
+                    rotZ = 0;
+                    break;
+            }
+            
+            // Füge ein wenig Variation zur Rotation hinzu, ohne das Ergebnis zu ändern
+            rotZ = Math.floor(Math.random() * 4) * 90;
+            
+            // Apply the rotation
+            dice.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg) rotateZ(${rotZ}deg)`;
+            
+                            // Display a random message after the dice has stopped rolling
+            setTimeout(function() {
+                const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+                message.innerHTML = `<div class="blink" style="margin-bottom: 12px">☢ ANALYSE ABGESCHLOSSEN ☢</div>${randomMessage}`;
+                
+                // Enable rolling again after a delay
+                setTimeout(() => {
+                    canRoll = true;
+                }, 500);
+            }, 1500);
+        });
+    </script>
+</body>
+</html>
