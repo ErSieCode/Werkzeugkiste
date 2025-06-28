@@ -1,0 +1,2803 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hochseeangeln Norwegen - Karten & GPS Tracker</title>
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- PDF.js CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf_viewer.min.css" />
+    
+    <style>
+        :root {
+            --primary-blue: #0084b4;
+            --primary-blue-light: #1a9bcf;
+            --primary-green: #2d5a27;
+            --primary-green-light: #4a7c59;
+            --bg-dark: #1a1a1a;
+            --bg-medium: #2d2d2d;
+            --bg-light: #3a3a3a;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --text-muted: #808080;
+            --accent-orange: #ff6b35;
+            --accent-red: #e74c3c;
+            --accent-green: #27ae60;
+            --accent-yellow: #f39c12;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 8px rgba(0,0,0,0.15);
+            --shadow-lg: 0 8px 16px rgba(0,0,0,0.2);
+            --border-radius: 8px;
+            --transition-fast: 0.2s ease;
+            --transition-smooth: 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark), var(--bg-medium));
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .app-header {
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-blue-light));
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+        }
+
+        .app-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .app-subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        /* Navigation */
+        .nav-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .nav-tab {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: var(--text-primary);
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-tab:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        .nav-tab.active {
+            background: var(--accent-orange);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Content Sections */
+        .content-container {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .content-section {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-light);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary-blue-light);
+        }
+
+        /* Map Container */
+        .map-container {
+            position: relative;
+            height: 70vh;
+            min-height: 500px;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            background: var(--bg-medium);
+        }
+
+        .map-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            transition: opacity var(--transition-smooth);
+        }
+
+        .map-layer.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #leafletMap {
+            z-index: 1;
+        }
+
+        #kystinfoFrame {
+            z-index: 2;
+        }
+
+        /* PDF Viewer with zoom controls */
+        #pdfViewer {
+            z-index: 3;
+            background: white;
+            overflow: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        #pdfCanvas {
+            cursor: grab;
+            transition: none;
+        }
+
+        #pdfCanvas.grabbing {
+            cursor: grabbing;
+        }
+
+        .pdf-controls {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            background: rgba(0,0,0,0.8);
+            border-radius: var(--border-radius);
+            padding: 0.5rem;
+            display: flex;
+            gap: 0.5rem;
+            z-index: 10;
+        }
+
+        .pdf-zoom-btn {
+            background: var(--bg-medium);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all var(--transition-fast);
+        }
+
+        .pdf-zoom-btn:hover {
+            background: var(--bg-light);
+        }
+
+        .pdf-zoom-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Map Controls - Mobile optimized */
+        .map-controls {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            z-index: 1000;
+        }
+
+        .map-overlay {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-width: calc(100% - 80px);
+        }
+
+        /* Simplified GPS Status Display */
+        .gps-status {
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            backdrop-filter: blur(10px);
+            min-width: 200px;
+        }
+
+        .gps-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #808080;
+            transition: all var(--transition-fast);
+            flex-shrink: 0;
+        }
+
+        .gps-indicator.active {
+            background: #27ae60;
+            box-shadow: 0 0 8px rgba(39, 174, 96, 0.8);
+            animation: pulse 2s infinite;
+        }
+
+        .gps-indicator.tracking {
+            background: #f39c12;
+            box-shadow: 0 0 8px rgba(243, 156, 18, 0.8);
+            animation: pulse 1s infinite;
+        }
+
+        .gps-indicator.error {
+            background: #e74c3c;
+            box-shadow: 0 0 8px rgba(231, 76, 60, 0.8);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+        }
+
+        .gps-status-text {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .layer-selector {
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 0.5rem;
+            border-radius: var(--border-radius);
+            backdrop-filter: blur(10px);
+        }
+
+        .layer-selector select {
+            background: transparent;
+            color: white;
+            border: none;
+            font-size: 0.9rem;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .layer-selector select option {
+            background: var(--bg-dark);
+            color: white;
+        }
+
+        /* GPS Info Panel */
+        .gps-info-panel {
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: var(--border-radius);
+            font-size: 0.85rem;
+            backdrop-filter: blur(10px);
+            display: none;
+            max-width: 250px;
+        }
+
+        .gps-info-panel.active {
+            display: block;
+        }
+
+        .gps-info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.25rem;
+        }
+
+        .gps-info-label {
+            color: var(--text-secondary);
+        }
+
+        .gps-info-value {
+            font-weight: 600;
+        }
+
+        /* Manual Marker Mode */
+        .manual-marker-mode {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: var(--border-radius);
+            text-align: center;
+            z-index: 1500;
+            backdrop-filter: blur(10px);
+            display: none;
+        }
+
+        .manual-marker-mode.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .manual-marker-crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            z-index: 1400;
+            pointer-events: none;
+            display: none;
+        }
+
+        .manual-marker-crosshair.active {
+            display: block;
+        }
+
+        .manual-marker-crosshair::before,
+        .manual-marker-crosshair::after {
+            content: '';
+            position: absolute;
+            background: #ff6b35;
+            box-shadow: 0 0 10px rgba(255, 107, 53, 0.8);
+        }
+
+        .manual-marker-crosshair::before {
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            transform: translateY(-50%);
+        }
+
+        .manual-marker-crosshair::after {
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            transform: translateX(-50%);
+        }
+
+        /* Buttons */
+        .btn {
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all var(--transition-fast);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn:hover {
+            background: var(--primary-blue-light);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-icon {
+            width: 50px;
+            height: 50px;
+            padding: 0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+
+        .btn-success {
+            background: var(--accent-green);
+        }
+
+        .btn-success:hover {
+            background: #2ecc71;
+        }
+
+        .btn-secondary {
+            background: var(--bg-medium);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-light);
+        }
+
+        .btn-danger {
+            background: var(--accent-red);
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-warning {
+            background: var(--accent-yellow);
+            color: var(--bg-dark);
+        }
+
+        .btn-warning:hover {
+            background: #e67e22;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg-medium);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: var(--border-radius);
+            color: var(--text-primary);
+            transition: all var(--transition-fast);
+            font-size: 16px; /* Prevents zoom on iOS */
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(0,132,180,0.1);
+        }
+
+        .form-control[readonly] {
+            background: var(--bg-dark);
+            color: var(--text-muted);
+        }
+
+        /* Modals */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            backdrop-filter: blur(5px);
+            padding: 1rem;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-light);
+            border-radius: var(--border-radius);
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from { transform: scale(0.9) translateY(-20px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+        }
+
+        .modal-close:hover {
+            background: rgba(255,255,255,0.1);
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        /* Lists */
+        .marker-list, .catch-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .marker-item, .catch-item {
+            background: var(--bg-medium);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all var(--transition-fast);
+        }
+
+        .marker-item:hover, .catch-item:hover {
+            background: var(--bg-light);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .item-title {
+            font-weight: 600;
+            color: var(--primary-blue-light);
+        }
+
+        .item-meta {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-small {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+            border-radius: 4px;
+        }
+
+        /* Weather Widget */
+        .weather-widget {
+            background: linear-gradient(135deg, var(--primary-green), var(--primary-green-light));
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            text-align: center;
+            color: white;
+        }
+
+        .weather-main {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .weather-icon {
+            font-size: 3rem;
+        }
+
+        .weather-temp {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .weather-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        /* Statistics */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-card {
+            background: var(--bg-medium);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            text-align: center;
+            border-top: 3px solid var(--primary-blue);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-blue-light);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .app-container {
+                padding: 0.5rem;
+            }
+            
+            .app-header {
+                padding: 1rem;
+            }
+            
+            .app-title { 
+                font-size: 1.5rem; 
+            }
+            
+            .nav-tabs { 
+                padding: 0 0.5rem; 
+            }
+            
+            .nav-tab { 
+                padding: 0.5rem 1rem; 
+                font-size: 0.9rem; 
+            }
+            
+            .map-container { 
+                height: 60vh; 
+                min-height: 400px; 
+            }
+            
+            .map-controls { 
+                bottom: 0.5rem; 
+                right: 0.5rem; 
+                gap: 0.5rem;
+            }
+            
+            .map-overlay { 
+                top: 0.5rem; 
+                left: 0.5rem; 
+                max-width: calc(100% - 70px);
+            }
+            
+            .gps-status {
+                font-size: 0.8rem;
+                padding: 0.5rem 0.75rem;
+                min-width: 160px;
+            }
+            
+            .gps-info-panel {
+                font-size: 0.75rem;
+                padding: 0.5rem 0.75rem;
+            }
+            
+            .btn-icon {
+                width: 45px;
+                height: 45px;
+                font-size: 1.1rem;
+            }
+            
+            .card {
+                padding: 1rem;
+            }
+            
+            .manual-marker-mode {
+                padding: 1rem;
+                width: 90%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-tab {
+                padding: 0.5rem;
+                font-size: 0.8rem;
+            }
+            
+            .nav-tab span:nth-child(2) {
+                display: none;
+            }
+            
+            .map-container {
+                height: 50vh;
+                min-height: 350px;
+            }
+        }
+
+        /* Utility Classes */
+        .text-center { text-align: center; }
+        .text-muted { color: var(--text-muted); }
+        .mt-1 { margin-top: 0.5rem; }
+        .mt-2 { margin-top: 1rem; }
+        .mb-1 { margin-bottom: 0.5rem; }
+        .mb-2 { margin-bottom: 1rem; }
+        .d-none { display: none; }
+        .flex { display: flex; }
+        .flex-center { display: flex; align-items: center; justify-content: center; }
+        .gap-1 { gap: 0.5rem; }
+        .gap-2 { gap: 1rem; }
+        .hidden { display: none; }
+
+        /* GPS Error Toast */
+        .gps-error-toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent-red);
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            z-index: 15000;
+            display: none;
+            animation: slideUp 0.3s ease;
+        }
+
+        .gps-error-toast.active {
+            display: block;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateX(-50%) translateY(100%); }
+            to { transform: translateX(-50%) translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <h1 class="app-title">
+                🎣 Hochseeangeln Norwegen 🌊
+            </h1>
+            <p class="app-subtitle">Professioneller Angelplatz-Tracker mit GPS & Seekarten</p>
+
+            <!-- Navigation -->
+            <nav class="nav-tabs">
+                <button class="nav-tab active" data-section="map">
+                    <span>🗺️</span>
+                    <span>Karte</span>
+                </button>
+                <button class="nav-tab" data-section="spots">
+                    <span>📍</span>
+                    <span>Angelplätze</span>
+                </button>
+                <button class="nav-tab" data-section="journal">
+                    <span>📖</span>
+                    <span>Fangbuch</span>
+                </button>
+                <button class="nav-tab" data-section="weather">
+                    <span>☁️</span>
+                    <span>Wetter</span>
+                </button>
+                <button class="nav-tab" data-section="settings">
+                    <span>⚙️</span>
+                    <span>Einstellungen</span>
+                </button>
+            </nav>
+        </header>
+
+        <!-- Content Container -->
+        <main class="content-container">
+            <!-- Karten Section -->
+            <section id="map-section" class="content-section active">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Interaktive Seekarte</h3>
+                        <div class="flex gap-1">
+                            <button class="btn btn-success" id="addMarker">
+                                <span>📌</span>
+                                <span>Marker hinzufügen</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="map-container">
+                        <!-- Leaflet Map -->
+                        <div id="leafletMap" class="map-layer"></div>
+                        
+                        <!-- Kystinfo.no Iframe -->
+                        <iframe 
+                            id="kystinfoFrame" 
+                            class="map-layer hidden"
+                            src="https://kystinfo.no/embedded/8a23a4ff-16c4-4c14-bb8d-a4fbd1a9a217"
+                            title="Kystinfo Seekarte"
+                            scrolling="no" 
+                            frameborder="0">
+                        </iframe>
+
+                        <!-- PDF Viewer -->
+                        <div id="pdfViewer" class="map-layer hidden">
+                            <canvas id="pdfCanvas"></canvas>
+                            <div class="pdf-controls">
+                                <button class="pdf-zoom-btn" id="pdfZoomIn" title="Vergrößern">+</button>
+                                <button class="pdf-zoom-btn" id="pdfZoomOut" title="Verkleinern">−</button>
+                                <button class="pdf-zoom-btn" id="pdfZoomReset" title="Zurücksetzen">⟲</button>
+                            </div>
+                        </div>
+
+                        <!-- Manual Marker Crosshair -->
+                        <div class="manual-marker-crosshair" id="markerCrosshair"></div>
+
+                        <!-- Manual Marker Mode Overlay -->
+                        <div class="manual-marker-mode" id="manualMarkerMode">
+                            <h4>📌 Marker-Modus aktiv</h4>
+                            <p>Klicken Sie auf die gewünschte Position auf der Karte</p>
+                            <div class="flex gap-1 mt-1" style="justify-content: center;">
+                                <button class="btn btn-success btn-small" id="confirmMarkerPosition">Bestätigen</button>
+                                <button class="btn btn-secondary btn-small" id="cancelMarkerMode">Abbrechen</button>
+                            </div>
+                        </div>
+
+                        <!-- Map Overlay -->
+                        <div class="map-overlay">
+                            <div class="gps-status">
+                                <span class="gps-indicator" id="gpsIndicator"></span>
+                                <span class="gps-status-text" id="gpsStatus">GPS bereit</span>
+                            </div>
+                            <div class="layer-selector">
+                                <select id="mapLayerSelect">
+                                    <option value="leaflet">Leaflet Seekarte</option>
+                                    <option value="kystinfo">Kystinfo.no</option>
+                                    <option value="pdf">West Norwegen PDF</option>
+                                </select>
+                            </div>
+                            <div class="gps-info-panel" id="gpsInfoPanel">
+                                <div class="gps-info-row">
+                                    <span class="gps-info-label">Genauigkeit:</span>
+                                    <span class="gps-info-value" id="gpsAccuracy">--</span>
+                                </div>
+                                <div class="gps-info-row">
+                                    <span class="gps-info-label">Höhe:</span>
+                                    <span class="gps-info-value" id="gpsAltitude">--</span>
+                                </div>
+                                <div class="gps-info-row">
+                                    <span class="gps-info-label">Geschw.:</span>
+                                    <span class="gps-info-value" id="gpsSpeed">--</span>
+                                </div>
+                                <div class="gps-info-row">
+                                    <span class="gps-info-label">Richtung:</span>
+                                    <span class="gps-info-value" id="gpsHeading">--</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Map Controls -->
+                        <div class="map-controls">
+                            <button class="btn btn-icon btn-secondary" id="gpsToggle" title="GPS aktivieren">
+                                <span>📍</span>
+                            </button>
+                            <button class="btn btn-icon btn-secondary" id="centerMap" title="Karte zentrieren">
+                                <span>🎯</span>
+                            </button>
+                            <button class="btn btn-icon btn-secondary" id="gpsDetails" title="GPS Details">
+                                <span>📊</span>
+                            </button>
+                            <button class="btn btn-icon btn-secondary" id="fullscreenMap" title="Vollbild">
+                                <span>⛶</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Angelplätze Section -->
+            <section id="spots-section" class="content-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Gespeicherte Angelplätze</h3>
+                        <div class="flex gap-1">
+                            <button class="btn btn-secondary" id="exportSpots">
+                                <span>💾</span>
+                                <span>Export</span>
+                            </button>
+                            <button class="btn btn-secondary" id="importSpots">
+                                <span>📁</span>
+                                <span>Import</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="spotsList" class="marker-list">
+                        <div class="text-center text-muted">
+                            <p>Noch keine Angelplätze gespeichert.</p>
+                            <p>Fügen Sie Marker über die Karte hinzu!</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Fangbuch Section -->
+            <section id="journal-section" class="content-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Fangbuch</h3>
+                        <button class="btn btn-success" id="addCatch">
+                            <span>➕</span>
+                            <span>Neuer Fang</span>
+                        </button>
+                    </div>
+                    <div id="catchList" class="catch-list">
+                        <div class="text-center text-muted">
+                            <p>Noch keine Fänge dokumentiert.</p>
+                            <p>Tragen Sie Ihren ersten Fang ein!</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Wetter Section -->
+            <section id="weather-section" class="content-section">
+                <div class="weather-widget">
+                    <div class="weather-main">
+                        <span class="weather-icon" id="weatherIcon">☀️</span>
+                        <span class="weather-temp" id="weatherTemp">--°C</span>
+                    </div>
+                    <div class="weather-details">
+                        <div>💨 <span id="windSpeed">-- km/h</span></div>
+                        <div>💧 <span id="humidity">--%</span></div>
+                        <div>🌡️ <span id="pressure">-- hPa</span></div>
+                        <div>🌙 <span id="moonPhase">--</span></div>
+                    </div>
+                </div>
+
+                <div class="card mt-2">
+                    <h3 class="card-title">Angelvorhersage</h3>
+                    <div id="fishingForecast">
+                        <div class="text-center text-muted">
+                            <p>Aktivieren Sie GPS für lokale Wettervorhersage</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Einstellungen Section -->
+            <section id="settings-section" class="content-section">
+                <div class="card">
+                    <h3 class="card-title">Einstellungen</h3>
+
+                    <div class="form-group">
+                        <label class="form-label">OpenWeatherMap API Key</label>
+                        <input type="text" class="form-control" id="openWeatherApiKey" 
+                               placeholder="Ihren API Key hier eingeben">
+                        <small style="color: var(--text-secondary); display: block; margin-top: 0.25rem;">
+                            Kostenlos registrieren auf <a href="https://openweathermap.org/api" target="_blank" style="color: var(--primary-blue-light);">openweathermap.org</a>
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Standort (für Wetter)</label>
+                        <input type="text" class="form-control" id="locationInput" placeholder="z.B. Lofoten, Norwegen">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Zusätzliche Karten-URL</label>
+                        <input type="url" class="form-control" id="customMapUrl" 
+                               value="https://raw.githack.com/Jamancode/jamancode.github.io/main/Karten/West_best.pdf"
+                               placeholder="URL zu PDF-Karte">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">GPS-Genauigkeit</label>
+                        <select class="form-control" id="gpsAccuracy">
+                            <option value="high">Hoch (beste Genauigkeit)</option>
+                            <option value="medium" selected>Mittel (ausgewogen)</option>
+                            <option value="low">Niedrig (energiesparend)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">GPS-Update-Intervall</label>
+                        <select class="form-control" id="gpsUpdateInterval">
+                            <option value="1000">1 Sekunde</option>
+                            <option value="5000" selected>5 Sekunden</option>
+                            <option value="10000">10 Sekunden</option>
+                            <option value="30000">30 Sekunden</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Automatisches GPS beim Start</label>
+                        <select class="form-control" id="autoGps">
+                            <option value="true">Aktiviert</option>
+                            <option value="false" selected>Deaktiviert</option>
+                        </select>
+                    </div>
+
+                    <div class="flex gap-2 mt-2">
+                        <button class="btn btn-success" id="saveSettings">Speichern</button>
+                        <button class="btn btn-secondary" id="exportData">Daten exportieren</button>
+                        <button class="btn btn-secondary" id="importData">Daten importieren</button>
+                        <button class="btn btn-danger" id="clearData">Daten löschen</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- GPS Error Toast -->
+    <div class="gps-error-toast" id="gpsErrorToast">
+        <span id="gpsErrorMessage">GPS-Fehler</span>
+    </div>
+
+    <!-- Modals -->
+    <!-- Marker hinzufügen Modal -->
+    <div class="modal" id="markerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Angelplatz hinzufügen</h3>
+                <button class="modal-close" id="closeMarkerModal">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="markerForm">
+                    <div class="form-group">
+                        <label class="form-label">Name des Angelplatzes</label>
+                        <input type="text" class="form-control" id="markerName" required placeholder="z.B. Lofoten Tiefwasserriff">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">GPS-Koordinaten</label>
+                        <input type="text" class="form-control" id="markerCoords" placeholder="Wird automatisch gesetzt oder manuell eingeben">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Wassertiefe (m)</label>
+                        <input type="number" class="form-control" id="markerDepth" placeholder="z.B. 85">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Untergrund</label>
+                        <select class="form-control" id="markerGround">
+                            <option value="">-- Bitte wählen --</option>
+                            <option value="sand">Sand</option>
+                            <option value="kies">Kies</option>
+                            <option value="fels">Fels</option>
+                            <option value="schlick">Schlick</option>
+                            <option value="mixed">Gemischt</option>
+                            <option value="riff">Riff</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Zielfischarten</label>
+                        <select multiple class="form-control" id="markerFish" style="height: 120px;">
+                            <option value="kabeljau">Kabeljau (Dorsch)</option>
+                            <option value="seelachs">Seelachs (Köhler)</option>
+                            <option value="heilbutt">Heilbutt</option>
+                            <option value="leng">Leng</option>
+                            <option value="lumb">Lumb</option>
+                            <option value="rotbarsch">Rotbarsch</option>
+                            <option value="pollack">Pollack</option>
+                            <option value="wittling">Wittling</option>
+                            <option value="makrele">Makrele</option>
+                            <option value="hering">Hering</option>
+                            <option value="steinbeisser">Steinbeißer</option>
+                            <option value="schellfisch">Schellfisch</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Notizen</label>
+                        <textarea class="form-control" id="markerNotes" rows="3" placeholder="Besondere Merkmale, beste Angelzeiten, etc."></textarea>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <button type="submit" class="btn btn-success">Speichern</button>
+                        <button type="button" class="btn btn-secondary" id="getCurrentGPS">GPS aktualisieren</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fang hinzufügen Modal -->
+    <div class="modal" id="catchModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Neuen Fang eintragen</h3>
+                <button class="modal-close" id="closeCatchModal">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="catchForm">
+                    <div class="form-group">
+                        <label class="form-label">Datum & Zeit</label>
+                        <input type="datetime-local" class="form-control" id="catchDateTime" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Fischart</label>
+                        <select class="form-control" id="catchFishType" required>
+                            <option value="">-- Bitte wählen --</option>
+                            <option value="kabeljau">Kabeljau (Dorsch)</option>
+                            <option value="seelachs">Seelachs (Köhler)</option>
+                            <option value="heilbutt">Heilbutt</option>
+                            <option value="leng">Leng</option>
+                            <option value="lumb">Lumb</option>
+                            <option value="rotbarsch">Rotbarsch</option>
+                            <option value="pollack">Pollack</option>
+                            <option value="wittling">Wittling</option>
+                            <option value="makrele">Makrele</option>
+                            <option value="hering">Hering</option>
+                            <option value="steinbeisser">Steinbeißer</option>
+                            <option value="schellfisch">Schellfisch</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Gewicht (kg)</label>
+                        <input type="number" step="0.1" class="form-control" id="catchWeight" placeholder="z.B. 2.5">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Länge (cm)</label>
+                        <input type="number" class="form-control" id="catchLength" placeholder="z.B. 45">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">GPS-Position</label>
+                        <input type="text" class="form-control" id="catchGPS" placeholder="Wird automatisch gesetzt oder manuell eingeben">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Köder</label>
+                        <input type="text" class="form-control" id="catchBait" placeholder="z.B. Pilker, Gummifisch">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Tiefe (m)</label>
+                        <input type="number" class="form-control" id="catchDepth" placeholder="z.B. 85">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Notizen</label>
+                        <textarea class="form-control" id="catchNotes" rows="3" placeholder="Besondere Umstände, Wetter, etc."></textarea>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <button type="submit" class="btn btn-success">Speichern</button>
+                        <button type="button" class="btn btn-secondary" id="getCurrentGPSCatch">GPS aktualisieren</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- GPS Permission Modal -->
+    <div class="modal" id="gpsPermissionModal">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header">
+                <h3 class="modal-title">📍 GPS-Berechtigung erforderlich</h3>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 1rem;">
+                    Diese App benötigt Zugriff auf Ihren Standort für folgende Funktionen:
+                </p>
+                <ul style="margin-left: 1.5rem; margin-bottom: 1rem; color: var(--text-secondary);">
+                    <li>Markierung von Angelplätzen</li>
+                    <li>Navigation zu gespeicherten Spots</li>
+                    <li>Lokale Wettervorhersage</li>
+                    <li>Tracking Ihrer Route</li>
+                </ul>
+                <p style="margin-bottom: 1.5rem; color: var(--text-secondary);">
+                    <strong>Datenschutz:</strong> Ihre Standortdaten werden nur lokal auf Ihrem Gerät gespeichert 
+                    und nicht an externe Server übertragen.
+                </p>
+                <div class="flex gap-2" style="justify-content: center;">
+                    <button class="btn btn-success" id="allowGPS">
+                        <span>✓</span>
+                        <span>GPS erlauben</span>
+                    </button>
+                    <button class="btn btn-secondary" id="denyGPS">
+                        <span>✗</span>
+                        <span>Später</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    
+    <script>
+        // Configuration
+        const APP_CONFIG = {
+            storageKey: 'hochseeangeln_data',
+            defaultLocation: { lat: 68.2, lng: 14.5 }, // Lofoten
+            mapZoom: 10,
+            gpsOptions: {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            },
+            openWeatherMap: {
+                baseUrl: 'https://api.openweathermap.org/data/2.5',
+                units: 'metric',
+                lang: 'de'
+            }
+        };
+
+        // Fish database
+        const FISH_DATABASE = {
+            kabeljau: { name: 'Kabeljau (Dorsch)', icon: '🐟' },
+            seelachs: { name: 'Seelachs (Köhler)', icon: '🐟' },
+            heilbutt: { name: 'Heilbutt', icon: '🐠' },
+            leng: { name: 'Leng', icon: '🐟' },
+            lumb: { name: 'Lumb', icon: '🐟' },
+            rotbarsch: { name: 'Rotbarsch', icon: '🐟' },
+            pollack: { name: 'Pollack', icon: '🐟' },
+            wittling: { name: 'Wittling', icon: '🐟' },
+            makrele: { name: 'Makrele', icon: '🐟' },
+            hering: { name: 'Hering', icon: '🐟' },
+            steinbeisser: { name: 'Steinbeißer', icon: '🐟' },
+            schellfisch: { name: 'Schellfisch', icon: '🐟' }
+        };
+
+        // App State Management
+        class AppState {
+            constructor() {
+                this.data = {
+                    spots: [],
+                    catches: [],
+                    settings: {
+                        location: '',
+                        customMapUrl: 'https://raw.githack.com/Jamancode/jamancode.github.io/main/Karten/West_best.pdf',
+                        gpsAccuracy: 'medium',
+                        gpsUpdateInterval: 5000,
+                        autoGps: false,
+                        openWeatherApiKey: ''
+                    }
+                };
+                this.map = null;
+                this.markers = [];
+                this.currentPosition = null;
+                this.currentMapLayer = 'leaflet';
+                this.manualMarkerMode = false;
+                this.pendingMarkerPosition = null;
+            }
+
+            load() {
+                const saved = localStorage.getItem(APP_CONFIG.storageKey);
+                if (saved) {
+                    try {
+                        const parsed = JSON.parse(saved);
+                        this.data = { ...this.data, ...parsed };
+                    } catch (e) {
+                        console.error('Error loading saved data:', e);
+                    }
+                }
+            }
+
+            save() {
+                localStorage.setItem(APP_CONFIG.storageKey, JSON.stringify(this.data));
+            }
+
+            addSpot(spotData) {
+                const spot = {
+                    id: Date.now(),
+                    timestamp: new Date().toISOString(),
+                    ...spotData
+                };
+                this.data.spots.push(spot);
+                this.save();
+                this.renderSpots();
+                this.addMarkerToMap(spot);
+            }
+
+            addCatch(catchData) {
+                const catchEntry = {
+                    id: Date.now(),
+                    timestamp: new Date().toISOString(),
+                    ...catchData
+                };
+                this.data.catches.push(catchEntry);
+                this.save();
+                this.renderCatches();
+            }
+
+            deleteSpot(id) {
+                this.data.spots = this.data.spots.filter(s => s.id !== id);
+                this.save();
+                this.renderSpots();
+                this.removeMarkerFromMap(id);
+            }
+
+            deleteCatch(id) {
+                this.data.catches = this.data.catches.filter(c => c.id !== id);
+                this.save();
+                this.renderCatches();
+            }
+
+            addMarkerToMap(spot) {
+                if (!this.map || !spot.coords) return;
+
+                const [lat, lng] = spot.coords.split(',').map(c => parseFloat(c.trim()));
+                if (isNaN(lat) || isNaN(lng)) return;
+
+                const marker = L.marker([lat, lng])
+                    .addTo(this.map)
+                    .bindPopup(`
+                        <div style="color: #333;">
+                            <h4>${spot.name}</h4>
+                            <p><strong>Tiefe:</strong> ${spot.depth || 'Unbekannt'}m</p>
+                            <p><strong>Untergrund:</strong> ${spot.ground || 'Unbekannt'}</p>
+                            <p><strong>Fischarten:</strong> ${spot.fish ? spot.fish.join(', ') : 'Keine angegeben'}</p>
+                            ${spot.notes ? `<p><strong>Notizen:</strong> ${spot.notes}</p>` : ''}
+                        </div>
+                    `);
+
+                marker._spotId = spot.id;
+                this.markers.push(marker);
+            }
+
+            removeMarkerFromMap(spotId) {
+                const markerIndex = this.markers.findIndex(m => m._spotId === spotId);
+                if (markerIndex !== -1) {
+                    this.map.removeLayer(this.markers[markerIndex]);
+                    this.markers.splice(markerIndex, 1);
+                }
+            }
+
+            addAllMarkersToMap() {
+                this.markers.forEach(marker => {
+                    this.map.removeLayer(marker);
+                });
+                this.markers = [];
+
+                this.data.spots.forEach(spot => {
+                    this.addMarkerToMap(spot);
+                });
+            }
+
+            enableManualMarkerMode() {
+                this.manualMarkerMode = true;
+                this.pendingMarkerPosition = null;
+                
+                document.getElementById('manualMarkerMode').classList.add('active');
+                document.getElementById('markerCrosshair').classList.add('active');
+                document.getElementById('leafletMap').style.cursor = 'crosshair';
+                
+                if (this.map) {
+                    this.map.dragging.disable();
+                    this.map.touchZoom.disable();
+                    this.map.doubleClickZoom.disable();
+                    this.map.scrollWheelZoom.disable();
+                    this.map.boxZoom.disable();
+                    this.map.keyboard.disable();
+                }
+            }
+
+            disableManualMarkerMode() {
+                this.manualMarkerMode = false;
+                this.pendingMarkerPosition = null;
+                
+                document.getElementById('manualMarkerMode').classList.remove('active');
+                document.getElementById('markerCrosshair').classList.remove('active');
+                document.getElementById('leafletMap').style.cursor = '';
+                
+                if (this.map) {
+                    this.map.dragging.enable();
+                    this.map.touchZoom.enable();
+                    this.map.doubleClickZoom.enable();
+                    this.map.scrollWheelZoom.enable();
+                    this.map.boxZoom.enable();
+                    this.map.keyboard.enable();
+                }
+            }
+
+            setManualMarkerPosition(latlng) {
+                this.pendingMarkerPosition = latlng;
+                const coords = `${latlng.lat.toFixed(6)}, ${latlng.lng.toFixed(6)}`;
+                document.getElementById('markerCoords').value = coords;
+            }
+
+            renderSpots() {
+                const container = document.getElementById('spotsList');
+                if (this.data.spots.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center text-muted">
+                            <p>Noch keine Angelplätze gespeichert.</p>
+                            <p>Fügen Sie Marker über die Karte hinzu!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = this.data.spots.map(spot => `
+                    <div class="marker-item">
+                        <div class="item-header">
+                            <div class="item-title">${spot.name}</div>
+                            <div class="item-actions">
+                                <button class="btn btn-small btn-secondary" onclick="appState.showSpotOnMap('${spot.id}')">
+                                    🗺️ Zeigen
+                                </button>
+                                <button class="btn btn-small btn-danger" onclick="appState.deleteSpot(${spot.id})">
+                                    🗑️ Löschen
+                                </button>
+                            </div>
+                        </div>
+                        <div class="item-meta">
+                            <p><strong>Koordinaten:</strong> ${spot.coords}</p>
+                            <p><strong>Tiefe:</strong> ${spot.depth || 'Unbekannt'}m | <strong>Untergrund:</strong> ${spot.ground || 'Unbekannt'}</p>
+                            ${spot.fish && spot.fish.length > 0 ? `<p><strong>Fischarten:</strong> ${spot.fish.join(', ')}</p>` : ''}
+                            ${spot.notes ? `<p><strong>Notizen:</strong> ${spot.notes}</p>` : ''}
+                            <p class="text-muted">Erstellt: ${new Date(spot.timestamp).toLocaleString('de-DE')}</p>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            renderCatches() {
+                const container = document.getElementById('catchList');
+                if (this.data.catches.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center text-muted">
+                            <p>Noch keine Fänge dokumentiert.</p>
+                            <p>Tragen Sie Ihren ersten Fang ein!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = this.data.catches.map(catchData => {
+                    const fish = FISH_DATABASE[catchData.fishType] || { name: catchData.fishType, icon: '🐟' };
+                    return `
+                        <div class="catch-item">
+                            <div class="item-header">
+                                <div class="item-title">${fish.icon} ${fish.name}</div>
+                                <div class="item-actions">
+                                    <button class="btn btn-small btn-danger" onclick="appState.deleteCatch(${catchData.id})">
+                                        🗑️ Löschen
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="item-meta">
+                                <p><strong>Datum:</strong> ${new Date(catchData.dateTime).toLocaleString('de-DE')}</p>
+                                <p><strong>Gewicht:</strong> ${catchData.weight || 'Unbekannt'}kg | <strong>Länge:</strong> ${catchData.length || 'Unbekannt'}cm</p>
+                                ${catchData.gps ? `<p><strong>Position:</strong> ${catchData.gps}</p>` : ''}
+                                ${catchData.bait ? `<p><strong>Köder:</strong> ${catchData.bait}</p>` : ''}
+                                ${catchData.depth ? `<p><strong>Tiefe:</strong> ${catchData.depth}m</p>` : ''}
+                                ${catchData.notes ? `<p><strong>Notizen:</strong> ${catchData.notes}</p>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            showSpotOnMap(spotId) {
+                const spot = this.data.spots.find(s => s.id == spotId);
+                if (!spot || !spot.coords) return;
+
+                uiController.showSection('map');
+                this.switchMapLayer('leaflet');
+
+                const [lat, lng] = spot.coords.split(',').map(c => parseFloat(c.trim()));
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    this.map.setView([lat, lng], 15);
+                    
+                    const marker = this.markers.find(m => m._spotId == spotId);
+                    if (marker) {
+                        marker.openPopup();
+                    }
+                }
+            }
+
+            switchMapLayer(layer) {
+                this.currentMapLayer = layer;
+                
+                const leafletMap = document.getElementById('leafletMap');
+                const kystinfoFrame = document.getElementById('kystinfoFrame');
+                const pdfViewer = document.getElementById('pdfViewer');
+                
+                leafletMap.classList.add('hidden');
+                kystinfoFrame.classList.add('hidden');
+                pdfViewer.classList.add('hidden');
+                
+                switch(layer) {
+                    case 'leaflet':
+                        leafletMap.classList.remove('hidden');
+                        if (this.map) {
+                            setTimeout(() => this.map.invalidateSize(), 100);
+                        }
+                        break;
+                    case 'kystinfo':
+                        kystinfoFrame.classList.remove('hidden');
+                        break;
+                    case 'pdf':
+                        pdfViewer.classList.remove('hidden');
+                        this.loadPDFMap();
+                        break;
+                }
+                
+                document.getElementById('mapLayerSelect').value = layer;
+            }
+
+            async loadPDFMap() {
+                const url = this.data.settings.customMapUrl;
+                if (!url) return;
+
+                try {
+                    const loadingTask = pdfjsLib.getDocument(url);
+                    const pdf = await loadingTask.promise;
+                    const page = await pdf.getPage(1);
+                    
+                    const canvas = document.getElementById('pdfCanvas');
+                    const context = canvas.getContext('2d');
+                    const container = document.getElementById('pdfViewer');
+                    
+                    // Initialize zoom level
+                    if (!this.pdfZoomLevel) {
+                        this.pdfZoomLevel = 1;
+                        this.pdfPosition = { x: 0, y: 0 };
+                    }
+                    
+                    const viewport = page.getViewport({ scale: this.pdfZoomLevel });
+                    
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    
+                    await page.render({
+                        canvasContext: context,
+                        viewport: viewport
+                    }).promise;
+                    
+                    // Apply position
+                    canvas.style.transform = `translate(${this.pdfPosition.x}px, ${this.pdfPosition.y}px)`;
+                    
+                    // Setup pan functionality
+                    this.setupPDFPan(canvas, container);
+                    
+                } catch (error) {
+                    console.error('Error loading PDF map:', error);
+                    document.getElementById('pdfViewer').innerHTML = `
+                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #666;">
+                            <p>Fehler beim Laden der PDF-Karte</p>
+                        </div>
+                    `;
+                }
+            }
+
+            setupPDFPan(canvas, container) {
+                let isDragging = false;
+                let startX, startY;
+                let scrollLeft, scrollTop;
+                
+                const startDrag = (e) => {
+                    isDragging = true;
+                    canvas.classList.add('grabbing');
+                    
+                    const event = e.type.includes('touch') ? e.touches[0] : e;
+                    startX = event.pageX - container.offsetLeft;
+                    startY = event.pageY - container.offsetTop;
+                    scrollLeft = container.scrollLeft;
+                    scrollTop = container.scrollTop;
+                    
+                    e.preventDefault();
+                };
+                
+                const drag = (e) => {
+                    if (!isDragging) return;
+                    e.preventDefault();
+                    
+                    const event = e.type.includes('touch') ? e.touches[0] : e;
+                    const x = event.pageX - container.offsetLeft;
+                    const y = event.pageY - container.offsetTop;
+                    const walkX = (x - startX) * 1;
+                    const walkY = (y - startY) * 1;
+                    
+                    container.scrollLeft = scrollLeft - walkX;
+                    container.scrollTop = scrollTop - walkY;
+                };
+                
+                const endDrag = () => {
+                    isDragging = false;
+                    canvas.classList.remove('grabbing');
+                };
+                
+                // Mouse events
+                canvas.addEventListener('mousedown', startDrag);
+                canvas.addEventListener('mousemove', drag);
+                canvas.addEventListener('mouseup', endDrag);
+                canvas.addEventListener('mouseleave', endDrag);
+                
+                // Touch events
+                canvas.addEventListener('touchstart', startDrag);
+                canvas.addEventListener('touchmove', drag);
+                canvas.addEventListener('touchend', endDrag);
+            }
+        }
+
+        // Simplified GPS Controller using Best Practices
+        class GPSController {
+            constructor(appState) {
+                this.appState = appState;
+                this.isTracking = false;
+                this.watchId = null;
+                this.positionMarker = null;
+                this.accuracyCircle = null;
+                this.trackPath = null;
+                this.trackCoordinates = [];
+                this.permissionGranted = false;
+            }
+
+            // Check if geolocation is supported
+            isSupported() {
+                return 'geolocation' in navigator;
+            }
+
+            // Initial permission request on app start
+            async requestInitialPermission() {
+                if (!this.isSupported()) {
+                    console.log('Geolocation not supported');
+                    return false;
+                }
+
+                // Show permission modal
+                const modal = document.getElementById('gpsPermissionModal');
+                modal.classList.add('active');
+
+                return new Promise((resolve) => {
+                    const allowBtn = document.getElementById('allowGPS');
+                    const denyBtn = document.getElementById('denyGPS');
+
+                    const handleAllow = async () => {
+                        modal.classList.remove('active');
+                        
+                        // Try to get position to trigger browser permission
+                        try {
+                            const position = await this.getCurrentPosition();
+                            this.permissionGranted = true;
+                            
+                            // If auto GPS is enabled, start tracking
+                            if (this.appState.data.settings.autoGps) {
+                                this.startTracking();
+                            }
+                            
+                            resolve(true);
+                        } catch (error) {
+                            console.error('GPS permission denied or error:', error);
+                            resolve(false);
+                        }
+                        
+                        // Remove event listeners
+                        allowBtn.removeEventListener('click', handleAllow);
+                        denyBtn.removeEventListener('click', handleDeny);
+                    };
+
+                    const handleDeny = () => {
+                        modal.classList.remove('active');
+                        this.permissionGranted = false;
+                        resolve(false);
+                        
+                        // Remove event listeners
+                        allowBtn.removeEventListener('click', handleAllow);
+                        denyBtn.removeEventListener('click', handleDeny);
+                    };
+
+                    allowBtn.addEventListener('click', handleAllow);
+                    denyBtn.addEventListener('click', handleDeny);
+                });
+            }
+
+            // Format coordinates for display
+            formatCoordinates(position) {
+                if (!position) return '';
+                const { latitude, longitude } = position.coords;
+                return `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+            }
+
+            // Update UI with position data
+            updateUI(position) {
+                const indicator = document.getElementById('gpsIndicator');
+                const statusText = document.getElementById('gpsStatus');
+                const accuracyEl = document.getElementById('gpsAccuracy');
+                const altitudeEl = document.getElementById('gpsAltitude');
+                const speedEl = document.getElementById('gpsSpeed');
+                const headingEl = document.getElementById('gpsHeading');
+
+                if (position) {
+                    // Update status
+                    indicator.classList.remove('error', 'tracking');
+                    indicator.classList.add('active');
+                    
+                    const accuracy = Math.round(position.coords.accuracy);
+                    statusText.textContent = `GPS aktiv (±${accuracy}m)`;
+                    
+                    // Update details panel
+                    accuracyEl.textContent = `±${accuracy}m`;
+                    
+                    if (position.coords.altitude !== null) {
+                        altitudeEl.textContent = `${Math.round(position.coords.altitude)}m`;
+                    } else {
+                        altitudeEl.textContent = '--';
+                    }
+                    
+                    if (position.coords.speed !== null) {
+                        const speedKmh = (position.coords.speed * 3.6).toFixed(1);
+                        speedEl.textContent = `${speedKmh} km/h`;
+                    } else {
+                        speedEl.textContent = '--';
+                    }
+                    
+                    if (position.coords.heading !== null) {
+                        const heading = Math.round(position.coords.heading);
+                        const compassDir = this.getCompassDirection(heading);
+                        headingEl.textContent = `${heading}° ${compassDir}`;
+                    } else {
+                        headingEl.textContent = '--';
+                    }
+
+                    // Save current position
+                    this.appState.currentPosition = position;
+                    
+                    // Update map
+                    this.updateMapPosition(position);
+                }
+            }
+
+            // Get compass direction from heading
+            getCompassDirection(heading) {
+                const directions = ['N', 'NO', 'O', 'SO', 'S', 'SW', 'W', 'NW'];
+                const index = Math.round(heading / 45) % 8;
+                return directions[index];
+            }
+
+            // Show error message
+            showError(message) {
+                const indicator = document.getElementById('gpsIndicator');
+                const statusText = document.getElementById('gpsStatus');
+                const toast = document.getElementById('gpsErrorToast');
+                const toastMessage = document.getElementById('gpsErrorMessage');
+
+                indicator.classList.remove('active', 'tracking');
+                indicator.classList.add('error');
+                statusText.textContent = 'GPS-Fehler';
+
+                toastMessage.textContent = message;
+                toast.classList.add('active');
+                
+                setTimeout(() => {
+                    toast.classList.remove('active');
+                }, 5000);
+            }
+
+            // Get current position (one-time)
+            async getCurrentPosition() {
+                if (!this.isSupported()) {
+                    throw new Error('Geolocation wird nicht unterstützt');
+                }
+
+                return new Promise((resolve, reject) => {
+                    const options = this.getOptions();
+                    
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            this.updateUI(position);
+                            resolve(position);
+                        },
+                        (error) => {
+                            const errorMessage = this.getErrorMessage(error);
+                            this.showError(errorMessage);
+                            reject(error);
+                        },
+                        options
+                    );
+                });
+            }
+
+            // Start tracking position
+            startTracking() {
+                if (!this.isSupported()) {
+                    this.showError('Geolocation wird nicht unterstützt');
+                    return;
+                }
+
+                if (this.isTracking) return;
+
+                const options = this.getOptions();
+                const indicator = document.getElementById('gpsIndicator');
+                const statusText = document.getElementById('gpsStatus');
+                const gpsToggle = document.getElementById('gpsToggle');
+
+                // Update UI to show tracking
+                indicator.classList.add('tracking');
+                statusText.textContent = 'GPS wird aktiviert...';
+                gpsToggle.style.background = 'var(--accent-yellow)';
+                gpsToggle.disabled = true;
+
+                // Start watching position
+                this.watchId = navigator.geolocation.watchPosition(
+                    (position) => {
+                        this.isTracking = true;
+                        gpsToggle.disabled = false;
+                        gpsToggle.style.background = 'var(--accent-green)';
+                        this.updateUI(position);
+                        
+                        // Add to track if moving
+                        if (position.coords.speed > 0.5) {
+                            this.addToTrack(position);
+                        }
+                    },
+                    (error) => {
+                        this.isTracking = false;
+                        gpsToggle.disabled = false;
+                        gpsToggle.style.background = 'var(--bg-medium)';
+                        const errorMessage = this.getErrorMessage(error);
+                        this.showError(errorMessage);
+                    },
+                    options
+                );
+            }
+
+            // Stop tracking
+            stopTracking() {
+                if (this.watchId) {
+                    navigator.geolocation.clearWatch(this.watchId);
+                    this.watchId = null;
+                }
+                
+                this.isTracking = false;
+                
+                const indicator = document.getElementById('gpsIndicator');
+                const statusText = document.getElementById('gpsStatus');
+                const gpsToggle = document.getElementById('gpsToggle');
+                
+                indicator.classList.remove('active', 'tracking', 'error');
+                statusText.textContent = 'GPS inaktiv';
+                gpsToggle.style.background = 'var(--bg-medium)';
+                
+                // Hide info panel
+                document.getElementById('gpsInfoPanel').classList.remove('active');
+            }
+
+            // Toggle tracking
+            toggle() {
+                if (this.isTracking) {
+                    this.stopTracking();
+                } else {
+                    this.startTracking();
+                }
+            }
+
+            // Get GPS options based on settings
+            getOptions() {
+                const accuracy = this.appState.data.settings.gpsAccuracy;
+                let options = { ...APP_CONFIG.gpsOptions };
+
+                switch (accuracy) {
+                    case 'high':
+                        options.enableHighAccuracy = true;
+                        options.timeout = 30000;
+                        options.maximumAge = 0;
+                        break;
+                    case 'medium':
+                        options.enableHighAccuracy = true;
+                        options.timeout = 10000;
+                        options.maximumAge = 5000;
+                        break;
+                    case 'low':
+                        options.enableHighAccuracy = false;
+                        options.timeout = 5000;
+                        options.maximumAge = 30000;
+                        break;
+                }
+
+                return options;
+            }
+
+            // Get error message based on error code
+            getErrorMessage(error) {
+                switch (error.code) {
+                    case error.PERMISSION_DENIED:
+                        return 'Standortzugriff verweigert. Bitte erlauben Sie den Zugriff in den Browsereinstellungen.';
+                    case error.POSITION_UNAVAILABLE:
+                        return 'Standort nicht verfügbar. Bitte prüfen Sie Ihre GPS-Einstellungen.';
+                    case error.TIMEOUT:
+                        return 'Zeitüberschreitung bei der Standortbestimmung. Schwaches GPS-Signal.';
+                    default:
+                        return 'Unbekannter GPS-Fehler aufgetreten.';
+                }
+            }
+
+            // Update position on map
+            updateMapPosition(position) {
+                if (!this.appState.map) return;
+
+                const { latitude, longitude, accuracy } = position.coords;
+                const latlng = [latitude, longitude];
+
+                // Create or update position marker
+                if (!this.positionMarker) {
+                    this.positionMarker = L.circleMarker(latlng, {
+                        radius: 8,
+                        fillColor: '#27ae60',
+                        color: 'white',
+                        weight: 3,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    }).addTo(this.appState.map);
+                } else {
+                    this.positionMarker.setLatLng(latlng);
+                }
+
+                // Create or update accuracy circle
+                if (!this.accuracyCircle) {
+                    this.accuracyCircle = L.circle(latlng, {
+                        radius: accuracy,
+                        color: '#27ae60',
+                        fillColor: '#27ae60',
+                        fillOpacity: 0.1,
+                        weight: 1
+                    }).addTo(this.appState.map);
+                } else {
+                    this.accuracyCircle.setLatLng(latlng);
+                    this.accuracyCircle.setRadius(accuracy);
+                }
+
+                // Add popup to marker
+                this.positionMarker.bindPopup(`
+                    <strong>Aktuelle Position</strong><br>
+                    Koordinaten: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}<br>
+                    Genauigkeit: ±${Math.round(accuracy)}m
+                `);
+            }
+
+            // Add position to track
+            addToTrack(position) {
+                if (!this.appState.map) return;
+
+                const latlng = [position.coords.latitude, position.coords.longitude];
+                this.trackCoordinates.push(latlng);
+
+                if (!this.trackPath) {
+                    this.trackPath = L.polyline(this.trackCoordinates, {
+                        color: '#3498db',
+                        weight: 3,
+                        opacity: 0.7
+                    }).addTo(this.appState.map);
+                } else {
+                    this.trackPath.setLatLngs(this.trackCoordinates);
+                }
+            }
+
+            // Center map on current position
+            centerOnPosition() {
+                if (this.appState.currentPosition && this.appState.map) {
+                    const { latitude, longitude } = this.appState.currentPosition.coords;
+                    this.appState.map.setView([latitude, longitude], 15);
+                }
+            }
+        }
+
+        // UI Controller
+        class UIController {
+            constructor(appState, gpsController) {
+                this.appState = appState;
+                this.gpsController = gpsController;
+                this.currentSection = 'map';
+                this.initializeEventListeners();
+            }
+
+            initializeEventListeners() {
+                // Navigation
+                document.querySelectorAll('.nav-tab').forEach(tab => {
+                    tab.addEventListener('click', (e) => {
+                        const section = e.currentTarget.dataset.section;
+                        this.showSection(section);
+                    });
+                });
+
+                // Map layer selector
+                document.getElementById('mapLayerSelect').addEventListener('change', (e) => {
+                    this.appState.switchMapLayer(e.target.value);
+                });
+
+                // GPS controls - Direct implementation
+                document.getElementById('gpsToggle').addEventListener('click', () => {
+                    this.gpsController.toggle();
+                });
+
+                // Center map button
+                document.getElementById('centerMap').addEventListener('click', () => {
+                    this.gpsController.centerOnPosition();
+                });
+
+                // GPS details toggle
+                document.getElementById('gpsDetails').addEventListener('click', () => {
+                    const panel = document.getElementById('gpsInfoPanel');
+                    panel.classList.toggle('active');
+                });
+
+                // Fullscreen button
+                document.getElementById('fullscreenMap').addEventListener('click', () => {
+                    const mapContainer = document.querySelector('.map-container');
+                    if (mapContainer.requestFullscreen) {
+                        mapContainer.requestFullscreen();
+                    } else if (mapContainer.webkitRequestFullscreen) {
+                        mapContainer.webkitRequestFullscreen();
+                    }
+                });
+
+                // Manual marker mode
+                document.getElementById('confirmMarkerPosition').addEventListener('click', () => {
+                    if (this.appState.pendingMarkerPosition) {
+                        this.appState.disableManualMarkerMode();
+                        this.showMarkerModal();
+                    }
+                });
+
+                document.getElementById('cancelMarkerMode').addEventListener('click', () => {
+                    this.appState.disableManualMarkerMode();
+                    document.getElementById('markerCoords').value = '';
+                });
+
+                // Add marker button
+                document.getElementById('addMarker').addEventListener('click', () => {
+                    this.appState.switchMapLayer('leaflet');
+                    this.appState.enableManualMarkerMode();
+                });
+
+                // Modal controls
+                document.getElementById('closeMarkerModal').addEventListener('click', () => {
+                    this.hideMarkerModal();
+                });
+
+                document.getElementById('closeCatchModal').addEventListener('click', () => {
+                    this.hideCatchModal();
+                });
+
+                // Form submissions
+                document.getElementById('markerForm').addEventListener('submit', (e) => {
+                    this.handleMarkerSubmit(e);
+                });
+
+                document.getElementById('catchForm').addEventListener('submit', (e) => {
+                    this.handleCatchSubmit(e);
+                });
+
+                // GPS position buttons - Direct implementation
+                document.getElementById('getCurrentGPS').addEventListener('click', async () => {
+                    const btn = document.getElementById('getCurrentGPS');
+                    const coordsField = document.getElementById('markerCoords');
+                    
+                    btn.disabled = true;
+                    btn.textContent = 'GPS wird abgerufen...';
+                    
+                    try {
+                        const position = await this.gpsController.getCurrentPosition();
+                        const coords = this.gpsController.formatCoordinates(position);
+                        
+                        if (!coordsField.value.trim() || confirm('Möchten Sie die vorhandenen Koordinaten überschreiben?')) {
+                            coordsField.value = coords;
+                        }
+                    } catch (error) {
+                        console.error('GPS error:', error);
+                    } finally {
+                        btn.disabled = false;
+                        btn.textContent = 'GPS aktualisieren';
+                    }
+                });
+
+                document.getElementById('getCurrentGPSCatch').addEventListener('click', async () => {
+                    const btn = document.getElementById('getCurrentGPSCatch');
+                    const gpsField = document.getElementById('catchGPS');
+                    
+                    btn.disabled = true;
+                    btn.textContent = 'GPS wird abgerufen...';
+                    
+                    try {
+                        const position = await this.gpsController.getCurrentPosition();
+                        const coords = this.gpsController.formatCoordinates(position);
+                        
+                        if (!gpsField.value.trim() || confirm('Möchten Sie die vorhandene Position überschreiben?')) {
+                            gpsField.value = coords;
+                        }
+                    } catch (error) {
+                        console.error('GPS error:', error);
+                    } finally {
+                        btn.disabled = false;
+                        btn.textContent = 'GPS aktualisieren';
+                    }
+                });
+
+                // Catch management
+                document.getElementById('addCatch').addEventListener('click', () => {
+                    this.showCatchModal();
+                });
+
+                // Settings
+                document.getElementById('saveSettings').addEventListener('click', () => {
+                    this.saveSettings();
+                });
+
+                // Data management
+                document.getElementById('exportData').addEventListener('click', () => {
+                    this.exportData();
+                });
+
+                document.getElementById('importData').addEventListener('click', () => {
+                    this.importData();
+                });
+
+                document.getElementById('exportSpots').addEventListener('click', () => {
+                    this.exportSpots();
+                });
+
+                document.getElementById('importSpots').addEventListener('click', () => {
+                    this.importSpots();
+                });
+
+                document.getElementById('clearData').addEventListener('click', () => {
+                    this.clearData();
+                });
+
+                // PDF zoom controls
+                document.getElementById('pdfZoomIn').addEventListener('click', () => {
+                    if (this.appState.pdfZoomLevel < 3) {
+                        this.appState.pdfZoomLevel += 0.25;
+                        this.appState.loadPDFMap();
+                    }
+                });
+
+                document.getElementById('pdfZoomOut').addEventListener('click', () => {
+                    if (this.appState.pdfZoomLevel > 0.5) {
+                        this.appState.pdfZoomLevel -= 0.25;
+                        this.appState.loadPDFMap();
+                    }
+                });
+
+                document.getElementById('pdfZoomReset').addEventListener('click', () => {
+                    this.appState.pdfZoomLevel = 1;
+                    this.appState.pdfPosition = { x: 0, y: 0 };
+                    const container = document.getElementById('pdfViewer');
+                    container.scrollLeft = 0;
+                    container.scrollTop = 0;
+                    this.appState.loadPDFMap();
+                });
+
+                // Close modals on outside click
+                document.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('modal')) {
+                        e.target.classList.remove('active');
+                    }
+                });
+
+                // Prevent double-tap zoom on buttons (mobile)
+                document.querySelectorAll('button').forEach(btn => {
+                    btn.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                        e.target.click();
+                    });
+                });
+            }
+
+            showSection(sectionName) {
+                document.querySelectorAll('.nav-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                document.querySelector(`[data-section="${sectionName}"]`).classList.add('active');
+
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                document.getElementById(`${sectionName}-section`).classList.add('active');
+
+                this.currentSection = sectionName;
+
+                if (sectionName === 'map' && this.appState.map) {
+                    setTimeout(() => this.appState.map.invalidateSize(), 100);
+                }
+
+                if (sectionName === 'settings') {
+                    this.loadSettings();
+                }
+            }
+
+            showMarkerModal() {
+                document.getElementById('markerModal').classList.add('active');
+            }
+
+            hideMarkerModal() {
+                document.getElementById('markerModal').classList.remove('active');
+                document.getElementById('markerForm').reset();
+            }
+
+            showCatchModal() {
+                document.getElementById('catchModal').classList.add('active');
+                const now = new Date();
+                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                document.getElementById('catchDateTime').value = now.toISOString().slice(0, 16);
+            }
+
+            hideCatchModal() {
+                document.getElementById('catchModal').classList.remove('active');
+                document.getElementById('catchForm').reset();
+            }
+
+            handleMarkerSubmit(e) {
+                e.preventDefault();
+                
+                const fishOptions = Array.from(document.getElementById('markerFish').selectedOptions).map(option => option.value);
+                
+                const spotData = {
+                    name: document.getElementById('markerName').value,
+                    coords: document.getElementById('markerCoords').value,
+                    depth: document.getElementById('markerDepth').value,
+                    ground: document.getElementById('markerGround').value,
+                    fish: fishOptions,
+                    notes: document.getElementById('markerNotes').value
+                };
+
+                if (!spotData.name || !spotData.coords) {
+                    alert('Name und GPS-Koordinaten sind erforderlich!');
+                    return;
+                }
+
+                const coordsPattern = /^-?\d+\.?\d*,\s*-?\d+\.?\d*$/;
+                if (!coordsPattern.test(spotData.coords)) {
+                    alert('Ungültiges Koordinatenformat! Verwenden Sie: Breitengrad, Längengrad');
+                    return;
+                }
+
+                this.appState.addSpot(spotData);
+                this.hideMarkerModal();
+                alert('Angelplatz erfolgreich gespeichert!');
+            }
+
+            handleCatchSubmit(e) {
+                e.preventDefault();
+                
+                const catchData = {
+                    dateTime: document.getElementById('catchDateTime').value,
+                    fishType: document.getElementById('catchFishType').value,
+                    weight: document.getElementById('catchWeight').value,
+                    length: document.getElementById('catchLength').value,
+                    gps: document.getElementById('catchGPS').value,
+                    bait: document.getElementById('catchBait').value,
+                    depth: document.getElementById('catchDepth').value,
+                    notes: document.getElementById('catchNotes').value
+                };
+
+                if (!catchData.dateTime || !catchData.fishType) {
+                    alert('Datum/Zeit und Fischart sind erforderlich!');
+                    return;
+                }
+
+                this.appState.addCatch(catchData);
+                this.hideCatchModal();
+                alert('Fang erfolgreich eingetragen!');
+            }
+
+            loadSettings() {
+                const settings = this.appState.data.settings;
+                document.getElementById('locationInput').value = settings.location || '';
+                document.getElementById('customMapUrl').value = settings.customMapUrl || '';
+                document.getElementById('gpsAccuracy').value = settings.gpsAccuracy || 'medium';
+                document.getElementById('gpsUpdateInterval').value = settings.gpsUpdateInterval || '5000';
+                document.getElementById('autoGps').value = settings.autoGps ? 'true' : 'false';
+                document.getElementById('openWeatherApiKey').value = settings.openWeatherApiKey || '';
+            }
+
+            saveSettings() {
+                this.appState.data.settings = {
+                    location: document.getElementById('locationInput').value,
+                    customMapUrl: document.getElementById('customMapUrl').value,
+                    gpsAccuracy: document.getElementById('gpsAccuracy').value,
+                    gpsUpdateInterval: parseInt(document.getElementById('gpsUpdateInterval').value),
+                    autoGps: document.getElementById('autoGps').value === 'true',
+                    openWeatherApiKey: document.getElementById('openWeatherApiKey').value
+                };
+                this.appState.save();
+                alert('Einstellungen gespeichert!');
+                
+                // Update weather with new API key
+                this.updateWeather();
+            }
+
+            exportData() {
+                const data = {
+                    spots: this.appState.data.spots,
+                    catches: this.appState.data.catches,
+                    settings: this.appState.data.settings,
+                    exportDate: new Date().toISOString()
+                };
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `hochseeangeln_backup_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+
+            importData() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json';
+                input.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const data = JSON.parse(e.target.result);
+                            if (confirm('Möchten Sie die importierten Daten mit den vorhandenen zusammenführen?')) {
+                                this.appState.data.spots = [...this.appState.data.spots, ...(data.spots || [])];
+                                this.appState.data.catches = [...this.appState.data.catches, ...(data.catches || [])];
+                                if (data.settings) {
+                                    this.appState.data.settings = { ...this.appState.data.settings, ...data.settings };
+                                }
+                            } else {
+                                this.appState.data = { ...this.appState.data, ...data };
+                            }
+                            this.appState.save();
+                            this.appState.renderSpots();
+                            this.appState.renderCatches();
+                            this.appState.addAllMarkersToMap();
+                            this.loadSettings();
+                            alert('Daten erfolgreich importiert!');
+                        } catch (error) {
+                            alert('Fehler beim Importieren: ' + error.message);
+                        }
+                    };
+                    reader.readAsText(file);
+                };
+                input.click();
+            }
+
+            exportSpots() {
+                const data = {
+                    spots: this.appState.data.spots,
+                    exportDate: new Date().toISOString()
+                };
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `angelplaetze_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+
+            importSpots() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json';
+                input.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const data = JSON.parse(e.target.result);
+                            if (data.spots && Array.isArray(data.spots)) {
+                                this.appState.data.spots = [...this.appState.data.spots, ...data.spots];
+                                this.appState.save();
+                                this.appState.renderSpots();
+                                data.spots.forEach(spot => {
+                                    this.appState.addMarkerToMap(spot);
+                                });
+                                alert('Angelplätze erfolgreich importiert!');
+                            } else {
+                                alert('Ungültiges Dateiformat!');
+                            }
+                        } catch (error) {
+                            alert('Fehler beim Importieren: ' + error.message);
+                        }
+                    };
+                    reader.readAsText(file);
+                };
+                input.click();
+            }
+
+            clearData() {
+                if (confirm('Möchten Sie wirklich alle Daten löschen? Diese Aktion kann nicht rückgängig gemacht werden!')) {
+                    if (confirm('Sind Sie absolut sicher? Alle Ihre Angelplätze und Fänge werden gelöscht!')) {
+                        localStorage.removeItem(APP_CONFIG.storageKey);
+                        location.reload();
+                    }
+                }
+            }
+
+            updateWeather() {
+                // Check if we have API key and location
+                const apiKey = this.appState.data.settings.openWeatherApiKey;
+                const location = this.appState.data.settings.location;
+                
+                if (!apiKey) {
+                    document.getElementById('weatherIcon').textContent = '❓';
+                    document.getElementById('weatherTemp').textContent = '--°C';
+                    document.getElementById('windSpeed').textContent = '-- km/h';
+                    document.getElementById('humidity').textContent = '--%';
+                    document.getElementById('pressure').textContent = '-- hPa';
+                    document.getElementById('moonPhase').textContent = '--';
+                    
+                    document.getElementById('fishingForecast').innerHTML = `
+                        <div class="text-center text-muted">
+                            <p>Bitte OpenWeatherMap API Key in den Einstellungen eingeben</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Try to use current GPS position or fallback to saved location
+                if (this.appState.currentPosition) {
+                    const { latitude, longitude } = this.appState.currentPosition.coords;
+                    this.fetchWeatherData(latitude, longitude, apiKey);
+                } else if (location) {
+                    // Use location name
+                    this.fetchWeatherDataByName(location, apiKey);
+                } else {
+                    document.getElementById('fishingForecast').innerHTML = `
+                        <div class="text-center text-muted">
+                            <p>Aktivieren Sie GPS oder geben Sie einen Standort in den Einstellungen ein</p>
+                        </div>
+                    `;
+                }
+            }
+
+            async fetchWeatherData(lat, lon, apiKey) {
+                try {
+                    const url = `${APP_CONFIG.openWeatherMap.baseUrl}/weather?lat=${lat}&lon=${lon}&units=${APP_CONFIG.openWeatherMap.units}&lang=${APP_CONFIG.openWeatherMap.lang}&appid=${apiKey}`;
+                    
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error('Weather API error');
+                    
+                    const data = await response.json();
+                    this.displayWeatherData(data);
+                    
+                    // Fetch forecast
+                    const forecastUrl = `${APP_CONFIG.openWeatherMap.baseUrl}/forecast?lat=${lat}&lon=${lon}&units=${APP_CONFIG.openWeatherMap.units}&lang=${APP_CONFIG.openWeatherMap.lang}&appid=${apiKey}`;
+                    const forecastResponse = await fetch(forecastUrl);
+                    if (forecastResponse.ok) {
+                        const forecastData = await forecastResponse.json();
+                        this.displayFishingForecast(data, forecastData);
+                    }
+                } catch (error) {
+                    console.error('Error fetching weather:', error);
+                    document.getElementById('weatherIcon').textContent = '❌';
+                    document.getElementById('weatherTemp').textContent = 'Fehler';
+                }
+            }
+
+            async fetchWeatherDataByName(location, apiKey) {
+                try {
+                    const url = `${APP_CONFIG.openWeatherMap.baseUrl}/weather?q=${encodeURIComponent(location)}&units=${APP_CONFIG.openWeatherMap.units}&lang=${APP_CONFIG.openWeatherMap.lang}&appid=${apiKey}`;
+                    
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error('Weather API error');
+                    
+                    const data = await response.json();
+                    this.displayWeatherData(data);
+                    
+                    // Fetch forecast using coordinates from current weather
+                    const forecastUrl = `${APP_CONFIG.openWeatherMap.baseUrl}/forecast?lat=${data.coord.lat}&lon=${data.coord.lon}&units=${APP_CONFIG.openWeatherMap.units}&lang=${APP_CONFIG.openWeatherMap.lang}&appid=${apiKey}`;
+                    const forecastResponse = await fetch(forecastUrl);
+                    if (forecastResponse.ok) {
+                        const forecastData = await forecastResponse.json();
+                        this.displayFishingForecast(data, forecastData);
+                    }
+                } catch (error) {
+                    console.error('Error fetching weather:', error);
+                    document.getElementById('weatherIcon').textContent = '❌';
+                    document.getElementById('weatherTemp').textContent = 'Fehler';
+                }
+            }
+
+            displayWeatherData(data) {
+                // Weather icons mapping
+                const weatherIcons = {
+                    '01d': '☀️', '01n': '🌙',
+                    '02d': '⛅', '02n': '☁️',
+                    '03d': '☁️', '03n': '☁️',
+                    '04d': '☁️', '04n': '☁️',
+                    '09d': '🌧️', '09n': '🌧️',
+                    '10d': '🌦️', '10n': '🌧️',
+                    '11d': '⛈️', '11n': '⛈️',
+                    '13d': '❄️', '13n': '❄️',
+                    '50d': '🌫️', '50n': '🌫️'
+                };
+                
+                const icon = weatherIcons[data.weather[0].icon] || '❓';
+                document.getElementById('weatherIcon').textContent = icon;
+                document.getElementById('weatherTemp').textContent = `${Math.round(data.main.temp)}°C`;
+                document.getElementById('windSpeed').textContent = `${Math.round(data.wind.speed * 3.6)} km/h`;
+                document.getElementById('humidity').textContent = `${data.main.humidity}%`;
+                document.getElementById('pressure').textContent = `${data.main.pressure} hPa`;
+                
+                // Calculate moon phase (simplified)
+                const moonPhases = this.calculateMoonPhase();
+                document.getElementById('moonPhase').textContent = moonPhases;
+            }
+
+            calculateMoonPhase() {
+                const date = new Date();
+                const year = date.getFullYear();
+                const month = date.getMonth() + 1;
+                const day = date.getDate();
+                
+                // Simple moon phase calculation
+                let r = year % 100;
+                r %= 19;
+                if (r > 9) r -= 19;
+                r = ((r * 11) % 30) + month + day;
+                if (month < 3) r += 2;
+                r -= 8.3;
+                r = Math.floor(r + 0.5) % 30;
+                r = r < 0 ? r + 30 : r;
+                
+                if (r < 2) return 'Neumond';
+                else if (r < 9) return 'Zunehmend';
+                else if (r < 16) return 'Vollmond';
+                else if (r < 23) return 'Abnehmend';
+                else return 'Neumond';
+            }
+
+            displayFishingForecast(currentWeather, forecastData) {
+                // Analyze conditions for fishing
+                const pressure = currentWeather.main.pressure;
+                const windSpeed = currentWeather.wind.speed * 3.6; // Convert to km/h
+                const temp = currentWeather.main.temp;
+                
+                let score = 0;
+                let factors = [];
+                
+                // Pressure analysis
+                if (pressure >= 1013 && pressure <= 1020) {
+                    score += 3;
+                    factors.push('Stabiler Luftdruck ✓');
+                } else if (pressure < 1000 || pressure > 1030) {
+                    score -= 2;
+                    factors.push('Extremer Luftdruck ✗');
+                }
+                
+                // Wind analysis
+                if (windSpeed < 15) {
+                    score += 2;
+                    factors.push('Ruhige See ✓');
+                } else if (windSpeed > 30) {
+                    score -= 3;
+                    factors.push('Starker Wind ✗');
+                }
+                
+                // Temperature analysis
+                if (temp >= 5 && temp <= 15) {
+                    score += 2;
+                    factors.push('Optimale Temperatur ✓');
+                }
+                
+                // Determine forecast quality
+                let quality, color;
+                if (score >= 5) {
+                    quality = 'Ausgezeichnete Angelbedingungen';
+                    color = 'var(--accent-green)';
+                } else if (score >= 2) {
+                    quality = 'Gute Angelbedingungen';
+                    color = 'var(--primary-blue-light)';
+                } else if (score >= 0) {
+                    quality = 'Mäßige Angelbedingungen';
+                    color = 'var(--accent-yellow)';
+                } else {
+                    quality = 'Schlechte Angelbedingungen';
+                    color = 'var(--accent-red)';
+                }
+                
+                document.getElementById('fishingForecast').innerHTML = `
+                    <div class="text-center">
+                        <h4 style="color: ${color};">${quality}</h4>
+                        <div style="margin: 1rem 0;">
+                            ${factors.map(f => `<p style="margin: 0.25rem 0;">${f}</p>`).join('')}
+                        </div>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                            Standort: ${currentWeather.name}, ${currentWeather.sys.country}
+                        </p>
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize App
+        let appState, gpsController, uiController;
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Initialize app state
+            appState = new AppState();
+            appState.load();
+
+            // Initialize GPS controller
+            gpsController = new GPSController(appState);
+
+            // Initialize UI controller
+            uiController = new UIController(appState, gpsController);
+
+            // Initialize Leaflet map
+            initializeMap();
+
+            // Load initial data
+            appState.renderSpots();
+            appState.renderCatches();
+            appState.addAllMarkersToMap();
+
+            // Request GPS permission on startup - IMPORTANT!
+            if (gpsController.isSupported()) {
+                setTimeout(async () => {
+                    const permissionGranted = await gpsController.requestInitialPermission();
+                    console.log('GPS permission:', permissionGranted ? 'granted' : 'denied');
+                    
+                    // Update weather after getting position
+                    if (permissionGranted) {
+                        uiController.updateWeather();
+                    }
+                }, 500); // Small delay to ensure UI is ready
+            }
+
+            // Update weather with saved data
+            uiController.updateWeather();
+            
+            // Set up periodic weather updates (every 10 minutes)
+            setInterval(() => {
+                uiController.updateWeather();
+            }, 600000);
+        });
+
+        function initializeMap() {
+            // Initialize Leaflet map
+            const map = L.map('leafletMap', {
+                center: [APP_CONFIG.defaultLocation.lat, APP_CONFIG.defaultLocation.lng],
+                zoom: APP_CONFIG.mapZoom,
+                zoomControl: false
+            });
+
+            // Add zoom control to bottom left for mobile
+            L.control.zoom({
+                position: 'bottomleft'
+            }).addTo(map);
+
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap',
+                maxZoom: 19
+            }).addTo(map);
+
+            // Try to add Norwegian nautical charts
+            try {
+                L.tileLayer.wms('https://cache.kartverket.no/v1/wmts/1.0.0/sjokartraster/default/webmercator/{z}/{y}/{x}.png', {
+                    attribution: '© Kartverket',
+                    maxZoom: 19,
+                    opacity: 0.7
+                }).addTo(map);
+            } catch (e) {
+                console.log('Norwegian nautical charts not available');
+            }
+
+            // Store map reference
+            appState.map = map;
+
+            // Click handler for manual marker mode
+            map.on('click', function(e) {
+                if (appState.manualMarkerMode) {
+                    appState.setManualMarkerPosition(e.latlng);
+                }
+            });
+
+            // Touch optimization
+            if (L.Browser.touch) {
+                map.tap.enable();
+                map.touchZoom.enable();
+            }
+        }
+    </script>
+</body>
+</html>
