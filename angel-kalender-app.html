@@ -1,0 +1,3161 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SeaTracker Pro - Hochseeangeln Norwegen</title>
+    
+    <style>
+        /* === CSS Reset & Basis-Styles === */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Maritime Farbpalette */
+            --ocean-deep: #001f3f;
+            --ocean-primary: #003366;
+            --ocean-light: #004080;
+            --ocean-surface: #0066cc;
+            --ocean-foam: #4da6ff;
+            
+            /* Akzentfarben */
+            --sunset-orange: #ff6b35;
+            --sunset-red: #ff4757;
+            --success-green: #26de81;
+            --warning-yellow: #fed330;
+            --danger-red: #fc5c65;
+            
+            /* Neutrale Farben */
+            --bg-dark: #0a0e1a;
+            --bg-medium: #141824;
+            --bg-light: #1e2230;
+            --surface: #282c3f;
+            --surface-light: #343849;
+            
+            --text-primary: #ffffff;
+            --text-secondary: #b8c4db;
+            --text-muted: #7f8c9f;
+            --border-color: rgba(255,255,255,0.1);
+            
+            /* Schatten */
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.2);
+            --shadow-md: 0 4px 8px rgba(0,0,0,0.3);
+            --shadow-lg: 0 8px 16px rgba(0,0,0,0.4);
+            --shadow-xl: 0 12px 24px rgba(0,0,0,0.5);
+            
+            /* Transitions */
+            --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+            
+            /* Z-Index Layers */
+            --z-base: 1;
+            --z-dropdown: 100;
+            --z-sticky: 200;
+            --z-fixed: 300;
+            --z-modal-backdrop: 400;
+            --z-modal: 500;
+            --z-notification: 600;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+            position: fixed;
+            width: 100%;
+        }
+
+        /* === Layout Structure === */
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100%;
+            position: relative;
+        }
+
+        /* === Header === */
+        .app-header {
+            background: linear-gradient(180deg, var(--ocean-primary) 0%, var(--ocean-deep) 100%);
+            border-bottom: 2px solid var(--ocean-surface);
+            padding: 1rem;
+            flex-shrink: 0;
+            z-index: var(--z-sticky);
+        }
+
+        .header-content {
+            text-align: center;
+        }
+
+        .app-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .app-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        /* === Navigation === */
+        .nav-container {
+            background: var(--bg-medium);
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .nav-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .nav-tabs {
+            display: flex;
+            padding: 0.75rem 1rem;
+            gap: 0.5rem;
+            min-width: max-content;
+        }
+
+        .nav-tab {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            background: var(--surface);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            font-weight: 500;
+            white-space: nowrap;
+            text-decoration: none;
+            font-size: 0.875rem;
+        }
+
+        .nav-tab:hover {
+            background: var(--surface-light);
+            color: var(--text-primary);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-tab.active {
+            background: var(--ocean-surface);
+            color: white;
+            border-color: var(--ocean-surface);
+            box-shadow: var(--shadow-md);
+        }
+
+        .nav-tab-icon {
+            font-size: 1.125rem;
+        }
+
+        /* === Content Container === */
+        .content-container {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+            background: var(--bg-dark);
+        }
+
+        .content-section {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow-y: auto;
+            padding: 1rem;
+            display: none;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        .content-section.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+            animation: fadeInSection var(--transition-normal) ease-out;
+        }
+
+        @keyframes fadeInSection {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* === Map Section === */
+        .map-section {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            gap: 1rem;
+        }
+
+        .map-container {
+            flex: 1;
+            position: relative;
+            background: var(--bg-medium);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .map-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .map-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: var(--z-dropdown);
+        }
+
+        /* GPS Status Widget */
+        .gps-widget {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(20, 24, 36, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            box-shadow: var(--shadow-lg);
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .gps-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--danger-red);
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .gps-indicator.active {
+            background: var(--success-green);
+            animation: gpsePulse 2s infinite;
+        }
+
+        .gps-indicator.pending {
+            background: var(--warning-yellow);
+            animation: gpsPending 1s infinite;
+        }
+
+        @keyframes gpsePulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(38, 222, 129, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(38, 222, 129, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(38, 222, 129, 0);
+            }
+        }
+
+        @keyframes gpsPending {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        .gps-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .gps-status {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .gps-coords {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+        }
+
+        .gps-accuracy {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Boat Position Marker */
+        .boat-marker {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: var(--z-dropdown);
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+        }
+
+        .boat-icon {
+            width: 100%;
+            height: 100%;
+            fill: var(--ocean-foam);
+            stroke: white;
+            stroke-width: 2;
+        }
+
+        .boat-accuracy-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 2px solid rgba(77, 166, 255, 0.3);
+            background: rgba(77, 166, 255, 0.1);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        /* Map Controls */
+        .map-controls {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            pointer-events: auto;
+        }
+
+        .map-control-btn {
+            width: 48px;
+            height: 48px;
+            background: rgba(20, 24, 36, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            box-shadow: var(--shadow-md);
+        }
+
+        .map-control-btn:hover {
+            background: var(--ocean-surface);
+            transform: scale(1.05);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .map-control-btn.active {
+            background: var(--ocean-surface);
+            color: white;
+        }
+
+        /* Marker List */
+        .marker-list-container {
+            background: var(--bg-medium);
+            border-radius: 12px;
+            padding: 1rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .marker-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .marker-list-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .marker-list-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .marker-list-empty {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 2rem 0;
+            font-style: italic;
+        }
+
+        .marker-item {
+            background: var(--surface);
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all var(--transition-fast);
+            cursor: pointer;
+        }
+
+        .marker-item:hover {
+            background: var(--surface-light);
+            transform: translateX(4px);
+        }
+
+        .marker-item-info {
+            flex: 1;
+        }
+
+        .marker-item-name {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .marker-item-coords {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-family: monospace;
+        }
+
+        .marker-item-actions {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        /* === Calendar Section === */
+        .calendar-container {
+            background: var(--bg-medium);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .calendar-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.5rem;
+        }
+
+        .calendar-weekday {
+            text-align: center;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            background: var(--surface);
+            border-radius: 8px;
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 2px solid transparent;
+        }
+
+        .calendar-day:hover {
+            background: var(--surface-light);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .calendar-day.selected {
+            border-color: var(--ocean-surface);
+            background: var(--ocean-deep);
+        }
+
+        .calendar-day.has-trip {
+            border-color: var(--warning-yellow);
+        }
+
+        .calendar-day.has-catches {
+            background: linear-gradient(135deg, var(--surface) 50%, var(--success-green) 50%);
+        }
+
+        .calendar-day-number {
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+        }
+
+        .calendar-day-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: end;
+            gap: 0.125rem;
+        }
+
+        .calendar-day-badge {
+            font-size: 0.625rem;
+            padding: 0.125rem 0.375rem;
+            background: var(--ocean-surface);
+            color: white;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        /* Trip Planner */
+        .trip-planner {
+            background: var(--bg-medium);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            box-shadow: var(--shadow-md);
+        }
+
+        .trip-timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .trip-timeline::before {
+            content: '';
+            position: absolute;
+            left: 0.75rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border-color);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 1.5rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -1.375rem;
+            top: 0.25rem;
+            width: 12px;
+            height: 12px;
+            background: var(--ocean-surface);
+            border-radius: 50%;
+            border: 2px solid var(--bg-medium);
+        }
+
+        .timeline-time {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+            font-weight: 600;
+        }
+
+        .timeline-content {
+            background: var(--surface);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .timeline-title {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-details {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* === Journal Section === */
+        .catch-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .catch-card {
+            background: var(--bg-medium);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            border-left: 4px solid var(--ocean-surface);
+            transition: all var(--transition-fast);
+        }
+
+        .catch-card:hover {
+            transform: translateX(4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .catch-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .catch-fish-info {
+            flex: 1;
+        }
+
+        .catch-fish-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .catch-datetime {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .catch-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .catch-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .catch-detail {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .catch-detail-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .catch-detail-value {
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .catch-location {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: var(--surface);
+            border-radius: 6px;
+            font-size: 0.875rem;
+        }
+
+        .catch-notes {
+            padding: 0.75rem;
+            background: var(--surface);
+            border-radius: 6px;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        /* === Statistics Section === */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-medium);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: var(--shadow-md);
+            border-top: 3px solid var(--ocean-surface);
+            transition: all var(--transition-fast);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--ocean-foam);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-trend {
+            font-size: 0.75rem;
+            color: var(--success-green);
+            margin-top: 0.5rem;
+        }
+
+        /* === Settings Section === */
+        .settings-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .settings-group {
+            background: var(--bg-medium);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+        }
+
+        .settings-group-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .settings-item {
+            margin-bottom: 1.5rem;
+        }
+
+        .settings-item:last-child {
+            margin-bottom: 0;
+        }
+
+        /* === Forms === */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-label-required::after {
+            content: ' *';
+            color: var(--danger-red);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: var(--surface);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            transition: all var(--transition-fast);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--ocean-surface);
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+            background: var(--surface-light);
+        }
+
+        .form-control:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        select.form-control {
+            cursor: pointer;
+            padding-right: 2.5rem;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23b8c4db' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 12px;
+            appearance: none;
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-input-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .form-input-group .form-control {
+            flex: 1;
+        }
+
+        .form-help {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        .form-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        .form-checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--ocean-surface);
+        }
+
+        /* === Buttons === */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: var(--ocean-surface);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--ocean-light);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: var(--surface-light);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-success {
+            background: var(--success-green);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger-red);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning-yellow);
+            color: var(--bg-dark);
+        }
+
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border-radius: 50%;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+        }
+
+        .btn-block {
+            width: 100%;
+        }
+
+        /* === Modal === */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: var(--z-modal-backdrop);
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn var(--transition-fast);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-dialog {
+            background: var(--bg-medium);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-xl);
+            animation: slideUp var(--transition-normal);
+            border: 1px solid var(--border-color);
+            z-index: var(--z-modal);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+            font-size: 1.5rem;
+        }
+
+        .modal-close:hover {
+            background: var(--surface);
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 0.75rem;
+            justify-content: flex-end;
+            flex-shrink: 0;
+        }
+
+        /* === Toast Notifications === */
+        .toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: var(--z-notification);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: var(--bg-medium);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 300px;
+            max-width: 500px;
+            pointer-events: auto;
+            animation: toastSlideIn var(--transition-normal);
+        }
+
+        @keyframes toastSlideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.removing {
+            animation: toastSlideOut var(--transition-normal);
+        }
+
+        @keyframes toastSlideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        .toast-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .toast-message {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .toast-success {
+            border-color: var(--success-green);
+        }
+
+        .toast-success .toast-icon {
+            color: var(--success-green);
+        }
+
+        .toast-error {
+            border-color: var(--danger-red);
+        }
+
+        .toast-error .toast-icon {
+            color: var(--danger-red);
+        }
+
+        .toast-warning {
+            border-color: var(--warning-yellow);
+        }
+
+        .toast-warning .toast-icon {
+            color: var(--warning-yellow);
+        }
+
+        /* === Loading States === */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-top-color: var(--ocean-surface);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, var(--surface) 25%, var(--surface-light) 50%, var(--surface) 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 4px;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* === Utility Classes === */
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .text-muted { color: var(--text-muted); }
+        .text-small { font-size: 0.875rem; }
+        .text-tiny { font-size: 0.75rem; }
+
+        .mt-1 { margin-top: 0.5rem; }
+        .mt-2 { margin-top: 1rem; }
+        .mt-3 { margin-top: 1.5rem; }
+        .mb-1 { margin-bottom: 0.5rem; }
+        .mb-2 { margin-bottom: 1rem; }
+        .mb-3 { margin-bottom: 1.5rem; }
+
+        .flex { display: flex; }
+        .flex-center { display: flex; align-items: center; justify-content: center; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .flex-col { display: flex; flex-direction: column; }
+        .gap-1 { gap: 0.5rem; }
+        .gap-2 { gap: 1rem; }
+
+        .d-none { display: none !important; }
+        .w-full { width: 100%; }
+
+        /* === Responsive === */
+        @media (max-width: 768px) {
+            .app-title { font-size: 1.25rem; }
+            .nav-tab { padding: 0.5rem 1rem; font-size: 0.75rem; }
+            .nav-tab-icon { font-size: 1rem; }
+            
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .catch-details { grid-template-columns: repeat(2, 1fr); }
+            
+            .modal { padding: 0.5rem; }
+            .modal-dialog { max-height: 100vh; border-radius: 12px; }
+            
+            .toast-container { 
+                bottom: 1rem; 
+                right: 1rem; 
+                left: 1rem; 
+            }
+            .toast { min-width: auto; }
+        }
+
+        @media (max-width: 480px) {
+            .calendar-grid { gap: 0.25rem; }
+            .calendar-day { padding: 0.25rem; font-size: 0.75rem; }
+            .btn { padding: 0.625rem 1.25rem; }
+        }
+
+        /* === Print Styles === */
+        @media print {
+            body { background: white; color: black; }
+            .nav-container, .map-controls, .btn, .modal { display: none !important; }
+            .content-section { position: static; padding: 0; }
+            .catch-card, .stat-card { break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1 class="app-title">
+                    <span>🛥️</span>
+                    <span>SeaTracker Pro</span>
+                    <span>🎣</span>
+                </h1>
+                <p class="app-subtitle">Hochseeangeln Norwegen - GPS Tracking & Fangdokumentation</p>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="nav-container">
+            <div class="nav-tabs">
+                <button class="nav-tab active" data-section="map">
+                    <span class="nav-tab-icon">🗺️</span>
+                    <span>Karte</span>
+                </button>
+                <button class="nav-tab" data-section="calendar">
+                    <span class="nav-tab-icon">📅</span>
+                    <span>Kalender</span>
+                </button>
+                <button class="nav-tab" data-section="journal">
+                    <span class="nav-tab-icon">📖</span>
+                    <span>Fangbuch</span>
+                </button>
+                <button class="nav-tab" data-section="statistics">
+                    <span class="nav-tab-icon">📊</span>
+                    <span>Statistik</span>
+                </button>
+                <button class="nav-tab" data-section="settings">
+                    <span class="nav-tab-icon">⚙️</span>
+                    <span>Einstellungen</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Content Container -->
+        <main class="content-container">
+            <!-- Map Section -->
+            <section id="map-section" class="content-section active">
+                <div class="map-section">
+                    <div class="map-container">
+                        <!-- kystinfo.no Embedded Map -->
+                        <iframe 
+                            id="mapFrame"
+                            class="map-iframe"
+                            name="embedMap" 
+                            title="Adaptive EmbedMap" 
+                            scrolling="no" 
+                            frameborder="0" 
+                            src="https://kystinfo.no/embedded/8a23a4ff-16c4-4c14-bb8d-a4fbd1a9a217"
+                        ></iframe>
+                        
+                        <!-- Map Overlay -->
+                        <div class="map-overlay">
+                            <!-- GPS Widget -->
+                            <div class="gps-widget">
+                                <div class="gps-indicator" id="gpsIndicator"></div>
+                                <div class="gps-info">
+                                    <div class="gps-status" id="gpsStatus">GPS nicht verfügbar</div>
+                                    <div class="gps-coords" id="gpsCoords">---.-----°, ---.-----°</div>
+                                    <div class="gps-accuracy" id="gpsAccuracy">Genauigkeit: -- m</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Boat Position -->
+                            <div class="boat-marker d-none" id="boatMarker">
+                                <div class="boat-accuracy-ring" id="boatAccuracyRing"></div>
+                                <svg class="boat-icon" viewBox="0 0 24 24">
+                                    <path d="M2 20h20v2H2v-2zm3.5-1h13l1.5-6h-3V6h-1V3H8v3H7v7H4l1.5 6zm5.5-15h2v2h-2V4z"/>
+                                </svg>
+                            </div>
+                            
+                            <!-- Map Controls -->
+                            <div class="map-controls">
+                                <button class="map-control-btn" id="gpsToggle" title="GPS aktivieren/deaktivieren">
+                                    📍
+                                </button>
+                                <button class="map-control-btn" id="centerPosition" title="Auf Position zentrieren">
+                                    🎯
+                                </button>
+                                <button class="map-control-btn" id="addMarkerBtn" title="Marker hinzufügen">
+                                    📌
+                                </button>
+                                <button class="map-control-btn" id="followMode" title="Follow-Modus">
+                                    🧭
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Marker List -->
+                    <div class="marker-list-container">
+                        <div class="marker-list-header">
+                            <h3 class="marker-list-title">Gespeicherte Markierungen</h3>
+                            <div class="marker-list-actions">
+                                <button class="btn btn-sm btn-secondary" id="importMarkers">
+                                    📥 Import
+                                </button>
+                                <button class="btn btn-sm btn-primary" id="exportMarkers">
+                                    📤 Export
+                                </button>
+                            </div>
+                        </div>
+                        <div id="markerList">
+                            <p class="marker-list-empty">Noch keine Markierungen gespeichert</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Calendar Section -->
+            <section id="calendar-section" class="content-section">
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <div class="calendar-nav">
+                            <button class="btn btn-icon btn-secondary" id="prevMonth">
+                                ←
+                            </button>
+                            <button class="btn btn-secondary" id="todayBtn">
+                                Heute
+                            </button>
+                            <button class="btn btn-icon btn-secondary" id="nextMonth">
+                                →
+                            </button>
+                        </div>
+                        <h2 class="calendar-title" id="calendarTitle">Juni 2025</h2>
+                        <button class="btn btn-primary" id="addTripBtn">
+                            ➕ Trip planen
+                        </button>
+                    </div>
+                    
+                    <div class="calendar-grid" id="calendarGrid">
+                        <!-- Calendar days will be generated here -->
+                    </div>
+                </div>
+                
+                <!-- Trip Planner -->
+                <div class="trip-planner d-none" id="tripPlanner">
+                    <h3 class="mb-2">Tagesplanung</h3>
+                    <div class="trip-timeline" id="tripTimeline">
+                        <!-- Timeline items will be generated here -->
+                    </div>
+                    <button class="btn btn-secondary btn-sm mt-2" id="addTimelineItem">
+                        ➕ Zeitpunkt hinzufügen
+                    </button>
+                </div>
+            </section>
+
+            <!-- Journal Section -->
+            <section id="journal-section" class="content-section">
+                <div class="flex-between mb-3">
+                    <h2>Fangbuch</h2>
+                    <button class="btn btn-success" id="addCatchBtn">
+                        ➕ Fang eintragen
+                    </button>
+                </div>
+                
+                <div class="catch-list" id="catchList">
+                    <!-- Catches will be displayed here -->
+                </div>
+            </section>
+
+            <!-- Statistics Section -->
+            <section id="statistics-section" class="content-section">
+                <h2 class="mb-3">Statistiken & Auswertungen</h2>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalCatchesCount">0</div>
+                        <div class="stat-label">Gesamtfänge</div>
+                        <div class="stat-trend">+0% diese Saison</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="biggestCatch">- kg</div>
+                        <div class="stat-label">Größter Fang</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="bestSpot">-</div>
+                        <div class="stat-label">Bester Spot</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="favoriteSpecies">-</div>
+                        <div class="stat-label">Häufigste Art</div>
+                    </div>
+                </div>
+                
+                <!-- Detailed Statistics -->
+                <div class="settings-group">
+                    <h3 class="settings-group-title">
+                        <span>📈</span>
+                        <span>Detaillierte Auswertung</span>
+                    </h3>
+                    <div id="detailedStats">
+                        <!-- Detailed statistics will be generated here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Section -->
+            <section id="settings-section" class="content-section">
+                <div class="settings-container">
+                    <!-- GPS Settings -->
+                    <div class="settings-group">
+                        <h3 class="settings-group-title">
+                            <span>📍</span>
+                            <span>GPS & Navigation</span>
+                        </h3>
+                        
+                        <div class="settings-item">
+                            <label class="form-label">GPS Update-Intervall</label>
+                            <select class="form-control" id="gpsUpdateInterval">
+                                <option value="5000">5 Sekunden</option>
+                                <option value="10000" selected>10 Sekunden</option>
+                                <option value="30000">30 Sekunden</option>
+                                <option value="60000">1 Minute</option>
+                            </select>
+                            <p class="form-help">Häufigere Updates verbrauchen mehr Akku</p>
+                        </div>
+                        
+                        <div class="settings-item">
+                            <label class="form-label">Mindestgenauigkeit (m)</label>
+                            <input type="number" class="form-control" id="gpsMinAccuracy" value="50" min="1" max="500">
+                            <p class="form-help">Positionen mit schlechterer Genauigkeit werden ignoriert</p>
+                        </div>
+                        
+                        <div class="settings-item">
+                            <label class="form-checkbox">
+                                <input type="checkbox" id="autoCenter" checked>
+                                <span>Karte automatisch auf Position zentrieren</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Fish Species -->
+                    <div class="settings-group">
+                        <h3 class="settings-group-title">
+                            <span>🐟</span>
+                            <span>Fischarten verwalten</span>
+                        </h3>
+                        
+                        <div class="settings-item">
+                            <label class="form-label">Verfügbare Fischarten</label>
+                            <div id="fishSpeciesList">
+                                <!-- Fish species will be listed here -->
+                            </div>
+                            <button class="btn btn-secondary btn-sm mt-2" id="addFishSpecies">
+                                ➕ Art hinzufügen
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Data Management -->
+                    <div class="settings-group">
+                        <h3 class="settings-group-title">
+                            <span>💾</span>
+                            <span>Datenverwaltung</span>
+                        </h3>
+                        
+                        <div class="settings-item">
+                            <div class="flex gap-2">
+                                <button class="btn btn-primary" id="exportAllData">
+                                    📤 Alle Daten exportieren
+                                </button>
+                                <button class="btn btn-secondary" id="importData">
+                                    📥 Daten importieren
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-item">
+                            <button class="btn btn-danger" id="clearAllData">
+                                🗑️ Alle Daten löschen
+                            </button>
+                            <p class="form-help text-small mt-1">Achtung: Diese Aktion kann nicht rückgängig gemacht werden!</p>
+                        </div>
+                    </div>
+                    
+                    <!-- App Settings -->
+                    <div class="settings-group">
+                        <h3 class="settings-group-title">
+                            <span>⚙️</span>
+                            <span>App-Einstellungen</span>
+                        </h3>
+                        
+                        <div class="settings-item">
+                            <label class="form-label">Einheitensystem</label>
+                            <select class="form-control" id="unitSystem">
+                                <option value="metric" selected>Metrisch (kg, m, km)</option>
+                                <option value="imperial">Imperial (lbs, ft, mi)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="settings-item">
+                            <label class="form-label">Standardwährung</label>
+                            <select class="form-control" id="currency">
+                                <option value="NOK" selected>NOK - Norwegische Krone</option>
+                                <option value="EUR">EUR - Euro</option>
+                                <option value="USD">USD - US Dollar</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Add Marker Modal -->
+    <div class="modal" id="markerModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 class="modal-title">Markierung hinzufügen</h3>
+                <button class="modal-close" data-dismiss="modal">×</button>
+            </div>
+            <form id="markerForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label form-label-required">Name</label>
+                        <input type="text" class="form-control" id="markerName" required placeholder="z.B. Heilbutt-Kante Nord">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">GPS-Position</label>
+                        <div class="form-input-group">
+                            <input type="text" class="form-control" id="markerLat" placeholder="Latitude" readonly>
+                            <input type="text" class="form-control" id="markerLng" placeholder="Longitude" readonly>
+                        </div>
+                        <p class="form-help">Position wird automatisch erfasst oder manuell auf der Karte gewählt</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Typ</label>
+                        <select class="form-control" id="markerType">
+                            <option value="hotspot">🎯 Hotspot</option>
+                            <option value="structure">🏔️ Struktur</option>
+                            <option value="wreck">⚓ Wrack</option>
+                            <option value="drift">〰️ Drift-Strecke</option>
+                            <option value="danger">⚠️ Gefahr</option>
+                            <option value="anchor">⚓ Ankerplatz</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Tiefe (m)</label>
+                        <input type="number" class="form-control" id="markerDepth" min="0" max="500" step="0.5" placeholder="z.B. 125">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Grund</label>
+                        <select class="form-control" id="markerBottom">
+                            <option value="">-- Bitte wählen --</option>
+                            <option value="sand">Sand</option>
+                            <option value="mud">Schlamm</option>
+                            <option value="rock">Felsen</option>
+                            <option value="gravel">Kies</option>
+                            <option value="coral">Korallen</option>
+                            <option value="seaweed">Seegras/Tang</option>
+                            <option value="mixed">Gemischt</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Notizen</label>
+                        <textarea class="form-control" id="markerNotes" rows="3" placeholder="z.B. Beste Drift bei ablaufendem Wasser, Heilbutt 20-40kg"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Abbrechen</button>
+                    <button type="submit" class="btn btn-primary">Speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Catch Modal -->
+    <div class="modal" id="catchModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 class="modal-title">Fang dokumentieren</h3>
+                <button class="modal-close" data-dismiss="modal">×</button>
+            </div>
+            <form id="catchForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label form-label-required">Datum & Zeit</label>
+                        <input type="datetime-local" class="form-control" id="catchDateTime" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label form-label-required">Fischart</label>
+                        <select class="form-control" id="catchSpecies" required>
+                            <option value="">-- Bitte wählen --</option>
+                            <option value="heilbutt">Heilbutt</option>
+                            <option value="dorsch">Dorsch</option>
+                            <option value="leng">Leng</option>
+                            <option value="lumb">Lumb</option>
+                            <option value="rotbarsch">Rotbarsch</option>
+                            <option value="steinbeisser">Steinbeißer</option>
+                            <option value="pollack">Pollack</option>
+                            <option value="koehler">Köhler</option>
+                            <option value="schellfisch">Schellfisch</option>
+                            <option value="makrele">Makrele</option>
+                            <option value="other">Sonstige</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-input-group">
+                        <div class="form-group">
+                            <label class="form-label">Länge (cm)</label>
+                            <input type="number" class="form-control" id="catchLength" min="0" max="300" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Gewicht (kg)</label>
+                            <input type="number" class="form-control" id="catchWeight" min="0" max="500" step="0.1">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">GPS-Position</label>
+                        <div class="form-input-group">
+                            <input type="text" class="form-control" id="catchLat" placeholder="Latitude" readonly>
+                            <input type="text" class="form-control" id="catchLng" placeholder="Longitude" readonly>
+                            <button type="button" class="btn btn-secondary btn-sm" id="catchUseCurrentPos">
+                                📍 Aktuelle
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Köder</label>
+                        <input type="text" class="form-control" id="catchBait" placeholder="z.B. Gummifisch 30cm orange">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Tiefe (m)</label>
+                        <input type="number" class="form-control" id="catchDepth" min="0" max="500" step="0.5">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Wetter</label>
+                        <select class="form-control" id="catchWeather">
+                            <option value="">-- Bitte wählen --</option>
+                            <option value="sunny">☀️ Sonnig</option>
+                            <option value="cloudy">☁️ Bewölkt</option>
+                            <option value="rainy">🌧️ Regen</option>
+                            <option value="stormy">⛈️ Sturm</option>
+                            <option value="foggy">🌫️ Nebel</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-input-group">
+                        <div class="form-group">
+                            <label class="form-label">Wind (Bft)</label>
+                            <select class="form-control" id="catchWind">
+                                <option value="">-</option>
+                                <option value="0">0 - Windstille</option>
+                                <option value="1">1 - Leiser Zug</option>
+                                <option value="2">2 - Leichte Brise</option>
+                                <option value="3">3 - Schwache Brise</option>
+                                <option value="4">4 - Mäßige Brise</option>
+                                <option value="5">5 - Frische Brise</option>
+                                <option value="6">6 - Starker Wind</option>
+                                <option value="7">7 - Steifer Wind</option>
+                                <option value="8">8 - Stürmischer Wind</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Drift (kn)</label>
+                            <input type="number" class="form-control" id="catchDrift" min="0" max="10" step="0.1">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-checkbox">
+                            <input type="checkbox" id="catchReleased">
+                            <span>Fisch zurückgesetzt (C&R)</span>
+                        </label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Notizen</label>
+                        <textarea class="form-control" id="catchNotes" rows="3" placeholder="Besonderheiten, Kampfzeit, etc."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Abbrechen</button>
+                    <button type="submit" class="btn btn-success">Fang speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Trip Modal -->
+    <div class="modal" id="tripModal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 class="modal-title">Trip planen</h3>
+                <button class="modal-close" data-dismiss="modal">×</button>
+            </div>
+            <form id="tripForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label form-label-required">Datum</label>
+                        <input type="date" class="form-control" id="tripDate" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label form-label-required">Titel</label>
+                        <input type="text" class="form-control" id="tripTitle" required placeholder="z.B. Heilbutt-Tour Nordwest">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Teilnehmer</label>
+                        <input type="text" class="form-control" id="tripParticipants" placeholder="z.B. Max, Peter, Klaus">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Zielfischarten</label>
+                        <input type="text" class="form-control" id="tripTargets" placeholder="z.B. Heilbutt, Leng, Dorsch">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Geplante Spots</label>
+                        <div id="tripSpotsList">
+                            <!-- Selected spots will be shown here -->
+                        </div>
+                        <button type="button" class="btn btn-secondary btn-sm mt-1" id="selectTripSpots">
+                            📍 Spots auswählen
+                        </button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Notizen</label>
+                        <textarea class="form-control" id="tripNotes" rows="3" placeholder="Ausrüstung, Köder, besondere Hinweise..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Abbrechen</button>
+                    <button type="submit" class="btn btn-primary">Trip speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // === SeaTracker Pro - Hauptanwendung ===
+        
+        // Globale Konfiguration
+        const APP_CONFIG = {
+            name: 'SeaTracker Pro',
+            version: '2.0.0',
+            storageKey: 'seatracker_data_v2',
+            mapIframeUrl: 'https://kystinfo.no/embedded/8a23a4ff-16c4-4c14-bb8d-a4fbd1a9a217',
+            defaultLocation: {
+                // Leka, Norwegen
+                lat: 65.095,
+                lng: 11.703
+            },
+            gps: {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0,
+                minAccuracy: 50,
+                updateInterval: 10000
+            }
+        };
+
+        // Norwegische Salzwasserfische
+        const FISH_SPECIES = {
+            heilbutt: { name: 'Heilbutt', minSize: 80, recordWeight: 400 },
+            dorsch: { name: 'Dorsch', minSize: 40, recordWeight: 55 },
+            leng: { name: 'Leng', minSize: 63, recordWeight: 40 },
+            lumb: { name: 'Lumb', minSize: 50, recordWeight: 30 },
+            rotbarsch: { name: 'Rotbarsch', minSize: 32, recordWeight: 15 },
+            steinbeisser: { name: 'Steinbeißer', minSize: 50, recordWeight: 25 },
+            pollack: { name: 'Pollack', minSize: 30, recordWeight: 20 },
+            koehler: { name: 'Köhler', minSize: 35, recordWeight: 30 },
+            schellfisch: { name: 'Schellfisch', minSize: 30, recordWeight: 10 },
+            makrele: { name: 'Makrele', minSize: 30, recordWeight: 3 }
+        };
+
+        // App State Management
+        class AppState {
+            constructor() {
+                this.data = {
+                    markers: [],
+                    catches: [],
+                    trips: [],
+                    settings: {
+                        gpsUpdateInterval: 10000,
+                        gpsMinAccuracy: 50,
+                        autoCenter: true,
+                        unitSystem: 'metric',
+                        currency: 'NOK',
+                        customSpecies: []
+                    }
+                };
+                
+                this.gps = {
+                    watchId: null,
+                    isActive: false,
+                    currentPosition: null,
+                    followMode: false,
+                    lastUpdate: null
+                };
+                
+                this.ui = {
+                    currentSection: 'map',
+                    selectedDate: null,
+                    markerMode: false,
+                    mapLoaded: false
+                };
+                
+                this.currentMonth = new Date();
+            }
+
+            load() {
+                try {
+                    const saved = localStorage.getItem(APP_CONFIG.storageKey);
+                    if (saved) {
+                        const parsed = JSON.parse(saved);
+                        this.data = { ...this.data, ...parsed };
+                        console.log('Data loaded successfully');
+                    }
+                } catch (error) {
+                    console.error('Failed to load data:', error);
+                    this.showToast('Fehler beim Laden der Daten', 'error');
+                }
+            }
+
+            save() {
+                try {
+                    localStorage.setItem(APP_CONFIG.storageKey, JSON.stringify(this.data));
+                    console.log('Data saved successfully');
+                } catch (error) {
+                    console.error('Failed to save data:', error);
+                    this.showToast('Fehler beim Speichern der Daten', 'error');
+                }
+            }
+
+            addMarker(marker) {
+                marker.id = Date.now();
+                marker.created = new Date().toISOString();
+                this.data.markers.push(marker);
+                this.save();
+                return marker;
+            }
+
+            updateMarker(id, updates) {
+                const index = this.data.markers.findIndex(m => m.id === id);
+                if (index !== -1) {
+                    this.data.markers[index] = { ...this.data.markers[index], ...updates };
+                    this.save();
+                    return true;
+                }
+                return false;
+            }
+
+            deleteMarker(id) {
+                this.data.markers = this.data.markers.filter(m => m.id !== id);
+                this.save();
+            }
+
+            addCatch(catchData) {
+                catchData.id = Date.now();
+                catchData.created = new Date().toISOString();
+                this.data.catches.push(catchData);
+                this.save();
+                return catchData;
+            }
+
+            deleteCatch(id) {
+                this.data.catches = this.data.catches.filter(c => c.id !== id);
+                this.save();
+            }
+
+            addTrip(trip) {
+                trip.id = Date.now();
+                trip.created = new Date().toISOString();
+                this.data.trips.push(trip);
+                this.save();
+                return trip;
+            }
+
+            deleteTrip(id) {
+                this.data.trips = this.data.trips.filter(t => t.id !== id);
+                this.save();
+            }
+
+            getStatistics() {
+                const stats = {
+                    totalCatches: this.data.catches.length,
+                    biggestCatch: null,
+                    speciesCounts: {},
+                    spotCounts: {},
+                    totalWeight: 0,
+                    releasedCount: 0
+                };
+
+                this.data.catches.forEach(c => {
+                    // Species count
+                    stats.speciesCounts[c.species] = (stats.speciesCounts[c.species] || 0) + 1;
+                    
+                    // Weight stats
+                    if (c.weight) {
+                        stats.totalWeight += parseFloat(c.weight);
+                        if (!stats.biggestCatch || parseFloat(c.weight) > parseFloat(stats.biggestCatch.weight)) {
+                            stats.biggestCatch = c;
+                        }
+                    }
+                    
+                    // Released count
+                    if (c.released) {
+                        stats.releasedCount++;
+                    }
+                    
+                    // Spot analysis
+                    if (c.lat && c.lng) {
+                        const spotKey = `${c.lat.toFixed(3)},${c.lng.toFixed(3)}`;
+                        stats.spotCounts[spotKey] = (stats.spotCounts[spotKey] || 0) + 1;
+                    }
+                });
+
+                return stats;
+            }
+
+            exportData() {
+                const exportData = {
+                    ...this.data,
+                    exportDate: new Date().toISOString(),
+                    version: APP_CONFIG.version
+                };
+                
+                const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `seatracker_export_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                this.showToast('Daten erfolgreich exportiert', 'success');
+            }
+
+            importData(file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const imported = JSON.parse(e.target.result);
+                        if (confirm('Alle aktuellen Daten werden überschrieben. Fortfahren?')) {
+                            this.data = imported;
+                            this.save();
+                            location.reload();
+                        }
+                    } catch (error) {
+                        console.error('Import failed:', error);
+                        this.showToast('Fehler beim Importieren der Daten', 'error');
+                    }
+                };
+                reader.readAsText(file);
+            }
+
+            showToast(message, type = 'info', title = '') {
+                const toastContainer = document.getElementById('toastContainer');
+                const toast = document.createElement('div');
+                toast.className = `toast toast-${type}`;
+                
+                const icons = {
+                    success: '✅',
+                    error: '❌',
+                    warning: '⚠️',
+                    info: 'ℹ️'
+                };
+                
+                toast.innerHTML = `
+                    <span class="toast-icon">${icons[type]}</span>
+                    <div class="toast-content">
+                        ${title ? `<div class="toast-title">${title}</div>` : ''}
+                        <div class="toast-message">${message}</div>
+                    </div>
+                `;
+                
+                toastContainer.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.classList.add('removing');
+                    setTimeout(() => toast.remove(), 300);
+                }, 5000);
+            }
+        }
+
+        // GPS Manager
+        class GPSManager {
+            constructor(appState) {
+                this.appState = appState;
+                this.updateTimer = null;
+            }
+
+            start() {
+                if (!('geolocation' in navigator)) {
+                    this.appState.showToast('GPS wird von diesem Browser nicht unterstützt', 'error');
+                    return false;
+                }
+
+                if (this.appState.gps.isActive) {
+                    return true;
+                }
+
+                this.updateStatus('pending');
+                
+                const options = {
+                    enableHighAccuracy: APP_CONFIG.gps.enableHighAccuracy,
+                    timeout: APP_CONFIG.gps.timeout,
+                    maximumAge: APP_CONFIG.gps.maximumAge
+                };
+
+                this.appState.gps.watchId = navigator.geolocation.watchPosition(
+                    (position) => this.onPositionUpdate(position),
+                    (error) => this.onPositionError(error),
+                    options
+                );
+
+                this.appState.gps.isActive = true;
+                
+                // Start update timer
+                this.updateTimer = setInterval(() => {
+                    if (this.appState.gps.currentPosition) {
+                        this.updateBoatPosition();
+                    }
+                }, this.appState.data.settings.gpsUpdateInterval);
+
+                return true;
+            }
+
+            stop() {
+                if (this.appState.gps.watchId !== null) {
+                    navigator.geolocation.clearWatch(this.appState.gps.watchId);
+                    this.appState.gps.watchId = null;
+                }
+                
+                if (this.updateTimer) {
+                    clearInterval(this.updateTimer);
+                    this.updateTimer = null;
+                }
+                
+                this.appState.gps.isActive = false;
+                this.appState.gps.currentPosition = null;
+                this.updateStatus('inactive');
+                
+                // Hide boat marker
+                document.getElementById('boatMarker').classList.add('d-none');
+            }
+
+            onPositionUpdate(position) {
+                // Check accuracy
+                if (position.coords.accuracy > this.appState.data.settings.gpsMinAccuracy) {
+                    this.updateStatus('pending', position);
+                    return;
+                }
+
+                this.appState.gps.currentPosition = position;
+                this.appState.gps.lastUpdate = new Date();
+                
+                this.updateStatus('active', position);
+                this.updateBoatPosition();
+                
+                // Auto-center if enabled
+                if (this.appState.gps.followMode || this.appState.data.settings.autoCenter) {
+                    this.centerOnPosition();
+                }
+            }
+
+            onPositionError(error) {
+                console.error('GPS Error:', error);
+                
+                let message = 'GPS-Fehler';
+                switch (error.code) {
+                    case error.PERMISSION_DENIED:
+                        message = 'GPS-Zugriff verweigert';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        message = 'Position nicht verfügbar';
+                        break;
+                    case error.TIMEOUT:
+                        message = 'GPS-Timeout';
+                        break;
+                }
+                
+                this.updateStatus('error', null, message);
+                this.appState.showToast(message, 'error');
+                
+                if (error.code === error.PERMISSION_DENIED) {
+                    this.stop();
+                }
+            }
+
+            updateStatus(status, position = null, errorMessage = '') {
+                const indicator = document.getElementById('gpsIndicator');
+                const statusText = document.getElementById('gpsStatus');
+                const coordsText = document.getElementById('gpsCoords');
+                const accuracyText = document.getElementById('gpsAccuracy');
+                
+                indicator.className = 'gps-indicator';
+                
+                switch (status) {
+                    case 'inactive':
+                        statusText.textContent = 'GPS nicht aktiv';
+                        coordsText.textContent = '---.-----°, ---.-----°';
+                        accuracyText.textContent = 'Genauigkeit: -- m';
+                        break;
+                        
+                    case 'pending':
+                        indicator.classList.add('pending');
+                        statusText.textContent = 'GPS-Signal wird gesucht...';
+                        if (position) {
+                            coordsText.textContent = `${position.coords.latitude.toFixed(5)}°, ${position.coords.longitude.toFixed(5)}°`;
+                            accuracyText.textContent = `Genauigkeit: ${Math.round(position.coords.accuracy)} m (zu ungenau)`;
+                        }
+                        break;
+                        
+                    case 'active':
+                        indicator.classList.add('active');
+                        statusText.textContent = 'GPS aktiv';
+                        if (position) {
+                            coordsText.textContent = `${position.coords.latitude.toFixed(5)}°, ${position.coords.longitude.toFixed(5)}°`;
+                            accuracyText.textContent = `Genauigkeit: ${Math.round(position.coords.accuracy)} m`;
+                        }
+                        break;
+                        
+                    case 'error':
+                        statusText.textContent = errorMessage || 'GPS-Fehler';
+                        break;
+                }
+            }
+
+            updateBoatPosition() {
+                const position = this.appState.gps.currentPosition;
+                if (!position) return;
+
+                const boatMarker = document.getElementById('boatMarker');
+                const accuracyRing = document.getElementById('boatAccuracyRing');
+                
+                // Show boat marker
+                boatMarker.classList.remove('d-none');
+                
+                // Update position (this would need map coordinate conversion)
+                // For now, we'll just show it's active
+                // In a real implementation, you'd convert lat/lng to pixel coordinates
+                
+                // Update accuracy ring
+                const accuracyRadius = Math.max(20, Math.min(100, position.coords.accuracy));
+                accuracyRing.style.width = `${accuracyRadius * 2}px`;
+                accuracyRing.style.height = `${accuracyRadius * 2}px`;
+            }
+
+            centerOnPosition() {
+                const position = this.appState.gps.currentPosition;
+                if (!position) return;
+
+                // Send message to iframe to center map
+                const iframe = document.getElementById('mapFrame');
+                if (iframe && iframe.contentWindow) {
+                    iframe.contentWindow.postMessage({
+                        type: 'centerMap',
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    }, '*');
+                }
+            }
+
+            getCurrentCoords() {
+                if (this.appState.gps.currentPosition) {
+                    return {
+                        lat: this.appState.gps.currentPosition.coords.latitude,
+                        lng: this.appState.gps.currentPosition.coords.longitude,
+                        accuracy: this.appState.gps.currentPosition.coords.accuracy
+                    };
+                }
+                return null;
+            }
+        }
+
+        // UI Controller
+        class UIController {
+            constructor(appState, gpsManager) {
+                this.appState = appState;
+                this.gpsManager = gpsManager;
+                this.initializeEventListeners();
+                this.initializeUI();
+            }
+
+            initializeEventListeners() {
+                // Navigation
+                document.querySelectorAll('.nav-tab').forEach(tab => {
+                    tab.addEventListener('click', (e) => {
+                        const section = e.currentTarget.dataset.section;
+                        this.showSection(section);
+                    });
+                });
+
+                // Modal dismiss
+                document.querySelectorAll('[data-dismiss="modal"]').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const modal = e.target.closest('.modal');
+                        if (modal) this.hideModal(modal.id);
+                    });
+                });
+
+                // Close modals on background click
+                document.querySelectorAll('.modal').forEach(modal => {
+                    modal.addEventListener('click', (e) => {
+                        if (e.target === modal) {
+                            this.hideModal(modal.id);
+                        }
+                    });
+                });
+
+                // GPS Controls
+                document.getElementById('gpsToggle').addEventListener('click', () => this.toggleGPS());
+                document.getElementById('centerPosition').addEventListener('click', () => this.centerOnPosition());
+                document.getElementById('followMode').addEventListener('click', () => this.toggleFollowMode());
+                document.getElementById('addMarkerBtn').addEventListener('click', () => this.startMarkerMode());
+
+                // Marker form
+                document.getElementById('markerForm').addEventListener('submit', (e) => this.handleMarkerSubmit(e));
+
+                // Catch controls
+                document.getElementById('addCatchBtn').addEventListener('click', () => this.showCatchModal());
+                document.getElementById('catchForm').addEventListener('submit', (e) => this.handleCatchSubmit(e));
+                document.getElementById('catchUseCurrentPos').addEventListener('click', () => this.useCurrentPositionForCatch());
+
+                // Calendar controls
+                document.getElementById('prevMonth').addEventListener('click', () => this.changeMonth(-1));
+                document.getElementById('nextMonth').addEventListener('click', () => this.changeMonth(1));
+                document.getElementById('todayBtn').addEventListener('click', () => this.goToToday());
+                document.getElementById('addTripBtn').addEventListener('click', () => this.showTripModal());
+
+                // Trip form
+                document.getElementById('tripForm').addEventListener('submit', (e) => this.handleTripSubmit(e));
+
+                // Data management
+                document.getElementById('exportMarkers').addEventListener('click', () => this.exportMarkers());
+                document.getElementById('importMarkers').addEventListener('click', () => this.importMarkers());
+                document.getElementById('exportAllData').addEventListener('click', () => this.appState.exportData());
+                document.getElementById('importData').addEventListener('click', () => this.showImportDialog());
+                document.getElementById('clearAllData').addEventListener('click', () => this.clearAllData());
+
+                // Settings
+                document.getElementById('gpsUpdateInterval').addEventListener('change', (e) => {
+                    this.appState.data.settings.gpsUpdateInterval = parseInt(e.target.value);
+                    this.appState.save();
+                    if (this.appState.gps.isActive) {
+                        this.gpsManager.stop();
+                        this.gpsManager.start();
+                    }
+                });
+
+                document.getElementById('gpsMinAccuracy').addEventListener('change', (e) => {
+                    this.appState.data.settings.gpsMinAccuracy = parseInt(e.target.value);
+                    this.appState.save();
+                });
+
+                document.getElementById('autoCenter').addEventListener('change', (e) => {
+                    this.appState.data.settings.autoCenter = e.target.checked;
+                    this.appState.save();
+                });
+
+                document.getElementById('unitSystem').addEventListener('change', (e) => {
+                    this.appState.data.settings.unitSystem = e.target.value;
+                    this.appState.save();
+                    this.refreshUI();
+                });
+
+                document.getElementById('currency').addEventListener('change', (e) => {
+                    this.appState.data.settings.currency = e.target.value;
+                    this.appState.save();
+                });
+
+                // Fish species management
+                document.getElementById('addFishSpecies').addEventListener('click', () => this.addCustomFishSpecies());
+            }
+
+            initializeUI() {
+                // Set current datetime for forms
+                const now = new Date();
+                const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+                    .toISOString().slice(0, 16);
+                
+                document.getElementById('catchDateTime').value = localDateTime;
+                
+                // Load settings
+                document.getElementById('gpsUpdateInterval').value = this.appState.data.settings.gpsUpdateInterval;
+                document.getElementById('gpsMinAccuracy').value = this.appState.data.settings.gpsMinAccuracy;
+                document.getElementById('autoCenter').checked = this.appState.data.settings.autoCenter;
+                document.getElementById('unitSystem').value = this.appState.data.settings.unitSystem;
+                document.getElementById('currency').value = this.appState.data.settings.currency;
+                
+                // Initialize calendar
+                this.renderCalendar();
+                
+                // Load initial data
+                this.renderMarkerList();
+                this.renderCatchList();
+                this.renderStatistics();
+                this.renderFishSpeciesList();
+            }
+
+            showSection(section) {
+                // Update navigation
+                document.querySelectorAll('.nav-tab').forEach(tab => {
+                    tab.classList.toggle('active', tab.dataset.section === section);
+                });
+
+                // Update content
+                document.querySelectorAll('.content-section').forEach(sec => {
+                    const isActive = sec.id === `${section}-section`;
+                    sec.classList.toggle('active', isActive);
+                });
+
+                this.appState.ui.currentSection = section;
+
+                // Section-specific initialization
+                if (section === 'calendar') {
+                    this.renderCalendar();
+                } else if (section === 'statistics') {
+                    this.renderStatistics();
+                }
+            }
+
+            toggleGPS() {
+                if (this.appState.gps.isActive) {
+                    this.gpsManager.stop();
+                    document.getElementById('gpsToggle').classList.remove('active');
+                    this.appState.showToast('GPS deaktiviert', 'info');
+                } else {
+                    if (this.gpsManager.start()) {
+                        document.getElementById('gpsToggle').classList.add('active');
+                        this.appState.showToast('GPS wird aktiviert...', 'info');
+                    }
+                }
+            }
+
+            centerOnPosition() {
+                if (!this.appState.gps.currentPosition) {
+                    this.appState.showToast('Keine GPS-Position verfügbar', 'warning');
+                    return;
+                }
+                
+                this.gpsManager.centerOnPosition();
+                this.appState.showToast('Karte zentriert', 'success');
+            }
+
+            toggleFollowMode() {
+                this.appState.gps.followMode = !this.appState.gps.followMode;
+                const btn = document.getElementById('followMode');
+                btn.classList.toggle('active', this.appState.gps.followMode);
+                
+                if (this.appState.gps.followMode) {
+                    this.appState.showToast('Follow-Modus aktiviert', 'success');
+                    this.centerOnPosition();
+                } else {
+                    this.appState.showToast('Follow-Modus deaktiviert', 'info');
+                }
+            }
+
+            startMarkerMode() {
+                this.appState.ui.markerMode = true;
+                document.getElementById('addMarkerBtn').classList.add('active');
+                
+                // Get current position if available
+                const coords = this.gpsManager.getCurrentCoords();
+                if (coords) {
+                    document.getElementById('markerLat').value = coords.lat.toFixed(6);
+                    document.getElementById('markerLng').value = coords.lng.toFixed(6);
+                } else {
+                    document.getElementById('markerLat').value = '';
+                    document.getElementById('markerLng').value = '';
+                }
+                
+                this.showModal('markerModal');
+                this.appState.showToast('Klicken Sie auf die Karte oder nutzen Sie die aktuelle Position', 'info');
+            }
+
+            handleMarkerSubmit(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    name: document.getElementById('markerName').value,
+                    lat: parseFloat(document.getElementById('markerLat').value),
+                    lng: parseFloat(document.getElementById('markerLng').value),
+                    type: document.getElementById('markerType').value,
+                    depth: document.getElementById('markerDepth').value,
+                    bottom: document.getElementById('markerBottom').value,
+                    notes: document.getElementById('markerNotes').value
+                };
+
+                if (!formData.lat || !formData.lng) {
+                    this.appState.showToast('Bitte Position angeben', 'error');
+                    return;
+                }
+
+                this.appState.addMarker(formData);
+                this.hideModal('markerModal');
+                this.renderMarkerList();
+                this.appState.showToast('Markierung gespeichert', 'success');
+                
+                // Reset marker mode
+                this.appState.ui.markerMode = false;
+                document.getElementById('addMarkerBtn').classList.remove('active');
+                
+                // Reset form
+                document.getElementById('markerForm').reset();
+            }
+
+            renderMarkerList() {
+                const container = document.getElementById('markerList');
+                
+                if (this.appState.data.markers.length === 0) {
+                    container.innerHTML = '<p class="marker-list-empty">Noch keine Markierungen gespeichert</p>';
+                    return;
+                }
+
+                container.innerHTML = this.appState.data.markers
+                    .sort((a, b) => new Date(b.created) - new Date(a.created))
+                    .map(marker => `
+                        <div class="marker-item" data-id="${marker.id}">
+                            <div class="marker-item-info">
+                                <div class="marker-item-name">${marker.name}</div>
+                                <div class="marker-item-coords">${marker.lat.toFixed(5)}°, ${marker.lng.toFixed(5)}°</div>
+                            </div>
+                            <div class="marker-item-actions">
+                                <button class="btn btn-icon btn-sm btn-secondary" onclick="app.navigateToMarker(${marker.id})" title="Navigieren">
+                                    🧭
+                                </button>
+                                <button class="btn btn-icon btn-sm btn-danger" onclick="app.deleteMarker(${marker.id})" title="Löschen">
+                                    🗑️
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+            }
+
+            showCatchModal() {
+                const now = new Date();
+                const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+                    .toISOString().slice(0, 16);
+                document.getElementById('catchDateTime').value = localDateTime;
+                
+                // Use current position if available
+                const coords = this.gpsManager.getCurrentCoords();
+                if (coords) {
+                    document.getElementById('catchLat').value = coords.lat.toFixed(6);
+                    document.getElementById('catchLng').value = coords.lng.toFixed(6);
+                }
+                
+                this.showModal('catchModal');
+            }
+
+            useCurrentPositionForCatch() {
+                const coords = this.gpsManager.getCurrentCoords();
+                if (coords) {
+                    document.getElementById('catchLat').value = coords.lat.toFixed(6);
+                    document.getElementById('catchLng').value = coords.lng.toFixed(6);
+                    this.appState.showToast('Position übernommen', 'success');
+                } else {
+                    this.appState.showToast('Keine GPS-Position verfügbar', 'error');
+                }
+            }
+
+            handleCatchSubmit(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    dateTime: document.getElementById('catchDateTime').value,
+                    species: document.getElementById('catchSpecies').value,
+                    length: document.getElementById('catchLength').value,
+                    weight: document.getElementById('catchWeight').value,
+                    lat: parseFloat(document.getElementById('catchLat').value) || null,
+                    lng: parseFloat(document.getElementById('catchLng').value) || null,
+                    bait: document.getElementById('catchBait').value,
+                    depth: document.getElementById('catchDepth').value,
+                    weather: document.getElementById('catchWeather').value,
+                    wind: document.getElementById('catchWind').value,
+                    drift: document.getElementById('catchDrift').value,
+                    released: document.getElementById('catchReleased').checked,
+                    notes: document.getElementById('catchNotes').value
+                };
+
+                // Validate minimum size
+                const species = FISH_SPECIES[formData.species];
+                if (species && formData.length && parseFloat(formData.length) < species.minSize) {
+                    if (!confirm(`Achtung: Der Fisch ist unter dem Mindestmaß (${species.minSize} cm). Trotzdem speichern?`)) {
+                        return;
+                    }
+                }
+
+                this.appState.addCatch(formData);
+                this.hideModal('catchModal');
+                this.renderCatchList();
+                this.renderStatistics();
+                this.appState.showToast('Fang gespeichert', 'success');
+                
+                // Reset form
+                document.getElementById('catchForm').reset();
+            }
+
+            renderCatchList() {
+                const container = document.getElementById('catchList');
+                
+                if (this.appState.data.catches.length === 0) {
+                    container.innerHTML = '<p class="text-center text-muted">Noch keine Fänge dokumentiert</p>';
+                    return;
+                }
+
+                const unitSystem = this.appState.data.settings.unitSystem;
+                
+                container.innerHTML = this.appState.data.catches
+                    .sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime))
+                    .map(catchData => {
+                        const species = FISH_SPECIES[catchData.species] || { name: catchData.species };
+                        const date = new Date(catchData.dateTime);
+                        
+                        // Convert units if needed
+                        let displayWeight = catchData.weight;
+                        let displayLength = catchData.length;
+                        let weightUnit = 'kg';
+                        let lengthUnit = 'cm';
+                        
+                        if (unitSystem === 'imperial' && catchData.weight) {
+                            displayWeight = (parseFloat(catchData.weight) * 2.20462).toFixed(1);
+                            weightUnit = 'lbs';
+                        }
+                        if (unitSystem === 'imperial' && catchData.length) {
+                            displayLength = (parseFloat(catchData.length) * 0.393701).toFixed(1);
+                            lengthUnit = 'in';
+                        }
+                        
+                        return `
+                            <div class="catch-card">
+                                <div class="catch-header">
+                                    <div class="catch-fish-info">
+                                        <div class="catch-fish-name">${species.name}</div>
+                                        <div class="catch-datetime">${date.toLocaleString('de-DE')}</div>
+                                    </div>
+                                    <div class="catch-actions">
+                                        <button class="btn btn-icon btn-sm btn-secondary" onclick="app.viewCatchDetails(${catchData.id})" title="Details">
+                                            👁️
+                                        </button>
+                                        <button class="btn btn-icon btn-sm btn-danger" onclick="app.deleteCatch(${catchData.id})" title="Löschen">
+                                            🗑️
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="catch-details">
+                                    ${displayLength ? `
+                                        <div class="catch-detail">
+                                            <div class="catch-detail-label">Länge</div>
+                                            <div class="catch-detail-value">${displayLength} ${lengthUnit}</div>
+                                        </div>
+                                    ` : ''}
+                                    ${displayWeight ? `
+                                        <div class="catch-detail">
+                                            <div class="catch-detail-label">Gewicht</div>
+                                            <div class="catch-detail-value">${displayWeight} ${weightUnit}</div>
+                                        </div>
+                                    ` : ''}
+                                    ${catchData.bait ? `
+                                        <div class="catch-detail">
+                                            <div class="catch-detail-label">Köder</div>
+                                            <div class="catch-detail-value">${catchData.bait}</div>
+                                        </div>
+                                    ` : ''}
+                                    ${catchData.depth ? `
+                                        <div class="catch-detail">
+                                            <div class="catch-detail-label">Tiefe</div>
+                                            <div class="catch-detail-value">${catchData.depth} m</div>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                                ${catchData.lat && catchData.lng ? `
+                                    <div class="catch-location">
+                                        <span>📍</span>
+                                        <span>${catchData.lat.toFixed(5)}°, ${catchData.lng.toFixed(5)}°</span>
+                                    </div>
+                                ` : ''}
+                                ${catchData.notes ? `
+                                    <div class="catch-notes">${catchData.notes}</div>
+                                ` : ''}
+                                ${catchData.released ? `
+                                    <div class="text-small text-muted mt-1">🎣 Catch & Release</div>
+                                ` : ''}
+                            </div>
+                        `;
+                    }).join('');
+            }
+
+            renderCalendar() {
+                const year = this.appState.currentMonth.getFullYear();
+                const month = this.appState.currentMonth.getMonth();
+                
+                // Update title
+                document.getElementById('calendarTitle').textContent = 
+                    new Intl.DateTimeFormat('de-DE', { month: 'long', year: 'numeric' }).format(this.appState.currentMonth);
+                
+                const firstDay = new Date(year, month, 1);
+                const lastDay = new Date(year, month + 1, 0);
+                const prevLastDay = new Date(year, month, 0);
+                
+                const firstDayIndex = firstDay.getDay() || 7; // Convert Sunday (0) to 7
+                const numberOfDays = lastDay.getDate();
+                const numberOfPrevDays = prevLastDay.getDate();
+                
+                const calendarGrid = document.getElementById('calendarGrid');
+                calendarGrid.innerHTML = '';
+                
+                // Weekday headers
+                const weekdays = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+                weekdays.forEach(day => {
+                    const weekdayEl = document.createElement('div');
+                    weekdayEl.className = 'calendar-weekday';
+                    weekdayEl.textContent = day;
+                    calendarGrid.appendChild(weekdayEl);
+                });
+                
+                // Previous month days
+                for (let i = firstDayIndex - 2; i >= 0; i--) {
+                    const dayEl = document.createElement('div');
+                    dayEl.className = 'calendar-day calendar-day-other';
+                    calendarGrid.appendChild(dayEl);
+                }
+                
+                // Current month days
+                for (let day = 1; day <= numberOfDays; day++) {
+                    const date = new Date(year, month, day);
+                    const dayEl = document.createElement('div');
+                    dayEl.className = 'calendar-day';
+                    
+                    // Check for catches on this day
+                    const dayCatches = this.appState.data.catches.filter(c => {
+                        const catchDate = new Date(c.dateTime);
+                        return catchDate.toDateString() === date.toDateString();
+                    });
+                    
+                    if (dayCatches.length > 0) {
+                        dayEl.classList.add('has-catches');
+                    }
+                    
+                    // Check for trips on this day
+                    const dayTrips = this.appState.data.trips.filter(t => {
+                        const tripDate = new Date(t.date);
+                        return tripDate.toDateString() === date.toDateString();
+                    });
+                    
+                    if (dayTrips.length > 0) {
+                        dayEl.classList.add('has-trip');
+                    }
+                    
+                    // Check if selected
+                    if (this.appState.ui.selectedDate && 
+                        date.toDateString() === this.appState.ui.selectedDate.toDateString()) {
+                        dayEl.classList.add('selected');
+                    }
+                    
+                    dayEl.innerHTML = `
+                        <div class="calendar-day-number">${day}</div>
+                        <div class="calendar-day-info">
+                            ${dayCatches.length > 0 ? `<div class="calendar-day-badge">🎣 ${dayCatches.length}</div>` : ''}
+                            ${dayTrips.length > 0 ? `<div class="calendar-day-badge">🚢 Trip</div>` : ''}
+                        </div>
+                    `;
+                    
+                    dayEl.addEventListener('click', () => this.selectDate(date));
+                    calendarGrid.appendChild(dayEl);
+                }
+            }
+
+            selectDate(date) {
+                this.appState.ui.selectedDate = date;
+                this.renderCalendar();
+                
+                // Show trip planner for selected date
+                const trips = this.appState.data.trips.filter(t => {
+                    const tripDate = new Date(t.date);
+                    return tripDate.toDateString() === date.toDateString();
+                });
+                
+                if (trips.length > 0) {
+                    this.showTripDetails(trips[0]);
+                } else {
+                    document.getElementById('tripPlanner').classList.add('d-none');
+                }
+            }
+
+            changeMonth(direction) {
+                this.appState.currentMonth.setMonth(this.appState.currentMonth.getMonth() + direction);
+                this.renderCalendar();
+            }
+
+            goToToday() {
+                this.appState.currentMonth = new Date();
+                this.appState.ui.selectedDate = new Date();
+                this.renderCalendar();
+            }
+
+            showTripModal() {
+                const selectedDate = this.appState.ui.selectedDate || new Date();
+                document.getElementById('tripDate').value = selectedDate.toISOString().split('T')[0];
+                this.showModal('tripModal');
+            }
+
+            handleTripSubmit(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    date: document.getElementById('tripDate').value,
+                    title: document.getElementById('tripTitle').value,
+                    participants: document.getElementById('tripParticipants').value,
+                    targets: document.getElementById('tripTargets').value,
+                    notes: document.getElementById('tripNotes').value,
+                    spots: [] // TODO: Implement spot selection
+                };
+
+                this.appState.addTrip(formData);
+                this.hideModal('tripModal');
+                this.renderCalendar();
+                this.appState.showToast('Trip gespeichert', 'success');
+                
+                // Reset form
+                document.getElementById('tripForm').reset();
+            }
+
+            showTripDetails(trip) {
+                const planner = document.getElementById('tripPlanner');
+                planner.classList.remove('d-none');
+                
+                // TODO: Implement detailed trip timeline display
+            }
+
+            renderStatistics() {
+                const stats = this.appState.getStatistics();
+                
+                // Update stat cards
+                document.getElementById('totalCatchesCount').textContent = stats.totalCatches;
+                
+                if (stats.biggestCatch) {
+                    const weight = this.appState.data.settings.unitSystem === 'imperial' 
+                        ? `${(parseFloat(stats.biggestCatch.weight) * 2.20462).toFixed(1)} lbs`
+                        : `${stats.biggestCatch.weight} kg`;
+                    document.getElementById('biggestCatch').textContent = weight;
+                } else {
+                    document.getElementById('biggestCatch').textContent = '- kg';
+                }
+                
+                // Best spot
+                if (Object.keys(stats.spotCounts).length > 0) {
+                    const bestSpot = Object.entries(stats.spotCounts)
+                        .sort((a, b) => b[1] - a[1])[0];
+                    document.getElementById('bestSpot').textContent = `${bestSpot[1]} Fänge`;
+                } else {
+                    document.getElementById('bestSpot').textContent = '-';
+                }
+                
+                // Favorite species
+                if (Object.keys(stats.speciesCounts).length > 0) {
+                    const favSpecies = Object.entries(stats.speciesCounts)
+                        .sort((a, b) => b[1] - a[1])[0];
+                    const species = FISH_SPECIES[favSpecies[0]] || { name: favSpecies[0] };
+                    document.getElementById('favoriteSpecies').textContent = species.name;
+                } else {
+                    document.getElementById('favoriteSpecies').textContent = '-';
+                }
+                
+                // Detailed statistics
+                this.renderDetailedStatistics(stats);
+            }
+
+            renderDetailedStatistics(stats) {
+                const container = document.getElementById('detailedStats');
+                
+                let html = '<div class="stats-detail-grid">';
+                
+                // Species breakdown
+                if (Object.keys(stats.speciesCounts).length > 0) {
+                    html += '<div class="stats-detail-section">';
+                    html += '<h4 class="mb-2">Fischarten</h4>';
+                    
+                    Object.entries(stats.speciesCounts)
+                        .sort((a, b) => b[1] - a[1])
+                        .forEach(([speciesKey, count]) => {
+                            const species = FISH_SPECIES[speciesKey] || { name: speciesKey };
+                            const percentage = ((count / stats.totalCatches) * 100).toFixed(1);
+                            html += `
+                                <div class="flex-between mb-1">
+                                    <span>${species.name}</span>
+                                    <span>${count} (${percentage}%)</span>
+                                </div>
+                            `;
+                        });
+                    
+                    html += '</div>';
+                }
+                
+                // Release statistics
+                if (stats.totalCatches > 0) {
+                    const releaseRate = ((stats.releasedCount / stats.totalCatches) * 100).toFixed(1);
+                    html += `
+                        <div class="stats-detail-section">
+                            <h4 class="mb-2">Catch & Release</h4>
+                            <div class="stat-value">${releaseRate}%</div>
+                            <div class="text-muted">${stats.releasedCount} von ${stats.totalCatches} Fischen</div>
+                        </div>
+                    `;
+                }
+                
+                html += '</div>';
+                container.innerHTML = html;
+            }
+
+            renderFishSpeciesList() {
+                const container = document.getElementById('fishSpeciesList');
+                
+                const allSpecies = { ...FISH_SPECIES };
+                
+                // Add custom species
+                this.appState.data.settings.customSpecies.forEach(species => {
+                    allSpecies[species.key] = species;
+                });
+                
+                let html = '<div class="species-list">';
+                
+                Object.entries(allSpecies).forEach(([key, species]) => {
+                    const isCustom = this.appState.data.settings.customSpecies.some(s => s.key === key);
+                    html += `
+                        <div class="flex-between mb-2">
+                            <span>${species.name} ${species.minSize ? `(Min: ${species.minSize}cm)` : ''}</span>
+                            ${isCustom ? `
+                                <button class="btn btn-icon btn-sm btn-danger" onclick="app.removeCustomSpecies('${key}')">
+                                    🗑️
+                                </button>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+                container.innerHTML = html;
+            }
+
+            addCustomFishSpecies() {
+                const name = prompt('Name der Fischart:');
+                if (!name) return;
+                
+                const minSize = prompt('Mindestmaß in cm (optional):');
+                
+                const key = name.toLowerCase().replace(/\s+/g, '_');
+                
+                this.appState.data.settings.customSpecies.push({
+                    key,
+                    name,
+                    minSize: minSize ? parseInt(minSize) : null
+                });
+                
+                this.appState.save();
+                this.renderFishSpeciesList();
+                this.appState.showToast('Fischart hinzugefügt', 'success');
+            }
+
+            exportMarkers() {
+                const markers = this.appState.data.markers;
+                if (markers.length === 0) {
+                    this.appState.showToast('Keine Markierungen zum Exportieren', 'warning');
+                    return;
+                }
+
+                const exportData = {
+                    type: 'seatracker_markers',
+                    version: APP_CONFIG.version,
+                    exportDate: new Date().toISOString(),
+                    markers: markers
+                };
+                
+                const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `seatracker_markers_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                this.appState.showToast(`${markers.length} Markierungen exportiert`, 'success');
+            }
+
+            importMarkers() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json';
+                
+                input.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        try {
+                            const imported = JSON.parse(event.target.result);
+                            
+                            if (imported.type !== 'seatracker_markers') {
+                                throw new Error('Ungültiges Dateiformat');
+                            }
+                            
+                            const newMarkers = imported.markers || [];
+                            const count = newMarkers.length;
+                            
+                            if (count === 0) {
+                                this.appState.showToast('Keine Markierungen in der Datei gefunden', 'warning');
+                                return;
+                            }
+                            
+                            if (confirm(`${count} Markierungen importieren?`)) {
+                                // Add new markers with new IDs to avoid conflicts
+                                newMarkers.forEach(marker => {
+                                    delete marker.id;
+                                    this.appState.addMarker(marker);
+                                });
+                                
+                                this.renderMarkerList();
+                                this.appState.showToast(`${count} Markierungen importiert`, 'success');
+                            }
+                        } catch (error) {
+                            console.error('Import error:', error);
+                            this.appState.showToast('Fehler beim Importieren', 'error');
+                        }
+                    };
+                    reader.readAsText(file);
+                };
+                
+                input.click();
+            }
+
+            showImportDialog() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json';
+                
+                input.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        this.appState.importData(file);
+                    }
+                };
+                
+                input.click();
+            }
+
+            clearAllData() {
+                if (confirm('ACHTUNG: Alle Daten werden unwiderruflich gelöscht! Fortfahren?')) {
+                    if (confirm('Sind Sie wirklich sicher? Diese Aktion kann nicht rückgängig gemacht werden!')) {
+                        localStorage.removeItem(APP_CONFIG.storageKey);
+                        location.reload();
+                    }
+                }
+            }
+
+            showModal(modalId) {
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                }
+            }
+
+            hideModal(modalId) {
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            }
+
+            refreshUI() {
+                this.renderCatchList();
+                this.renderStatistics();
+            }
+        }
+
+        // Initialize Application
+        const appState = new AppState();
+        const gpsManager = new GPSManager(appState);
+        const ui = new UIController(appState, gpsManager);
+
+        // Load saved data
+        appState.load();
+
+        // Global app reference for inline handlers
+        window.app = {
+            navigateToMarker: (id) => {
+                const marker = appState.data.markers.find(m => m.id === id);
+                if (!marker) return;
+                
+                // Send message to iframe
+                const iframe = document.getElementById('mapFrame');
+                if (iframe && iframe.contentWindow) {
+                    iframe.contentWindow.postMessage({
+                        type: 'navigateToMarker',
+                        lat: marker.lat,
+                        lng: marker.lng
+                    }, '*');
+                }
+                
+                appState.showToast(`Navigation zu ${marker.name}`, 'info');
+            },
+            
+            deleteMarker: (id) => {
+                if (confirm('Markierung wirklich löschen?')) {
+                    appState.deleteMarker(id);
+                    ui.renderMarkerList();
+                    appState.showToast('Markierung gelöscht', 'success');
+                }
+            },
+            
+            viewCatchDetails: (id) => {
+                const catchData = appState.data.catches.find(c => c.id === id);
+                if (!catchData) return;
+                
+                // Navigate to position if available
+                if (catchData.lat && catchData.lng) {
+                    if (confirm('Zur Fangposition navigieren?')) {
+                        ui.showSection('map');
+                        
+                        const iframe = document.getElementById('mapFrame');
+                        if (iframe && iframe.contentWindow) {
+                            iframe.contentWindow.postMessage({
+                                type: 'navigateToPosition',
+                                lat: catchData.lat,
+                                lng: catchData.lng
+                            }, '*');
+                        }
+                    }
+                }
+            },
+            
+            deleteCatch: (id) => {
+                if (confirm('Fang wirklich löschen?')) {
+                    appState.deleteCatch(id);
+                    ui.renderCatchList();
+                    ui.renderStatistics();
+                    appState.showToast('Fang gelöscht', 'success');
+                }
+            },
+            
+            removeCustomSpecies: (key) => {
+                if (confirm('Fischart wirklich entfernen?')) {
+                    appState.data.settings.customSpecies = 
+                        appState.data.settings.customSpecies.filter(s => s.key !== key);
+                    appState.save();
+                    ui.renderFishSpeciesList();
+                    appState.showToast('Fischart entfernt', 'success');
+                }
+            }
+        };
+
+        // Listen for messages from iframe
+        window.addEventListener('message', (event) => {
+            // Verify origin if needed
+            // if (event.origin !== 'https://kystinfo.no') return;
+            
+            if (event.data.type === 'mapClick' && appState.ui.markerMode) {
+                // Update marker form with clicked position
+                document.getElementById('markerLat').value = event.data.lat.toFixed(6);
+                document.getElementById('markerLng').value = event.data.lng.toFixed(6);
+                appState.showToast('Position ausgewählt', 'success');
+            }
+        });
+
+        // Initialize on DOM ready
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('SeaTracker Pro initialized');
+            
+            // Check HTTPS
+            if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+                appState.showToast('WARNUNG: GPS funktioniert nur über HTTPS!', 'warning');
+            }
+        });
+
+        // Handle page visibility for GPS
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && appState.gps.isActive) {
+                // Pause GPS updates when page is hidden to save battery
+                if (gpsManager.updateTimer) {
+                    clearInterval(gpsManager.updateTimer);
+                }
+            } else if (!document.hidden && appState.gps.isActive) {
+                // Resume GPS updates
+                gpsManager.updateTimer = setInterval(() => {
+                    if (appState.gps.currentPosition) {
+                        gpsManager.updateBoatPosition();
+                    }
+                }, appState.data.settings.gpsUpdateInterval);
+            }
+        });
+
+        // Prevent accidental navigation
+        window.addEventListener('beforeunload', (e) => {
+            if (appState.gps.isActive) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+    </script>
+</body>
+</html>
