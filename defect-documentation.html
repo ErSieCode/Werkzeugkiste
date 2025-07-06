@@ -1,0 +1,2171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Defect Documentation System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #2563eb;
+            --primary-dark: #1d4ed8;
+            --danger-color: #dc2626;
+            --warning-color: #d97706;
+            --success-color: #059669;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --radius-sm: 0.375rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: var(--gray-900);
+            background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            text-align: center;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .language-selector {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .lang-btn {
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .lang-btn:hover,
+        .lang-btn.active {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 1rem;
+            text-align: center;
+            background: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--gray-600);
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .nav-tab.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+            background: var(--gray-50);
+        }
+
+        .nav-tab:hover {
+            background: var(--gray-50);
+            color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .defect-categories {
+            display: grid;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .category-section {
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .category-section:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .category-header {
+            background: linear-gradient(135deg, var(--gray-800) 0%, var(--gray-700) 100%);
+            color: white;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .category-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .category-icon {
+            width: 2rem;
+            height: 2rem;
+            fill: currentColor;
+        }
+
+        .defect-count {
+            background: var(--danger-color);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .defect-list {
+            padding: 1.5rem;
+        }
+
+        .defect-item {
+            background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .defect-item:hover {
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow-md);
+        }
+
+        .defect-item.critical {
+            border-left: 4px solid var(--danger-color);
+        }
+
+        .defect-item.warning {
+            border-left: 4px solid var(--warning-color);
+        }
+
+        .defect-item.minor {
+            border-left: 4px solid var(--gray-400);
+        }
+
+        .defect-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .defect-title {
+            flex: 1;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 0.5rem;
+        }
+
+        .defect-description {
+            color: var(--gray-600);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .defect-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            font-size: 0.875rem;
+            color: var(--gray-500);
+        }
+
+        .defect-images {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .defect-image {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .defect-image:hover {
+            transform: scale(1.05);
+        }
+
+        .btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn:disabled {
+            background: var(--gray-400);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+        }
+
+        .btn-success:hover {
+            background: #047857;
+        }
+
+        .btn-secondary {
+            background: var(--gray-600);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-700);
+        }
+
+        .floating-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 4rem;
+            height: 4rem;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .floating-btn:hover {
+            background: var(--primary-dark);
+            transform: scale(1.1);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray-500);
+            padding: 0.25rem;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            background: white;
+        }
+
+        .file-upload {
+            border: 2px dashed var(--gray-300);
+            border-radius: var(--radius-md);
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .file-upload:hover {
+            border-color: var(--primary-color);
+            background: var(--gray-50);
+        }
+
+        .file-upload.dragover {
+            border-color: var(--primary-color);
+            background: rgba(37, 99, 235, 0.05);
+        }
+
+        .signature-section {
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .signature-pad {
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            cursor: crosshair;
+            width: 100%;
+            height: 200px;
+            display: block;
+            margin: 1rem 0;
+        }
+
+        .signature-controls {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .dual-signature-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .signature-box {
+            border: 2px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .signature-box.completed {
+            border-color: var(--success-color);
+            background: rgba(5, 150, 105, 0.05);
+        }
+
+        .search-box {
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid var(--gray-300);
+            border-radius: var(--radius-md);
+            font-size: 1rem;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E") no-repeat 1rem center;
+            padding-left: 3rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .stat-label {
+            color: var(--gray-600);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        .report-status {
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            padding: 2rem;
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .report-status.signed {
+            border: 2px solid var(--success-color);
+            background: rgba(5, 150, 105, 0.05);
+        }
+
+        .report-status.unsigned {
+            border: 2px solid var(--warning-color);
+            background: rgba(217, 119, 6, 0.05);
+        }
+
+        .signature-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+            margin: 0.5rem;
+        }
+
+        .signature-indicator.signed {
+            color: var(--success-color);
+            background: rgba(5, 150, 105, 0.1);
+        }
+
+        .signature-indicator.unsigned {
+            color: var(--warning-color);
+            background: rgba(217, 119, 6, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0.5rem;
+            }
+
+            .header {
+                margin-bottom: 1rem;
+                position: relative;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .language-selector {
+                position: relative;
+                top: 0;
+                right: 0;
+                justify-content: center;
+                margin-top: 1rem;
+            }
+
+            .nav-tabs {
+                flex-direction: column;
+            }
+
+            .defect-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .defect-meta {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .floating-btn {
+                bottom: 1rem;
+                right: 1rem;
+                width: 3.5rem;
+                height: 3.5rem;
+            }
+
+            .modal-content {
+                margin: 1rem;
+                max-height: 95vh;
+            }
+
+            .signature-controls {
+                flex-direction: column;
+            }
+
+            .dual-signature-container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .validation-message {
+            color: var(--danger-color);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .validation-message.show {
+            display: block;
+        }
+
+        .final-signature-info {
+            background: var(--gray-50);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .defect-summary {
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: var(--gray-50);
+            border-radius: var(--radius-md);
+        }
+
+        .defect-summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .defect-summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .severity-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .severity-badge.critical {
+            background: rgba(220, 38, 38, 0.1);
+            color: var(--danger-color);
+        }
+
+        .severity-badge.warning {
+            background: rgba(217, 119, 6, 0.1);
+            color: var(--warning-color);
+        }
+
+        .severity-badge.minor {
+            background: rgba(107, 114, 128, 0.1);
+            color: var(--gray-600);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="language-selector">
+                <button class="lang-btn active" data-lang="en">EN</button>
+                <button class="lang-btn" data-lang="de">DE</button>
+                <button class="lang-btn" data-lang="no">NO</button>
+            </div>
+            <h1 data-text="title">Defect Documentation System</h1>
+            <p data-text="subtitle">Professional inspection and maintenance tracking</p>
+        </header>
+
+        <nav class="nav-tabs">
+            <button class="nav-tab active" data-tab="overview" data-text="tab-overview">Overview</button>
+            <button class="nav-tab" data-tab="defects" data-text="tab-defects">Defects</button>
+            <button class="nav-tab" data-tab="reports" data-text="tab-reports">Reports</button>
+            <button class="nav-tab" data-tab="export" data-text="tab-export">Export</button>
+        </nav>
+
+        <div class="tab-content active" id="overview">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalDefects">0</div>
+                    <div class="stat-label" data-text="stat-total">Total Defects</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="criticalDefects">0</div>
+                    <div class="stat-label" data-text="stat-critical">Critical Issues</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="warningDefects">0</div>
+                    <div class="stat-label" data-text="stat-warnings">Warnings</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="minorDefects">0</div>
+                    <div class="stat-label" data-text="stat-minor">Minor Issues</div>
+                </div>
+            </div>
+
+            <div class="defect-categories" id="categoriesContainer">
+                <!-- Categories will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <div class="tab-content" id="defects">
+            <div class="search-box">
+                <input type="text" class="search-input" id="searchInput" data-placeholder="search-placeholder" placeholder="Search defects...">
+            </div>
+            <div id="defectsList">
+                <!-- Defects list will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <div class="tab-content" id="reports">
+            <div class="report-status" id="reportStatus">
+                <h3 data-text="report-status-title">Report Status</h3>
+                <p data-text="report-status-desc">Final signatures required before PDF generation</p>
+                
+                <div class="final-signature-info">
+                    <h4 data-text="signature-summary">Signature Summary</h4>
+                    <div id="signatureStatus">
+                        <div class="signature-indicator unsigned" id="ownerStatus">
+                            <span data-text="owner-not-signed">Owner: Not Signed</span>
+                        </div>
+                        <div class="signature-indicator unsigned" id="tenantStatus">
+                            <span data-text="tenant-not-signed">Tenant: Not Signed</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin: 2rem 0;">
+                    <button class="btn" onclick="openFinalSignatureModal()" data-text="sign-report">Sign Final Report</button>
+                    <button class="btn btn-success" id="generatePdfBtn" onclick="generateReport()" disabled data-text="generate-pdf">Generate PDF Report</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="export">
+            <div class="search-box">
+                <h3 data-text="export-title">Data Management</h3>
+                <p data-text="export-desc">Export, import, and backup your defect data.</p>
+                <div style="display: flex; gap: 1rem; margin-top: 1rem; flex-wrap: wrap;">
+                    <button class="btn" onclick="exportData()">
+                        <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                        </svg>
+                        <span data-text="export-data">Export Data</span>
+                    </button>
+                    <label class="btn btn-secondary" for="importFile">
+                        <svg style="width: 1rem; height: 1rem;" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                        </svg>
+                        <span data-text="import-data">Import Data</span>
+                    </label>
+                    <input type="file" id="importFile" accept=".json" style="display: none;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button class="floating-btn" onclick="openAddDefectModal()" data-title="add-defect-title">
+        <svg viewBox="0 0 24 24" fill="currentColor" style="width: 1.5rem; height: 1.5rem;">
+            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+        </svg>
+    </button>
+
+    <!-- Add/Edit Defect Modal -->
+    <div class="modal" id="defectModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle" data-text="add-defect">Add New Defect</h3>
+                <button class="modal-close" onclick="closeModal('defectModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="defectForm">
+                    <input type="hidden" id="defectId">
+                    
+                    <div class="form-group">
+                        <label class="form-label" data-text="category-label">Category</label>
+                        <select class="form-select" id="category" required>
+                            <option value="" data-text="select-category">Select Category</option>
+                            <option value="Board" data-text="category-board">Board</option>
+                            <option value="House-Apartment-3" data-text="category-house-3">House - Apartment 3</option>
+                            <option value="House-Apartment-4" data-text="category-house-4">House - Apartment 4</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" data-text="title-label">Title</label>
+                        <input type="text" class="form-input" id="title" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" data-text="description-label">Description</label>
+                        <textarea class="form-input form-textarea" id="description" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" data-text="severity-label">Severity</label>
+                        <select class="form-select" id="severity" required>
+                            <option value="" data-text="select-severity">Select Severity</option>
+                            <option value="critical" data-text="severity-critical">Critical</option>
+                            <option value="warning" data-text="severity-warning">Warning</option>
+                            <option value="minor" data-text="severity-minor">Minor</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" data-text="images-label">Images</label>
+                        <div class="file-upload" id="fileUpload">
+                            <p data-text="upload-images">Click to upload images or drag and drop</p>
+                            <input type="file" id="images" multiple accept="image/*" style="display: none;">
+                        </div>
+                        <div id="imagePreview" class="defect-images"></div>
+                    </div>
+
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                        <button type="submit" class="btn" data-text="save-defect">Save Defect</button>
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('defectModal')" data-text="cancel">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Final Signature Modal -->
+    <div class="modal" id="finalSignatureModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" data-text="final-signature-title">Final Report Signature</h3>
+                <button class="modal-close" onclick="closeModal('finalSignatureModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="final-signature-info">
+                    <h4 data-text="defect-summary-title">Defect Summary</h4>
+                    <div class="defect-summary" id="defectSummaryList">
+                        <!-- Summary will be populated -->
+                    </div>
+                    <p data-text="final-signature-desc">Both parties must sign to acknowledge all documented defects and approve the final report.</p>
+                </div>
+                
+                <div class="dual-signature-container">
+                    <div class="signature-box" id="finalOwnerSignatureBox">
+                        <h4 data-text="owner-signature">Owner Signature</h4>
+                        <canvas id="finalOwnerSignaturePad" class="signature-pad" width="300" height="150"></canvas>
+                        <div class="signature-controls">
+                            <button type="button" class="btn btn-secondary" onclick="clearFinalSignature('owner')" data-text="clear">Clear</button>
+                            <button type="button" class="btn" onclick="saveFinalSignature('owner')" data-text="sign">Sign</button>
+                        </div>
+                        <div id="finalOwnerSignatureStatus" class="signature-indicator unsigned">
+                            <span data-text="not-signed">Not Signed</span>
+                        </div>
+                    </div>
+
+                    <div class="signature-box" id="finalTenantSignatureBox">
+                        <h4 data-text="tenant-signature">Tenant Signature</h4>
+                        <canvas id="finalTenantSignaturePad" class="signature-pad" width="300" height="150"></canvas>
+                        <div class="signature-controls">
+                            <button type="button" class="btn btn-secondary" onclick="clearFinalSignature('tenant')" data-text="clear">Clear</button>
+                            <button type="button" class="btn" onclick="saveFinalSignature('tenant')" data-text="sign">Sign</button>
+                        </div>
+                        <div id="finalTenantSignatureStatus" class="signature-indicator unsigned">
+                            <span data-text="not-signed">Not Signed</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="validation-message" id="finalSignatureValidation" data-text="both-signatures-required">
+                    Both owner and tenant signatures are required to finalize the report.
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 2rem; justify-content: center;">
+                    <button type="button" class="btn btn-success" id="finalizeReportBtn" onclick="finalizeReport()" disabled data-text="finalize-report">Finalize Report</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('finalSignatureModal')" data-text="cancel">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Modal -->
+    <div class="modal" id="imageModal">
+        <div class="modal-content" style="max-width: 90vw; max-height: 90vh;">
+            <div class="modal-header">
+                <h3 class="modal-title" data-text="image-view">Image View</h3>
+                <button class="modal-close" onclick="closeModal('imageModal')">&times;</button>
+            </div>
+            <div class="modal-body" style="text-align: center;">
+                <img id="modalImage" style="max-width: 100%; max-height: 70vh; object-fit: contain;">
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        // Multi-language translations
+        const translations = {
+            en: {
+                'title': 'Defect Documentation System',
+                'subtitle': 'Professional inspection and maintenance tracking',
+                'tab-overview': 'Overview',
+                'tab-defects': 'Defects',
+                'tab-reports': 'Reports',
+                'tab-export': 'Export',
+                'stat-total': 'Total Defects',
+                'stat-critical': 'Critical Issues',
+                'stat-warnings': 'Warnings',
+                'stat-minor': 'Minor Issues',
+                'search-placeholder': 'Search defects...',
+                'add-defect': 'Add New Defect',
+                'add-defect-title': 'Add New Defect',
+                'category-label': 'Category',
+                'select-category': 'Select Category',
+                'category-board': 'Board',
+                'category-house-3': 'House - Apartment 3',
+                'category-house-4': 'House - Apartment 4',
+                'title-label': 'Title',
+                'description-label': 'Description',
+                'severity-label': 'Severity',
+                'select-severity': 'Select Severity',
+                'severity-critical': 'Critical',
+                'severity-warning': 'Warning',
+                'severity-minor': 'Minor',
+                'images-label': 'Images',
+                'upload-images': 'Click to upload images or drag and drop',
+                'save-defect': 'Save Defect',
+                'cancel': 'Cancel',
+                'image-view': 'Image View',
+                'export-title': 'Data Management',
+                'export-desc': 'Export, import, and backup your defect data.',
+                'export-data': 'Export Data',
+                'import-data': 'Import Data',
+                'edit': 'Edit',
+                'delete': 'Delete',
+                'category': 'Category',
+                'severity': 'Severity',
+                'date': 'Date',
+                'no-defects': 'No defects found.',
+                'defect-saved': 'Defect saved successfully!',
+                'data-imported': 'Data imported successfully!',
+                'invalid-file': 'Invalid file format!',
+                'error-reading': 'Error reading file: ',
+                'confirm-delete': 'Are you sure you want to delete this defect?',
+                'report-status-title': 'Report Status',
+                'report-status-desc': 'Final signatures required before PDF generation',
+                'signature-summary': 'Signature Summary',
+                'owner-not-signed': 'Owner: Not Signed',
+                'tenant-not-signed': 'Tenant: Not Signed',
+                'owner-signed': 'Owner: Signed',
+                'tenant-signed': 'Tenant: Signed',
+                'sign-report': 'Sign Final Report',
+                'generate-pdf': 'Generate PDF Report',
+                'final-signature-title': 'Final Report Signature',
+                'defect-summary-title': 'Defect Summary',
+                'final-signature-desc': 'Both parties must sign to acknowledge all documented defects and approve the final report.',
+                'owner-signature': 'Owner Signature',
+                'tenant-signature': 'Tenant Signature',
+                'clear': 'Clear',
+                'sign': 'Sign',
+                'not-signed': 'Not Signed',
+                'signed': 'Signed',
+                'both-signatures-required': 'Both owner and tenant signatures are required to finalize the report.',
+                'finalize-report': 'Finalize Report',
+                'signature-saved': 'Signature saved!',
+                'report-finalized': 'Report finalized! You can now generate the PDF.',
+                'signatures-cleared': 'All signatures have been cleared. Please sign the report again to generate PDF.'
+            },
+            de: {
+                'title': 'Mängeldokumentationssystem',
+                'subtitle': 'Professionelle Inspektions- und Wartungsverfolgung',
+                'tab-overview': 'Übersicht',
+                'tab-defects': 'Mängel',
+                'tab-reports': 'Berichte',
+                'tab-export': 'Export',
+                'stat-total': 'Mängel Gesamt',
+                'stat-critical': 'Kritische Probleme',
+                'stat-warnings': 'Warnungen',
+                'stat-minor': 'Geringfügige Probleme',
+                'search-placeholder': 'Mängel suchen...',
+                'add-defect': 'Neuen Mangel hinzufügen',
+                'add-defect-title': 'Neuen Mangel hinzufügen',
+                'category-label': 'Kategorie',
+                'select-category': 'Kategorie auswählen',
+                'category-board': 'Boot',
+                'category-house-3': 'Haus - Wohnung 3',
+                'category-house-4': 'Haus - Wohnung 4',
+                'title-label': 'Titel',
+                'description-label': 'Beschreibung',
+                'severity-label': 'Schweregrad',
+                'select-severity': 'Schweregrad auswählen',
+                'severity-critical': 'Kritisch',
+                'severity-warning': 'Warnung',
+                'severity-minor': 'Geringfügig',
+                'images-label': 'Bilder',
+                'upload-images': 'Klicken Sie zum Hochladen von Bildern oder ziehen Sie sie hierher',
+                'save-defect': 'Mangel speichern',
+                'cancel': 'Abbrechen',
+                'image-view': 'Bildansicht',
+                'export-title': 'Datenverwaltung',
+                'export-desc': 'Exportieren, importieren und sichern Sie Ihre Mängeldaten.',
+                'export-data': 'Daten exportieren',
+                'import-data': 'Daten importieren',
+                'edit': 'Bearbeiten',
+                'delete': 'Löschen',
+                'category': 'Kategorie',
+                'severity': 'Schweregrad',
+                'date': 'Datum',
+                'no-defects': 'Keine Mängel gefunden.',
+                'defect-saved': 'Mangel erfolgreich gespeichert!',
+                'data-imported': 'Daten erfolgreich importiert!',
+                'invalid-file': 'Ungültiges Dateiformat!',
+                'error-reading': 'Fehler beim Lesen der Datei: ',
+                'confirm-delete': 'Sind Sie sicher, dass Sie diesen Mangel löschen möchten?',
+                'report-status-title': 'Berichtsstatus',
+                'report-status-desc': 'Finale Unterschriften erforderlich vor PDF-Generierung',
+                'signature-summary': 'Unterschriftsübersicht',
+                'owner-not-signed': 'Eigentümer: Nicht unterschrieben',
+                'tenant-not-signed': 'Mieter: Nicht unterschrieben',
+                'owner-signed': 'Eigentümer: Unterschrieben',
+                'tenant-signed': 'Mieter: Unterschrieben',
+                'sign-report': 'Finalen Bericht unterschreiben',
+                'generate-pdf': 'PDF-Bericht generieren',
+                'final-signature-title': 'Finale Berichtsunterschrift',
+                'defect-summary-title': 'Mängelübersicht',
+                'final-signature-desc': 'Beide Parteien müssen unterschreiben, um alle dokumentierten Mängel anzuerkennen und den finalen Bericht zu genehmigen.',
+                'owner-signature': 'Unterschrift des Eigentümers',
+                'tenant-signature': 'Unterschrift des Mieters',
+                'clear': 'Löschen',
+                'sign': 'Unterschreiben',
+                'not-signed': 'Nicht unterschrieben',
+                'signed': 'Unterschrieben',
+                'both-signatures-required': 'Sowohl die Unterschrift des Eigentümers als auch des Mieters sind erforderlich, um den Bericht abzuschließen.',
+                'finalize-report': 'Bericht abschließen',
+                'signature-saved': 'Unterschrift gespeichert!',
+                'report-finalized': 'Bericht abgeschlossen! Sie können nun das PDF generieren.',
+                'signatures-cleared': 'Alle Unterschriften wurden gelöscht. Bitte unterschreiben Sie den Bericht erneut, um ein PDF zu generieren.'
+            },
+            no: {
+                'title': 'Mangelsdokumentasjonssystem',
+                'subtitle': 'Profesjonell inspeksjons- og vedlikeholdssporing',
+                'tab-overview': 'Oversikt',
+                'tab-defects': 'Mangler',
+                'tab-reports': 'Rapporter',
+                'tab-export': 'Eksport',
+                'stat-total': 'Totale mangler',
+                'stat-critical': 'Kritiske problemer',
+                'stat-warnings': 'Advarsler',
+                'stat-minor': 'Mindre problemer',
+                'search-placeholder': 'Søk etter mangler...',
+                'add-defect': 'Legg til ny mangel',
+                'add-defect-title': 'Legg til ny mangel',
+                'category-label': 'Kategori',
+                'select-category': 'Velg kategori',
+                'category-board': 'Båt',
+                'category-house-3': 'Hus - Leilighet 3',
+                'category-house-4': 'Hus - Leilighet 4',
+                'title-label': 'Tittel',
+                'description-label': 'Beskrivelse',
+                'severity-label': 'Alvorlighetsgrad',
+                'select-severity': 'Velg alvorlighetsgrad',
+                'severity-critical': 'Kritisk',
+                'severity-warning': 'Advarsel',
+                'severity-minor': 'Mindre',
+                'images-label': 'Bilder',
+                'upload-images': 'Klikk for å laste opp bilder eller dra og slipp',
+                'save-defect': 'Lagre mangel',
+                'cancel': 'Avbryt',
+                'image-view': 'Bildevisning',
+                'export-title': 'Databehandling',
+                'export-desc': 'Eksporter, importer og sikkerhetskopier mangelsdataene dine.',
+                'export-data': 'Eksporter data',
+                'import-data': 'Importer data',
+                'edit': 'Rediger',
+                'delete': 'Slett',
+                'category': 'Kategori',
+                'severity': 'Alvorlighetsgrad',
+                'date': 'Dato',
+                'no-defects': 'Ingen mangler funnet.',
+                'defect-saved': 'Mangel lagret!',
+                'data-imported': 'Data importert!',
+                'invalid-file': 'Ugyldig filformat!',
+                'error-reading': 'Feil ved lesing av fil: ',
+                'confirm-delete': 'Er du sikker på at du vil slette denne mangelen?',
+                'report-status-title': 'Rapportstatus',
+                'report-status-desc': 'Endelige signaturer kreves før PDF-generering',
+                'signature-summary': 'Signatursammendrag',
+                'owner-not-signed': 'Eier: Ikke signert',
+                'tenant-not-signed': 'Leietaker: Ikke signert',
+                'owner-signed': 'Eier: Signert',
+                'tenant-signed': 'Leietaker: Signert',
+                'sign-report': 'Signer endelig rapport',
+                'generate-pdf': 'Generer PDF-rapport',
+                'final-signature-title': 'Endelig rapportsignatur',
+                'defect-summary-title': 'Mangelsammendrag',
+                'final-signature-desc': 'Begge parter må signere for å anerkjenne alle dokumenterte mangler og godkjenne den endelige rapporten.',
+                'owner-signature': 'Eiers signatur',
+                'tenant-signature': 'Leietakers signatur',
+                'clear': 'Tøm',
+                'sign': 'Signer',
+                'not-signed': 'Ikke signert',
+                'signed': 'Signert',
+                'both-signatures-required': 'Både eiers og leietakers signaturer kreves for å fullføre rapporten.',
+                'finalize-report': 'Fullfør rapport',
+                'signature-saved': 'Signatur lagret!',
+                'report-finalized': 'Rapport fullført! Du kan nå generere PDF-en.',
+                'signatures-cleared': 'Alle signaturer har blitt slettet. Vennligst signer rapporten igjen for å generere PDF.'
+            }
+        };
+
+        class DefectManager {
+            constructor() {
+                this.defects = [];
+                this.currentLanguage = 'en';
+                this.finalSignaturePads = {};
+                this.finalSignatures = {
+                    owner: null,
+                    tenant: null
+                };
+                this.reportSigned = false;
+                this.init();
+            }
+
+            init() {
+                this.loadData();
+                this.setupEventListeners();
+                this.initializeFinalSignaturePads();
+                this.loadInitialDefects();
+                this.render();
+                this.updateLanguage();
+                this.updateReportStatus();
+            }
+
+            loadData() {
+                const stored = localStorage.getItem('defectData');
+                if (stored) {
+                    this.defects = JSON.parse(stored);
+                }
+                
+                const storedLang = localStorage.getItem('selectedLanguage');
+                if (storedLang) {
+                    this.currentLanguage = storedLang;
+                }
+
+                const storedSignatures = localStorage.getItem('finalSignatures');
+                if (storedSignatures) {
+                    this.finalSignatures = JSON.parse(storedSignatures);
+                }
+
+                const storedReportSigned = localStorage.getItem('reportSigned');
+                if (storedReportSigned) {
+                    this.reportSigned = JSON.parse(storedReportSigned);
+                }
+            }
+
+            saveData() {
+                localStorage.setItem('defectData', JSON.stringify(this.defects));
+                localStorage.setItem('selectedLanguage', this.currentLanguage);
+                localStorage.setItem('finalSignatures', JSON.stringify(this.finalSignatures));
+                localStorage.setItem('reportSigned', JSON.stringify(this.reportSigned));
+            }
+
+            setupEventListeners() {
+                // Language selector
+                document.querySelectorAll('.lang-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => this.switchLanguage(e.target.dataset.lang));
+                });
+
+                // Tab navigation
+                document.querySelectorAll('.nav-tab').forEach(tab => {
+                    tab.addEventListener('click', (e) => this.switchTab(e.target.dataset.tab));
+                });
+
+                // Search functionality
+                document.getElementById('searchInput').addEventListener('input', (e) => {
+                    this.filterDefects(e.target.value);
+                });
+
+                // File upload
+                const fileUpload = document.getElementById('fileUpload');
+                const fileInput = document.getElementById('images');
+                
+                fileUpload.addEventListener('click', () => fileInput.click());
+                fileUpload.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    fileUpload.classList.add('dragover');
+                });
+                fileUpload.addEventListener('dragleave', () => {
+                    fileUpload.classList.remove('dragover');
+                });
+                fileUpload.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    fileUpload.classList.remove('dragover');
+                    this.handleFiles(e.dataTransfer.files);
+                });
+
+                fileInput.addEventListener('change', (e) => {
+                    this.handleFiles(e.target.files);
+                });
+
+                // Form submission
+                document.getElementById('defectForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.saveDefect();
+                });
+
+                // Import functionality
+                document.getElementById('importFile').addEventListener('change', (e) => {
+                    this.importData(e.target.files[0]);
+                });
+            }
+
+            switchLanguage(lang) {
+                this.currentLanguage = lang;
+                this.saveData();
+                
+                // Update active language button
+                document.querySelectorAll('.lang-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.lang === lang);
+                });
+                
+                this.updateLanguage();
+            }
+
+            updateLanguage() {
+                const texts = translations[this.currentLanguage];
+                
+                document.querySelectorAll('[data-text]').forEach(element => {
+                    const key = element.dataset.text;
+                    if (texts[key]) {
+                        if (element.tagName === 'INPUT' && element.type !== 'submit') {
+                            element.placeholder = texts[key];
+                        } else {
+                            element.textContent = texts[key];
+                        }
+                    }
+                });
+
+                document.querySelectorAll('[data-title]').forEach(element => {
+                    const key = element.dataset.title;
+                    if (texts[key]) {
+                        element.title = texts[key];
+                    }
+                });
+
+                document.querySelectorAll('[data-placeholder]').forEach(element => {
+                    const key = element.dataset.placeholder;
+                    if (texts[key]) {
+                        element.placeholder = texts[key];
+                    }
+                });
+            }
+
+            getText(key) {
+                return translations[this.currentLanguage][key] || translations['en'][key] || key;
+            }
+
+            initializeFinalSignaturePads() {
+                const pads = ['finalOwnerSignaturePad', 'finalTenantSignaturePad'];
+                
+                pads.forEach(padId => {
+                    const canvas = document.getElementById(padId);
+                    if (!canvas) return;
+                    
+                    const ctx = canvas.getContext('2d');
+                    let isDrawing = false;
+                    let lastX = 0;
+                    let lastY = 0;
+
+                    const startDrawing = (e) => {
+                        isDrawing = true;
+                        const rect = canvas.getBoundingClientRect();
+                        if (e.type === 'touchstart') {
+                            const touch = e.touches[0];
+                            lastX = touch.clientX - rect.left;
+                            lastY = touch.clientY - rect.top;
+                        } else {
+                            lastX = e.offsetX;
+                            lastY = e.offsetY;
+                        }
+                    };
+
+                    const draw = (e) => {
+                        if (!isDrawing) return;
+                        e.preventDefault();
+                        
+                        const rect = canvas.getBoundingClientRect();
+                        let currentX, currentY;
+                        
+                        if (e.type === 'touchmove') {
+                            const touch = e.touches[0];
+                            currentX = touch.clientX - rect.left;
+                            currentY = touch.clientY - rect.top;
+                        } else {
+                            currentX = e.offsetX;
+                            currentY = e.offsetY;
+                        }
+
+                        ctx.beginPath();
+                        ctx.moveTo(lastX, lastY);
+                        ctx.lineTo(currentX, currentY);
+                        ctx.strokeStyle = '#000';
+                        ctx.lineWidth = 2;
+                        ctx.lineCap = 'round';
+                        ctx.stroke();
+                        
+                        lastX = currentX;
+                        lastY = currentY;
+                    };
+
+                    const stopDrawing = () => {
+                        isDrawing = false;
+                    };
+
+                    // Mouse events
+                    canvas.addEventListener('mousedown', startDrawing);
+                    canvas.addEventListener('mousemove', draw);
+                    canvas.addEventListener('mouseup', stopDrawing);
+                    canvas.addEventListener('mouseout', stopDrawing);
+
+                    // Touch events
+                    canvas.addEventListener('touchstart', startDrawing);
+                    canvas.addEventListener('touchmove', draw);
+                    canvas.addEventListener('touchend', stopDrawing);
+
+                    this.finalSignaturePads[padId] = canvas;
+
+                    // Load existing signatures if available
+                    const type = padId.includes('Owner') ? 'owner' : 'tenant';
+                    if (this.finalSignatures[type]) {
+                        const img = new Image();
+                        img.onload = () => {
+                            ctx.clearRect(0, 0, canvas.width, canvas.height);
+                            ctx.drawImage(img, 0, 0);
+                        };
+                        img.src = this.finalSignatures[type];
+                    }
+                });
+            }
+
+            loadInitialDefects() {
+                if (this.defects.length === 0) {
+                    const initialDefects = [
+                        // Board defects
+                        {
+                            id: 'board-1',
+                            category: 'Board',
+                            title: 'Engine off Fall 1/2 day (Boot 7)',
+                            description: 'On the first day of fishing, the engine broke down (it wouldn\'t start again) in the middle of the archipelago, so we were only rescued by luck when our second boat towed us into the harbor. It was a life-threatening situation. Mario said it was due to an operating error, which he hadn\'t mentioned during the boat safety briefing, even though it had happened frequently in the past. But in the harbor, the engine started immediately the first time, but unfortunately wouldn\'t start again after that. He then carried out maintenance and said the engine was ok',
+                            severity: 'critical',
+                            date: new Date().toISOString(),
+                            images: []
+                        },
+                        {
+                            id: 'board-2',
+                            category: 'Board',
+                            title: 'Fuel line brittle and leaking fuel at sea 1/2 day',
+                            description: 'The fuel line had not been serviced; it was so porous that fuel leaked during the trip and we had to cancel the tour that day (Boat 4)',
+                            severity: 'critical',
+                            date: new Date().toISOString(),
+                            images: []
+                        },
+                        {
+                            id: 'board-3',
+                            category: 'Board',
+                            title: 'No fender (Boot 4)',
+                            description: 'Due to the missing fenders, the boats cannot be protected from collisions in rough seas or when leaving the parking position',
+                            severity: 'warning',
+                            date: new Date().toISOString(),
+                            images: []
+                        },
+                        {
+                            id: 'board-4',
+                            category: 'Board',
+                            title: 'Fire extinguisher rusted',
+                            description: 'The fire extinguisher is so rusted that we are not sure whether it will be used in an emergency.',
+                            severity: 'critical',
+                            date: new Date().toISOString(),
+                            images: []
+                        },
+                        {
+                            id: 'board-5',
+                            category: 'Board',
+                            title: 'Missing boat hooks',
+                            description: 'There are no boat hooks to park boats in the harbor, which can lead to dangerous situations!',
+                            severity: 'warning',
+                            date: new Date().toISOString(),
+                            images: []
+                        },
+                        {
+                            id: 'board-6',
+                            category: 'Board',
+                            title: 'Fuel canister (much too less)',
+                            description: 'In recent years you could take as many as you needed, but now it\'s more difficult with only 2 canisters on a day trip with a lot of waves, which can cause problems for inexperienced boaters.',
+                            severity: 'warning',
+                            date: new Date().toISOString(),
+                            images: []
+                        },
+                        {
+                            id: 'board-7',
+                            category: 'Board',
+                            title: 'Engine Malfunction indicator lamp always on',
+                            description: 'Engine Malfunction indicator lamp is always on, so it cannot be determined whether there is really a malfunction or not.',
+                            severity: 'warning',
+                            date: new Date().toISOString(),
+                            images: []
+                        },
+                        {
+                            id: 'board-8',
+                            category: 'Board',
+                            title: 'GPS navigation system issues (Boat 4)',
+                            description: 'In boat 4 is the GPS navigation system (Garmin) is not up to date and occasionally has errors when rendering the map. Only 5m around the boat is shown. The correct orientation in which direction the boat is actually pointing is not always correct, so you can accidentally drive in the wrong direction, which can lead to dangerous situations in the archipelago.',
+                            severity: 'critical',
+                            date: new Date().toISOString(),
+                            images: []
+                        },
+                        // House Apartment 3 defects
+                        {
+                            id: 'house-3-1',
+                            category: 'House-Apartment-3',
+                            title: 'Oven circulating air defective',
+                            description: 'The oven\'s circulating air fails irregularly, so that even baking rolls is difficult. In addition, the fuse keeps blowing and requires the fuse to be switched on again manually at the fuse box.',
+                            severity: 'warning',
+                            date: new Date().toISOString(),
+                            images: []
+                        },
+                        {
+                            id: 'house-3-2',
+                            category: 'House-Apartment-3',
+                            title: 'Broken door (room 3)',
+                            description: 'This door was already broken last year and has still not been repaired. Who is liable if it is stolen?',
+                            severity: 'warning',
+                            date: new Date().toISOString(),
+                            images: []
+                        },
+                        {
+                            id: 'house-3-3',
+                            category: 'House-Apartment-3',
+                            title: 'Missing cleaning supplies',
+                            description: 'Broom, dustpan and hand brush, missing dishes, Dishwasher tabs',
+                            severity: 'minor',
+                            date: new Date().toISOString(),
+                            images: []
+                        },
+                        {
+                            id: 'house-3-4',
+                            category: 'House-Apartment-3',
+                            title: 'Dirty Filleting room',
+                            description: 'Dirty Filleting room: this is extremely dirty with fish remains all over the room, on the walls, under the table and the table itself was extremely contaminated with fish remains, these are sticking everywhere, it is a matter of hygiene, the crews do not have the possibility to clean the room because the necessary utensils and cleaning products were not there.',
+                            severity: 'critical',
+                            date: new Date().toISOString(),
+                            images: []
+                        },
+                        {
+                            id: 'house-3-5',
+                            category: 'House-Apartment-3',
+                            title: 'Bridge broken planks',
+                            description: 'Bridge broken planks, in front of the filleting room',
+                            severity: 'warning',
+                            date: new Date().toISOString(),
+                            images: []
+                        },
+                        // House Apartment 4 defects
+                        {
+                            id: 'house-4-1',
+                            category: 'House-Apartment-4',
+                            title: 'Bathroom sink drainage issue',
+                            description: 'The water in the bathroom sink doesn\'t drain properly, making it very dirty and difficult to clean.',
+                            severity: 'warning',
+                            date: new Date().toISOString(),
+                            images: []
+                        },
+                        {
+                            id: 'house-4-2',
+                            category: 'House-Apartment-4',
+                            title: 'No cleaning products (room 4)',
+                            description: 'No cleaning products available in room 4',
+                            severity: 'minor',
+                            date: new Date().toISOString(),
+                            images: []
+                        }
+                    ];
+                    
+                    this.defects = initialDefects;
+                    this.saveData();
+                }
+            }
+
+            switchTab(tabName) {
+                document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                
+                document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+                document.getElementById(tabName).classList.add('active');
+                
+                if (tabName === 'overview') {
+                    this.renderOverview();
+                } else if (tabName === 'defects') {
+                    this.renderDefectsList();
+                } else if (tabName === 'reports') {
+                    this.updateReportStatus();
+                }
+            }
+
+            handleFiles(files) {
+                const preview = document.getElementById('imagePreview');
+                
+                Array.from(files).forEach(file => {
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.className = 'defect-image';
+                            img.onclick = () => this.showImageModal(e.target.result);
+                            preview.appendChild(img);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+
+            showImageModal(src) {
+                document.getElementById('modalImage').src = src;
+                document.getElementById('imageModal').classList.add('active');
+            }
+
+            saveDefect() {
+                const form = document.getElementById('defectForm');
+                const formData = new FormData(form);
+                
+                const images = Array.from(document.querySelectorAll('#imagePreview img')).map(img => img.src);
+                
+                const defect = {
+                    id: document.getElementById('defectId').value || 'defect-' + Date.now(),
+                    category: formData.get('category') || document.getElementById('category').value,
+                    title: formData.get('title') || document.getElementById('title').value,
+                    description: formData.get('description') || document.getElementById('description').value,
+                    severity: formData.get('severity') || document.getElementById('severity').value,
+                    date: new Date().toISOString(),
+                    images: images
+                };
+
+                const existingIndex = this.defects.findIndex(d => d.id === defect.id);
+                if (existingIndex >= 0) {
+                    this.defects[existingIndex] = defect;
+                } else {
+                    this.defects.push(defect);
+                }
+
+                // Clear signatures when new defects are added or modified
+                this.clearAllFinalSignatures();
+
+                this.saveData();
+                this.render();
+                this.closeModal('defectModal');
+                this.resetForm();
+                alert(this.getText('defect-saved'));
+            }
+
+            resetForm() {
+                document.getElementById('defectForm').reset();
+                document.getElementById('imagePreview').innerHTML = '';
+            }
+
+            editDefect(id) {
+                const defect = this.defects.find(d => d.id === id);
+                if (!defect) return;
+
+                document.getElementById('defectId').value = defect.id;
+                document.getElementById('category').value = defect.category;
+                document.getElementById('title').value = defect.title;
+                document.getElementById('description').value = defect.description;
+                document.getElementById('severity').value = defect.severity;
+
+                const preview = document.getElementById('imagePreview');
+                preview.innerHTML = '';
+                defect.images.forEach(src => {
+                    const img = document.createElement('img');
+                    img.src = src;
+                    img.className = 'defect-image';
+                    img.onclick = () => this.showImageModal(src);
+                    preview.appendChild(img);
+                });
+
+                document.getElementById('modalTitle').textContent = this.getText('edit');
+                document.getElementById('defectModal').classList.add('active');
+            }
+
+            deleteDefect(id) {
+                if (confirm(this.getText('confirm-delete'))) {
+                    this.defects = this.defects.filter(d => d.id !== id);
+                    // Clear signatures when defects are deleted
+                    this.clearAllFinalSignatures();
+                    this.saveData();
+                    this.render();
+                }
+            }
+
+            filterDefects(searchTerm) {
+                const filtered = this.defects.filter(defect => 
+                    defect.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    defect.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    defect.category.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+                this.renderDefectsList(filtered);
+            }
+
+            render() {
+                this.renderOverview();
+                this.renderDefectsList();
+                this.updateReportStatus();
+            }
+
+            renderOverview() {
+                this.updateStats();
+                this.renderCategories();
+            }
+
+            updateStats() {
+                const total = this.defects.length;
+                const critical = this.defects.filter(d => d.severity === 'critical').length;
+                const warning = this.defects.filter(d => d.severity === 'warning').length;
+                const minor = this.defects.filter(d => d.severity === 'minor').length;
+
+                document.getElementById('totalDefects').textContent = total;
+                document.getElementById('criticalDefects').textContent = critical;
+                document.getElementById('warningDefects').textContent = warning;
+                document.getElementById('minorDefects').textContent = minor;
+            }
+
+            renderCategories() {
+                const categories = {};
+                this.defects.forEach(defect => {
+                    if (!categories[defect.category]) {
+                        categories[defect.category] = [];
+                    }
+                    categories[defect.category].push(defect);
+                });
+
+                const container = document.getElementById('categoriesContainer');
+                container.innerHTML = '';
+
+                Object.entries(categories).forEach(([category, defects]) => {
+                    const section = document.createElement('div');
+                    section.className = 'category-section fade-in';
+                    
+                    const icon = category === 'Board' ? 
+                        '<path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>' :
+                        '<path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>';
+
+                    section.innerHTML = `
+                        <div class="category-header">
+                            <div class="category-title">
+                                <svg class="category-icon" viewBox="0 0 24 24" fill="currentColor">
+                                    ${icon}
+                                </svg>
+                                ${category}
+                            </div>
+                            <div class="defect-count">${defects.length}</div>
+                        </div>
+                        <div class="defect-list">
+                            ${defects.slice(0, 3).map(defect => this.renderDefectItem(defect)).join('')}
+                            ${defects.length > 3 ? `<p style="text-align: center; margin-top: 1rem;"><button class="btn" onclick="app.switchTab('defects')">${this.getText('tab-defects')} (${defects.length})</button></p>` : ''}
+                        </div>
+                    `;
+                    
+                    container.appendChild(section);
+                });
+            }
+
+            renderDefectsList(defects = this.defects) {
+                const container = document.getElementById('defectsList');
+                container.innerHTML = '';
+
+                if (defects.length === 0) {
+                    container.innerHTML = `<p style="text-align: center; color: var(--gray-500); margin: 2rem 0;">${this.getText('no-defects')}</p>`;
+                    return;
+                }
+
+                defects.forEach(defect => {
+                    const item = document.createElement('div');
+                    item.className = 'defect-item fade-in';
+                    item.innerHTML = this.renderDefectItem(defect, true);
+                    container.appendChild(item);
+                });
+            }
+
+            renderDefectItem(defect, showActions = false) {
+                const severityClass = defect.severity;
+                
+                const actions = showActions ? `
+                    <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                        <button class="btn" onclick="app.editDefect('${defect.id}')" style="padding: 0.5rem 1rem; font-size: 0.875rem;">${this.getText('edit')}</button>
+                        <button class="btn btn-danger" onclick="app.deleteDefect('${defect.id}')" style="padding: 0.5rem 1rem; font-size: 0.875rem;">${this.getText('delete')}</button>
+                    </div>
+                ` : '';
+
+                const images = defect.images && defect.images.length > 0 ? `
+                    <div class="defect-images">
+                        ${defect.images.map(src => `<img src="${src}" class="defect-image" onclick="app.showImageModal('${src}')">`).join('')}
+                    </div>
+                ` : '';
+
+                return `
+                    <div class="defect-item ${severityClass}">
+                        <div class="defect-header">
+                            <div>
+                                <div class="defect-title">${defect.title}</div>
+                                <div class="defect-description">${defect.description}</div>
+                            </div>
+                        </div>
+                        ${images}
+                        <div class="defect-meta">
+                            <span>${this.getText('category')}: <strong>${defect.category}</strong></span>
+                            <span>${this.getText('severity')}: <strong style="color: var(--${defect.severity === 'critical' ? 'danger' : defect.severity === 'warning' ? 'warning' : 'gray-600'}-color)">${defect.severity.charAt(0).toUpperCase() + defect.severity.slice(1)}</strong></span>
+                            <span>${this.getText('date')}: ${new Date(defect.date).toLocaleDateString()}</span>
+                        </div>
+                        ${actions}
+                    </div>
+                `;
+            }
+
+            updateReportStatus() {
+                const reportStatus = document.getElementById('reportStatus');
+                const ownerStatus = document.getElementById('ownerStatus');
+                const tenantStatus = document.getElementById('tenantStatus');
+                const generatePdfBtn = document.getElementById('generatePdfBtn');
+
+                // Update signature status
+                if (this.finalSignatures.owner) {
+                    ownerStatus.innerHTML = `<span>${this.getText('owner-signed')}</span>`;
+                    ownerStatus.className = 'signature-indicator signed';
+                } else {
+                    ownerStatus.innerHTML = `<span>${this.getText('owner-not-signed')}</span>`;
+                    ownerStatus.className = 'signature-indicator unsigned';
+                }
+
+                if (this.finalSignatures.tenant) {
+                    tenantStatus.innerHTML = `<span>${this.getText('tenant-signed')}</span>`;
+                    tenantStatus.className = 'signature-indicator signed';
+                } else {
+                    tenantStatus.innerHTML = `<span>${this.getText('tenant-not-signed')}</span>`;
+                    tenantStatus.className = 'signature-indicator unsigned';
+                }
+
+                // Update report status
+                const bothSigned = this.finalSignatures.owner && this.finalSignatures.tenant;
+                this.reportSigned = bothSigned;
+
+                if (bothSigned) {
+                    reportStatus.className = 'report-status signed';
+                    generatePdfBtn.disabled = false;
+                } else {
+                    reportStatus.className = 'report-status unsigned';
+                    generatePdfBtn.disabled = true;
+                }
+
+                this.saveData();
+            }
+
+            openFinalSignatureModal() {
+                const modal = document.getElementById('finalSignatureModal');
+                const summaryList = document.getElementById('defectSummaryList');
+                
+                // Populate defect summary
+                summaryList.innerHTML = this.defects.map(defect => `
+                    <div class="defect-summary-item">
+                        <div>
+                            <strong>${defect.title}</strong>
+                            <div style="font-size: 0.875rem; color: var(--gray-600);">${defect.category}</div>
+                        </div>
+                        <div class="severity-badge ${defect.severity}">${defect.severity}</div>
+                    </div>
+                `).join('');
+                
+                // Update signature status
+                this.updateFinalSignatureStatus();
+                
+                modal.classList.add('active');
+            }
+
+            clearFinalSignature(type) {
+                const canvas = document.getElementById(`final${type.charAt(0).toUpperCase() + type.slice(1)}SignaturePad`);
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                this.finalSignatures[type] = null;
+                this.updateFinalSignatureStatus();
+                this.updateReportStatus();
+            }
+
+            clearAllFinalSignatures() {
+                this.finalSignatures = { owner: null, tenant: null };
+                this.reportSigned = false;
+                
+                // Clear canvases if they exist
+                const ownerCanvas = document.getElementById('finalOwnerSignaturePad');
+                const tenantCanvas = document.getElementById('finalTenantSignaturePad');
+                
+                if (ownerCanvas) {
+                    const ctx = ownerCanvas.getContext('2d');
+                    ctx.clearRect(0, 0, ownerCanvas.width, ownerCanvas.height);
+                }
+                
+                if (tenantCanvas) {
+                    const ctx = tenantCanvas.getContext('2d');
+                    ctx.clearRect(0, 0, tenantCanvas.width, tenantCanvas.height);
+                }
+                
+                this.saveData();
+                this.updateReportStatus();
+                alert(this.getText('signatures-cleared'));
+            }
+
+            saveFinalSignature(type) {
+                const canvas = document.getElementById(`final${type.charAt(0).toUpperCase() + type.slice(1)}SignaturePad`);
+                const isEmpty = this.isCanvasEmpty(canvas);
+                
+                if (isEmpty) {
+                    alert(this.getText('signature-saved'));
+                    return;
+                }
+                
+                this.finalSignatures[type] = canvas.toDataURL();
+                this.updateFinalSignatureStatus();
+                this.updateReportStatus();
+                alert(this.getText('signature-saved'));
+            }
+
+            isCanvasEmpty(canvas) {
+                const ctx = canvas.getContext('2d');
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                return imageData.data.every(pixel => pixel === 0);
+            }
+
+            updateFinalSignatureStatus() {
+                const ownerStatus = document.getElementById('finalOwnerSignatureStatus');
+                const tenantStatus = document.getElementById('finalTenantSignatureStatus');
+                const finalizeBtn = document.getElementById('finalizeReportBtn');
+                const validation = document.getElementById('finalSignatureValidation');
+                
+                // Update owner status
+                if (this.finalSignatures.owner) {
+                    ownerStatus.innerHTML = `<span>${this.getText('signed')}</span>`;
+                    ownerStatus.className = 'signature-indicator signed';
+                    document.getElementById('finalOwnerSignatureBox').classList.add('completed');
+                } else {
+                    ownerStatus.innerHTML = `<span>${this.getText('not-signed')}</span>`;
+                    ownerStatus.className = 'signature-indicator unsigned';
+                    document.getElementById('finalOwnerSignatureBox').classList.remove('completed');
+                }
+                
+                // Update tenant status
+                if (this.finalSignatures.tenant) {
+                    tenantStatus.innerHTML = `<span>${this.getText('signed')}</span>`;
+                    tenantStatus.className = 'signature-indicator signed';
+                    document.getElementById('finalTenantSignatureBox').classList.add('completed');
+                } else {
+                    tenantStatus.innerHTML = `<span>${this.getText('not-signed')}</span>`;
+                    tenantStatus.className = 'signature-indicator unsigned';
+                    document.getElementById('finalTenantSignatureBox').classList.remove('completed');
+                }
+                
+                // Update finalize button and validation
+                const bothSigned = this.finalSignatures.owner && this.finalSignatures.tenant;
+                finalizeBtn.disabled = !bothSigned;
+                validation.classList.toggle('show', !bothSigned);
+            }
+
+            finalizeReport() {
+                if (!this.finalSignatures.owner || !this.finalSignatures.tenant) {
+                    alert(this.getText('both-signatures-required'));
+                    return;
+                }
+                
+                this.reportSigned = true;
+                this.saveData();
+                this.updateReportStatus();
+                this.closeModal('finalSignatureModal');
+                alert(this.getText('report-finalized'));
+            }
+
+            closeModal(modalId) {
+                document.getElementById(modalId).classList.remove('active');
+                if (modalId === 'defectModal') {
+                    this.resetForm();
+                }
+            }
+
+            exportData() {
+                const data = {
+                    defects: this.defects,
+                    finalSignatures: this.finalSignatures,
+                    reportSigned: this.reportSigned,
+                    exportDate: new Date().toISOString(),
+                    language: this.currentLanguage,
+                    version: '3.0'
+                };
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `defect-report-${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+
+            importData(file) {
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        if (data.defects && Array.isArray(data.defects)) {
+                            this.defects = data.defects;
+                            if (data.finalSignatures) {
+                                this.finalSignatures = data.finalSignatures;
+                            }
+                            if (data.reportSigned !== undefined) {
+                                this.reportSigned = data.reportSigned;
+                            }
+                            if (data.language) {
+                                this.currentLanguage = data.language;
+                            }
+                            this.saveData();
+                            this.render();
+                            this.updateLanguage();
+                            alert(this.getText('data-imported'));
+                        } else {
+                            alert(this.getText('invalid-file'));
+                        }
+                    } catch (error) {
+                        alert(this.getText('error-reading') + error.message);
+                    }
+                };
+                reader.readAsText(file);
+            }
+
+            generateReport() {
+                if (!this.reportSigned) {
+                    alert(this.getText('both-signatures-required'));
+                    return;
+                }
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Header
+                doc.setFontSize(20);
+                doc.setFont(undefined, 'bold');
+                doc.text(this.getText('title'), 105, 20, { align: 'center' });
+                
+                doc.setFontSize(12);
+                doc.setFont(undefined, 'normal');
+                doc.text(`${this.getText('date')}: ${new Date().toLocaleDateString()}`, 105, 30, { align: 'center' });
+                
+                // Summary
+                doc.setFontSize(14);
+                doc.setFont(undefined, 'bold');
+                doc.text('Summary', 20, 50);
+                
+                doc.setFontSize(11);
+                doc.setFont(undefined, 'normal');
+                const total = this.defects.length;
+                const critical = this.defects.filter(d => d.severity === 'critical').length;
+                const warning = this.defects.filter(d => d.severity === 'warning').length;
+                const minor = this.defects.filter(d => d.severity === 'minor').length;
+                
+                doc.text(`${this.getText('stat-total')}: ${total}`, 20, 60);
+                doc.text(`${this.getText('stat-critical')}: ${critical}`, 20, 70);
+                doc.text(`${this.getText('stat-warnings')}: ${warning}`, 20, 80);
+                doc.text(`${this.getText('stat-minor')}: ${minor}`, 20, 90);
+                
+                // Categories
+                const categories = {};
+                this.defects.forEach(defect => {
+                    if (!categories[defect.category]) categories[defect.category] = [];
+                    categories[defect.category].push(defect);
+                });
+                
+                let yPos = 110;
+                
+                Object.entries(categories).forEach(([category, defects]) => {
+                    if (yPos > 250) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+                    
+                    doc.setFontSize(14);
+                    doc.setFont(undefined, 'bold');
+                    doc.text(`${category} (${defects.length} defects)`, 20, yPos);
+                    yPos += 15;
+                    
+                    defects.forEach(defect => {
+                        if (yPos > 270) {
+                            doc.addPage();
+                            yPos = 20;
+                        }
+                        
+                        doc.setFontSize(11);
+                        doc.setFont(undefined, 'bold');
+                        doc.text(`• ${defect.title}`, 25, yPos);
+                        yPos += 7;
+                        
+                        doc.setFont(undefined, 'normal');
+                        const lines = doc.splitTextToSize(defect.description, 160);
+                        doc.text(lines, 30, yPos);
+                        yPos += lines.length * 5 + 3;
+                        
+                        doc.setFontSize(9);
+                        doc.text(`${this.getText('severity')}: ${defect.severity} | ${this.getText('date')}: ${new Date(defect.date).toLocaleDateString()}`, 30, yPos);
+                        yPos += 15;
+                    });
+                    
+                    yPos += 10;
+                });
+                
+                // Final signatures section
+                if (yPos > 200) {
+                    doc.addPage();
+                    yPos = 20;
+                }
+                
+                doc.setFontSize(14);
+                doc.setFont(undefined, 'bold');
+                doc.text('Final Approval Signatures', 20, yPos + 20);
+                
+                doc.setFontSize(10);
+                doc.setFont(undefined, 'normal');
+                doc.text('Both parties acknowledge all documented defects and approve this report:', 20, yPos + 35);
+                
+                // Add signatures
+                if (this.finalSignatures.owner) {
+                    doc.addImage(this.finalSignatures.owner, 'PNG', 20, yPos + 45, 60, 30);
+                    doc.text(this.getText('owner-signature'), 20, yPos + 80);
+                    doc.text(`${this.getText('date')}: ${new Date().toLocaleDateString()}`, 20, yPos + 87);
+                }
+                
+                if (this.finalSignatures.tenant) {
+                    doc.addImage(this.finalSignatures.tenant, 'PNG', 110, yPos + 45, 60, 30);
+                    doc.text(this.getText('tenant-signature'), 110, yPos + 80);
+                    doc.text(`${this.getText('date')}: ${new Date().toLocaleDateString()}`, 110, yPos + 87);
+                }
+                
+                doc.save(`defect-report-${new Date().toISOString().split('T')[0]}.pdf`);
+            }
+        }
+
+        // Global functions
+        function openAddDefectModal() {
+            app.updateLanguage();
+            document.getElementById('modalTitle').textContent = app.getText('add-defect');
+            document.getElementById('defectModal').classList.add('active');
+        }
+
+        function openFinalSignatureModal() {
+            app.openFinalSignatureModal();
+        }
+
+        function closeModal(modalId) {
+            app.closeModal(modalId);
+        }
+
+        function clearFinalSignature(type) {
+            app.clearFinalSignature(type);
+        }
+
+        function saveFinalSignature(type) {
+            app.saveFinalSignature(type);
+        }
+
+        function finalizeReport() {
+            app.finalizeReport();
+        }
+
+        function generateReport() {
+            app.generateReport();
+        }
+
+        function exportData() {
+            app.exportData();
+        }
+
+        // Initialize app
+        const app = new DefectManager();
+
+        // Close modals when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
