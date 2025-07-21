@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Würfel- und Münzwurf-Spiel</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --background-color: #ecf0f1;
+            --font-color: #34495e;
+            --white: #ffffff;
+            --success-color: #2ecc71;
+            --error-color: #e74c3c;
+            --border-radius: 12px;
+            --box-shadow: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+            --transition-speed: 0.3s;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--font-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        header h1 {
+            color: var(--secondary-color);
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+        }
+
+        .game-selection {
+            margin-bottom: 2rem;
+        }
+
+        .game-selection label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+        }
+
+        .game-selection select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid var(--primary-color);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            background-color: var(--white);
+            color: var(--font-color);
+            cursor: pointer;
+            transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+        }
+
+        .game-selection select:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.4);
+        }
+
+        .roll-button {
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: background-color var(--transition-speed), transform var(--transition-speed);
+            width: 100%;
+            margin-bottom: 2rem;
+        }
+
+        .roll-button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .roll-button:active {
+            transform: translateY(1px);
+        }
+
+        .result-area {
+            min-height: 150px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 1rem;
+            border: 2px dashed var(--secondary-color);
+            border-radius: var(--border-radius);
+            background-color: #f8f9f9;
+        }
+
+        .result-area p {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        .result-display {
+            font-size: 3rem;
+            color: var(--success-color);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .dice-container {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .die, .coin {
+            width: 80px;
+            height: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            border-radius: var(--border-radius);
+            background-color: var(--white);
+            color: var(--secondary-color);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            animation: roll 0.5s ease-out;
+        }
+        
+        .coin {
+            border: 4px solid #f1c40f;
+            color: #f1c40f;
+            border-radius: 50%;
+        }
+
+        .total {
+            margin-top: 1rem;
+            font-size: 2rem !important;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes roll {
+            0% { transform: rotate(0deg) scale(0.8); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        /* Responsive Design für größere Bildschirme */
+        @media (min-width: 600px) {
+            header h1 {
+                font-size: 2.5rem;
+            }
+
+            .container {
+                padding: 3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Glücksspiel</h1>
+        </header>
+
+        <main>
+            <div class="game-selection">
+                <label for="game-selector">Wähle ein Spiel:</label>
+                <select id="game-selector">
+                    <option value="coin">1. Münzwurf (Kopf oder Zahl)</option>
+                    <option value="d6">2. 6-seitiger Würfel</option>
+                    <option value="2d6">3. Zwei 6-seitige Würfel (Summe)</option>
+                    <option value="d20">4. 20-seitiger Würfel</option>
+                </select>
+            </div>
+
+            <button class="roll-button" id="roll-button">Werfen!</button>
+
+            <div class="result-area" id="result-area">
+                <p>Das Ergebnis wird hier angezeigt.</p>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const gameSelector = document.getElementById('game-selector');
+            const rollButton = document.getElementById('roll-button');
+            const resultArea = document.getElementById('result-area');
+
+            rollButton.addEventListener('click', () => {
+                const selectedGame = gameSelector.value;
+                playGame(selectedGame);
+            });
+
+            function playGame(game) {
+                resultArea.innerHTML = ''; // Ergebnisbereich leeren
+
+                switch (game) {
+                    case 'coin':
+                        flipCoin();
+                        break;
+                    case 'd6':
+                        rollD6();
+                        break;
+                    case '2d6':
+                        roll2D6();
+                        break;
+                    case 'd20':
+                        rollD20();
+                        break;
+                }
+            }
+
+            function flipCoin() {
+                const result = Math.random() < 0.5 ? 'Kopf' : 'Zahl';
+                const resultElement = document.createElement('div');
+                resultElement.className = 'result-display coin';
+                resultElement.textContent = result.substring(0, 1); // Zeigt K oder Z
+                resultArea.appendChild(resultElement);
+                
+                const textElement = document.createElement('p');
+                textElement.textContent = result;
+                textElement.style.marginTop = '1rem';
+                resultArea.appendChild(textElement);
+            }
+
+            function rollD6() {
+                const result = Math.floor(Math.random() * 6) + 1;
+                const resultElement = document.createElement('div');
+                resultElement.className = 'result-display die';
+                resultElement.textContent = result;
+                resultArea.appendChild(resultElement);
+            }
+
+            function roll2D6() {
+                const result1 = Math.floor(Math.random() * 6) + 1;
+                const result2 = Math.floor(Math.random() * 6) + 1;
+                const total = result1 + result2;
+
+                const diceContainer = document.createElement('div');
+                diceContainer.className = 'dice-container';
+
+                const die1 = document.createElement('div');
+                die1.className = 'result-display die';
+                die1.textContent = result1;
+
+                const die2 = document.createElement('div');
+                die2.className = 'result-display die';
+                die2.textContent = result2;
+
+                diceContainer.appendChild(die1);
+                diceContainer.appendChild(die2);
+                resultArea.appendChild(diceContainer);
+
+                const totalElement = document.createElement('p');
+                totalElement.className = 'total';
+                totalElement.textContent = `Gesamt: ${total}`;
+                resultArea.appendChild(totalElement);
+            }
+
+            function rollD20() {
+                const result = Math.floor(Math.random() * 20) + 1;
+                const resultElement = document.createElement('div');
+                resultElement.className = 'result-display die';
+                resultElement.textContent = result;
+                resultArea.appendChild(resultElement);
+            }
+        });
+    </script>
+
+</body>
+</html>
