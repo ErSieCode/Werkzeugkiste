@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Der große Wissens- und Charakter-Quiz</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+        :root {
+            /* Gedeckte, ruhigere Grün-Palette */
+            --primary-color: #609966; /* Ruhiges Moosgrün */
+            --secondary-color: #2c3e50;
+            --correct-color: #4a7c59; /* Sattes, dunkles Waldgrün */
+            --wrong-color: #e74c3c;
+            --bg-light: #ffffff;
+            --bg-dark: #f2f4f2; /* Sehr helles, passendes Grau-Grün */
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            color: var(--secondary-color);
+            /* Beruhigender grüner Farbverlauf für den Hintergrund */
+            background: linear-gradient(135deg, #cad2c5, #84a98c, #cad2c5);
+            background-size: 200% 200%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            animation: gradient-animation 18s ease infinite;
+        }
+        
+        @keyframes gradient-animation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .quiz-container {
+            background-color: var(--bg-light);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px var(--shadow-color);
+            width: 100%;
+            max-width: 800px;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .quiz-header {
+            padding: 1.5rem 2.5rem;
+            background-color: var(--bg-dark);
+            border-bottom: 1px solid #ddd;
+        }
+
+        h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+        h2 { font-size: 1.6rem; padding: 1rem 0; margin-bottom: 0.5rem; line-height: 1.4; }
+        
+        #question-category {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            background-color: rgba(96, 153, 102, 0.1);
+            padding: 5px 12px;
+            border-radius: 12px;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+
+        #question-counter { font-size: 1rem; font-weight: 600; color: #7f8c8d; }
+        .quiz-body { padding: 2rem 2.5rem; }
+
+        .btn-grid { display: grid; grid-template-columns: 1fr; gap: 15px; margin-top: 20px; }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: var(--bg-light);
+            border: none;
+            border-radius: 8px;
+            padding: 15px 20px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .btn:hover:not([disabled]) { background-color: #538557; transform: translateY(-3px); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
+        .btn:active:not([disabled]) { transform: translateY(-1px) scale(0.98); }
+
+        .btn .icon { font-size: 1.5rem; opacity: 0; transition: opacity 0.3s; }
+        .btn.correct .icon, .btn.wrong .icon { opacity: 1; }
+
+        .btn.correct { background-color: var(--correct-color) !important; }
+        .btn.wrong { background-color: var(--wrong-color) !important; }
+        .btn:disabled { cursor: not-allowed; }
+
+        #start-btn, .control-btn {
+            font-size: 1.2rem;
+            padding: 15px 40px;
+            width: auto;
+            display: inline-block;
+            background-color: var(--correct-color);
+            color: white;
+            text-align: center;
+        }
+        #start-btn:hover, .control-btn:hover { background-color: #3e6648; }
+        
+        .result-controls { margin-top: 2rem; display: flex; gap: 15px; justify-content: center; }
+        .control-btn.secondary { background-color: var(--primary-color); }
+        .control-btn.secondary:hover { background-color: #538557; }
+
+        #high-score-display { margin-top: 1.5rem; font-weight: 600; }
+        #new-high-score { color: var(--correct-color); font-weight: bold; animation: pop-in 0.5s ease; }
+        @keyframes pop-in { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+        /* Ergebnis-Bildschirm */
+        .result-category { margin-bottom: 2.5rem; text-align: left; }
+        .result-category h3 { font-size: 1.8rem; color: var(--primary-color); }
+        .result-category p { font-size: 1.1rem; margin-top: 0.5rem; color: #555; line-height: 1.6; }
+        .progress-bar { width: 100%; height: 25px; background-color: var(--bg-dark); border-radius: 12.5px; margin-top: 1rem; overflow: hidden; border: 1px solid #bdc3c7; }
+        .progress-bar-inner { height: 100%; width: 0%; background: linear-gradient(90deg, #84a98c, #52796f); border-radius: 12.5px; transition: width 1s ease-in-out; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.9rem; }
+        #social-progress .progress-bar-inner { background: linear-gradient(90deg, #a2bca6, #609966); }
+
+        /* Antworten-Überprüfung */
+        #review-list { list-style: none; margin-top: 1.5rem; text-align: left; }
+        .review-item { background: #fdfdfd; border: 1px solid #eee; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
+        .review-item strong { display: block; margin-bottom: 10px; }
+        .review-answer { display: block; padding: 8px; border-radius: 5px; margin-top: 5px; }
+        .review-answer.user-correct { background-color: rgba(74, 124, 89, 0.2); border-left: 4px solid var(--correct-color); }
+        .review-answer.user-wrong { background-color: rgba(231, 76, 60, 0.2); border-left: 4px solid var(--wrong-color); }
+        .review-answer.correct-answer { background-color: rgba(74, 124, 89, 0.3); font-weight: bold; }
+
+        .hide { display: none; }
+
+        /* Animationen für Übergänge */
+        .fade-out { animation: fadeOut 0.5s forwards; }
+        .fade-in { animation: fadeIn 0.5s forwards; }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; transform: scale(0.95); } }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        
+        @media (min-width: 768px) { .btn-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 600px) {
+            .quiz-header, .quiz-body { padding: 1.5rem; }
+            h1 { font-size: 1.5rem; }
+            h2 { font-size: 1.3rem; }
+            .result-category h3 { font-size: 1.5rem; }
+            .result-category p { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <!-- Startbildschirm -->
+        <div id="start-screen">
+            <div class="quiz-header"><h1>Der große Wissens- und Charakter-Quiz</h1></div>
+            <div class="quiz-body">
+                <p style="font-size: 1.1rem; line-height: 1.6;">Teste dein Wissen, fordere dein Glück heraus und entdecke deinen Highscore!</p>
+                <div id="high-score-display">Dein Highscore: 0</div>
+                <br><br>
+                <button id="start-btn" class="btn control-btn">Quiz starten!</button>
+            </div>
+        </div>
+
+        <!-- Quiz-Bildschirm -->
+        <div id="quiz-screen" class="hide">
+            <div class="quiz-header">
+                <div id="question-category">Kategorie</div>
+                <h2 id="question-text">Frage hier</h2>
+            </div>
+            <div class="quiz-body">
+                <div id="question-counter">Frage X von 10</div>
+                <div id="answer-buttons" class="btn-grid"></div>
+            </div>
+        </div>
+
+        <!-- Ergebnis-Bildschirm -->
+        <div id="result-screen" class="hide">
+            <div class="quiz-header"><h2>Deine Auswertung</h2></div>
+            <div class="quiz-body">
+                <div id="new-high-score" class="hide">🎉 Neuer Highscore! 🎉</div>
+                <div class="result-category">
+                    <h3 id="iq-title">Titel der Intelligenz</h3>
+                    <div class="progress-bar"><div id="iq-progress" class="progress-bar-inner"></div></div>
+                    <p id="iq-description">Beschreibung der Intelligenz.</p>
+                </div>
+                <div class="result-category">
+                    <h3 id="social-title">Titel des Sozialverhaltens</h3>
+                    <div class="progress-bar"><div id="social-progress" class="progress-bar-inner"></div></div>
+                    <p id="social-description">Beschreibung des Sozialverhaltens.</p>
+                </div>
+                <div class="result-controls">
+                    <button id="review-btn" class="btn control-btn secondary">Antworten ansehen</button>
+                    <button id="restart-btn" class="btn control-btn">Nochmal spielen</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Antworten-Überprüfung Bildschirm -->
+        <div id="review-screen" class="hide">
+            <div class="quiz-header"><h2>Antwort-Überprüfung</h2></div>
+            <div class="quiz-body">
+                <ul id="review-list"></ul>
+                <button id="back-to-results-btn" class="btn control-btn">Zurück zur Auswertung</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const allQuestions = [
+            // Kategorie: Soziales & Moral
+            { category: "Soziales & Moral", question: "Ein Mitschüler wird geärgert. Was tust du?", answers: [ { text: "Ich hole einen Lehrer oder helfe direkt.", isCorrect: true, socialScore: 2 }, { text: "Ich schaue weg, es ist nicht mein Problem.", isCorrect: false, socialScore: -1 }, { text: "Ich mache mit, um 'cool' zu sein.", isCorrect: false, socialScore: -2 }, { text: "Ich filme es mit dem Handy für Klicks.", isCorrect: false, socialScore: -2 } ] },
+            { category: "Soziales & Moral", question: "Du findest einen Geldbeutel mit 50€ und Ausweis. Was tust du?", answers: [ { text: "Ich bringe ihn zur Polizei/zum Fundbüro.", isCorrect: true, socialScore: 2 }, { text: "Ich nehme das Geld und werfe den Rest weg.", isCorrect: false, socialScore: -2 }, { text: "Ich lasse ihn liegen.", isCorrect: false, socialScore: -1 }, { text: "Ich behalte ihn und warte, ob sich jemand meldet.", isCorrect: false, socialScore: 0 } ] },
+            { category: "Soziales & Moral", question: "Dein Freund erzählt dir ein Geheimnis. Was machst du?", answers: [ { text: "Ich behalte es absolut für mich.", isCorrect: true, socialScore: 2 }, { text: "Ich erzähle es nur meiner besten Freundin.", isCorrect: false, socialScore: -1 }, { text: "Ich poste es in unserem Gruppenchat.", isCorrect: false, socialScore: -2 }, { text: "Ich erpresse meinen Freund damit.", isCorrect: false, socialScore: -2 } ] },
+            { category: "Soziales & Moral", question: "Du hast beim Sport fair verloren. Was tust du?", answers: [ { text: "Ich gratuliere dem Gewinner.", isCorrect: true, socialScore: 2 }, { text: "Ich sage, der andere hatte nur Glück.", isCorrect: false, socialScore: 0 }, { text: "Ich bin sauer und rede nicht mehr mit ihm.", isCorrect: false, socialScore: -1 }, { text: "Ich behaupte, der Schiedsrichter war unfair.", isCorrect: false, socialScore: -1 } ] },
+            { category: "Soziales & Moral", question: "Du siehst, wie jemand Müll in den Wald wirft. Was machst du?", answers: [ { text: "Ich spreche die Person höflich darauf an oder hebe es auf.", isCorrect: true, socialScore: 2 }, { text: "Nichts, das geht mich nichts an.", isCorrect: false, socialScore: -1 }, { text: "Ich werfe meinen Müll auch dorthin.", isCorrect: false, socialScore: -2 }, { text: "Ich mache ein Foto und beschwere mich online darüber.", isCorrect: false, socialScore: 0 } ] },
+            { category: "Soziales & Moral", question: "Du bekommst im Laden zu viel Wechselgeld zurück. Was tust du?", answers: [ { text: "Ich gebe es zurück und weise auf den Fehler hin.", isCorrect: true, socialScore: 2 }, { text: "Ich behalte es. Ist ja mein Glück!", isCorrect: false, socialScore: -2 }, { text: "Ich merke es erst zu Hause, dann ist es zu spät.", isCorrect: false, socialScore: 0 }, { text: "Ich spende es, um mein Gewissen zu beruhigen.", isCorrect: false, socialScore: 1 } ] },
+            { category: "Soziales & Moral", question: "Bei einer Gruppenarbeit macht ein Mitglied nicht mit. Was tust du?", answers: [ { text: "Ich spreche die Person freundlich an und biete Hilfe an.", isCorrect: true, socialScore: 2 }, { text: "Ich mache die Arbeit für die Person mit, um Streit zu vermeiden.", isCorrect: false, socialScore: -1 }, { text: "Ich petze sofort beim Lehrer.", isCorrect: false, socialScore: 0 }, { text: "Wir lassen den Namen der Person von der Arbeit weg.", isCorrect: false, socialScore: -1 } ] },
+            { category: "Soziales & Moral", question: "Du hast etwas ausgeliehen und es aus Versehen kaputt gemacht. Was tust du?", answers: [ { text: "Ich gestehe es, entschuldige mich und biete Ersatz an.", isCorrect: true, socialScore: 2 }, { text: "Ich gebe es heimlich zurück und hoffe, es fällt nicht auf.", isCorrect: false, socialScore: -2 }, { text: "Ich schiebe die Schuld auf jemand anderen.", isCorrect: false, socialScore: -2 }, { text: "Ich behaupte, es war schon vorher kaputt.", isCorrect: false, socialScore: -1 } ] },
+
+            // Kategorie: Biologie & Natur
+            { category: "Biologie & Natur", question: "Wodurch bekommen Pflanzen ihre Energie zum Wachsen?", answers: [ { text: "Durch Fotosynthese, mithilfe von Sonnenlicht.", isCorrect: true, socialScore: 1 }, { text: "Sie saugen Nährstoffe nur aus der Erde.", isCorrect: false, socialScore: 1 }, { text: "Sie nehmen die Energie von Tieren.", isCorrect: false, socialScore: 0 }, { text: "Man muss sie mit Energy-Drinks gießen.", isCorrect: false, socialScore: 0 } ] },
+            { category: "Biologie & Natur", question: "Was ist die wichtigste Aufgabe der Bienen für die Natur?", answers: [ { text: "Sie bestäuben Blüten, damit Früchte wachsen.", isCorrect: true, socialScore: 1 }, { text: "Sie produzieren Honig für Menschen.", isCorrect: false, socialScore: 1 }, { text: "Sie stechen Menschen, die sie ärgern.", isCorrect: false, socialScore: 0 }, { text: "Sie tanzen schön in der Luft.", isCorrect: false, socialScore: 0 } ] },
+            { category: "Biologie & Natur", question: "Welches ist das schnellste Landtier?", answers: [ { text: "Gepard", isCorrect: true, socialScore: 1 }, { text: "Löwe", isCorrect: false, socialScore: 1 }, { text: "Rennmaus", isCorrect: false, socialScore: 0 }, { text: "Schnecke mit Raketenantrieb", isCorrect: false, socialScore: -1 } ] },
+            { category: "Biologie & Natur", question: "Was ist ein 'Herbivore'?", answers: [ { text: "Ein Pflanzenfresser", isCorrect: true, socialScore: 1 }, { text: "Ein Fleischfresser", isCorrect: false, socialScore: 1 }, { text: "Ein Allesfresser", isCorrect: false, socialScore: 1 }, { text: "Eine seltene Kräuterart", isCorrect: false, socialScore: 0 } ] },
+            { category: "Biologie & Natur", question: "Welches Tier legt die größten Eier?", answers: [ { text: "Der Strauß", isCorrect: true, socialScore: 1 }, { text: "Das Huhn", isCorrect: false, socialScore: 1 }, { text: "Der Tyrannosaurus Rex", isCorrect: false, socialScore: 0 }, { text: "Der Osterhase", isCorrect: false, socialScore: 0 } ] },
+            { category: "Biologie & Natur", question: "Welches ist das größte Säugetier der Welt?", answers: [ { text: "Der Blauwal", isCorrect: true, socialScore: 1 }, { text: "Der Afrikanische Elefant", isCorrect: false, socialScore: 1 }, { text: "Das Nilpferd", isCorrect: false, socialScore: 1 }, { text: "Deine Mudda", isCorrect: false, socialScore: -1 } ] },
+            { category: "Biologie & Natur", question: "Wie viele Herzen hat ein Oktopus?", answers: [ { text: "Drei", isCorrect: true, socialScore: 1 }, { text: "Eins", isCorrect: false, socialScore: 1 }, { text: "Acht", isCorrect: false, socialScore: 1 }, { text: "Genug, um viel zu lieben.", isCorrect: false, socialScore: 0 } ] },
+            { category: "Biologie & Natur", question: "Welches einzigartige Säugetier kann fliegen?", answers: [ { text: "Die Fledermaus", isCorrect: true, socialScore: 1 }, { text: "Das Flughörnchen", isCorrect: false, socialScore: 1 }, { text: "Der Flugfuchs", isCorrect: false, socialScore: 1 }, { text: "Ein Pegasus", isCorrect: false, socialScore: 0 } ] },
+            
+            // Kategorie: Geografie & Welt
+            { category: "Geografie & Welt", question: "Wie viele Bundesländer hat Deutschland?", answers: [ { text: "16", isCorrect: true, socialScore: 1 }, { text: "15, weil man Berlin nicht mitzählt.", isCorrect: false, socialScore: 1 }, { text: "4", isCorrect: false, socialScore: 0 }, { text: "So viele, wie es WM-Titel hat.", isCorrect: false, socialScore: 0 } ] },
+            { category: "Geografie & Welt", question: "Welcher ist der höchste Berg der Welt?", answers: [ { text: "Mount Everest", isCorrect: true, socialScore: 1 }, { text: "K2", isCorrect: false, socialScore: 1 }, { text: "Zugspitze", isCorrect: false, socialScore: 1 }, { text: "Ein sehr großer Steinhaufen", isCorrect: false, socialScore: 0 } ] },
+            { category: "Geografie & Welt", question: "In welchem Land findest du die Pyramiden von Gizeh?", answers: [ { text: "Ägypten", isCorrect: true, socialScore: 1 }, { text: "Mexiko", isCorrect: false, socialScore: 1 }, { text: "Im Louvre in Paris", isCorrect: false, socialScore: 0 }, { text: "In der Wüste", isCorrect: false, socialScore: 0 } ] },
+            { category: "Geografie & Welt", question: "Was ist die Hauptstadt von Australien?", answers: [ { text: "Canberra", isCorrect: true, socialScore: 1 }, { text: "Sydney", isCorrect: false, socialScore: 1 }, { text: "Melbourne", isCorrect: false, socialScore: 1 }, { text: "Känguru-Stadt", isCorrect: false, socialScore: 0 } ] },
+            { category: "Geografie & Welt", question: "Welcher ist der längste Fluss der Welt?", answers: [ { text: "Der Nil", isCorrect: true, socialScore: 1 }, { text: "Der Amazonas", isCorrect: false, socialScore: 1 }, { text: "Der Jangtse", isCorrect: false, socialScore: 1 }, { text: "Die Donau", isCorrect: false, socialScore: 1 } ] },
+            { category: "Geografie & Welt", question: "Wie viele Kontinente gibt es?", answers: [ { text: "Sieben", isCorrect: true, socialScore: 1 }, { text: "Fünf", isCorrect: false, socialScore: 1 }, { text: "Sechs", isCorrect: false, socialScore: 1 }, { text: "Pangea", isCorrect: false, socialScore: 0 } ] },
+            { category: "Geografie & Welt", question: "In welcher Stadt steht die Freiheitsstatue?", answers: [ { text: "New York", isCorrect: true, socialScore: 1 }, { text: "Paris", isCorrect: false, socialScore: 1 }, { text: "Washington D.C.", isCorrect: false, socialScore: 1 }, { text: "Auf einer Insel", isCorrect: false, socialScore: 0 } ] },
+            { category: "Geografie & Welt", question: "Welches Land ist für seine Fjorde bekannt?", answers: [ { text: "Norwegen", isCorrect: true, socialScore: 1 }, { text: "Schweden", isCorrect: false, socialScore: 1 }, { text: "Schweiz", isCorrect: false, socialScore: 1 }, { text: "Finnland", isCorrect: false, socialScore: 1 } ] },
+
+            // Kategorie: Technik
+            { category: "Technik", question: "Welche Farbe hat die 'Blackbox' in einem Flugzeug meistens?", answers: [ { text: "Leuchtend Orange", isCorrect: true, socialScore: 1 }, { text: "Schwarz, wie der Name sagt.", isCorrect: false, socialScore: 1 }, { text: "Durchsichtig", isCorrect: false, socialScore: 0 }, { text: "Die Farbe der Hoffnung.", isCorrect: false, socialScore: 0 } ] },
+            { category: "Technik", question: "Wofür steht die Abkürzung 'CPU' in einem Computer?", answers: [ { text: "Central Processing Unit", isCorrect: true, socialScore: 1 }, { text: "Computer Power Unit", isCorrect: false, socialScore: 1 }, { text: "Cool Power User", isCorrect: false, socialScore: 0 }, { text: "Computer Piept Ununterbrochen", isCorrect: false, socialScore: -1 } ] },
+            { category: "Technik", question: "Wofür steht 'WLAN'?", answers: [ { text: "Wireless Local Area Network", isCorrect: true, socialScore: 1 }, { text: "Wichtiger Leitungs-Anschluss für Notebooks", isCorrect: false, socialScore: 1 }, { text: "Weltweites lahmfreies Anschluss-Netz", isCorrect: false, socialScore: 0 }, { text: "Magie", isCorrect: false, socialScore: 0 } ] },
+            { category: "Technik", question: "Was ist der Zweck einer 'Firewall'?", answers: [ { text: "Ein Computernetzwerk vor unerlaubten Zugriffen schützen.", isCorrect: true, socialScore: 1 }, { text: "Den Computer vor Feuer schützen.", isCorrect: false, socialScore: 1 }, { text: "Die Wände im Büro feuerfest machen.", isCorrect: false, socialScore: 0 }, { text: "Sehr heiße Daten speichern.", isCorrect: false, socialScore: -1 } ] },
+            { category: "Technik", question: "Wer gilt als Erfinder des Telefons?", answers: [ { text: "Alexander Graham Bell", isCorrect: true, socialScore: 1 }, { text: "Thomas Edison", isCorrect: false, socialScore: 1 }, { text: "Nikola Tesla", isCorrect: false, socialScore: 1 }, { text: "Ein Typ, der nicht gerne Briefe schrieb.", isCorrect: false, socialScore: 0 } ] },
+            { category: "Technik", question: "Wofür steht die Abkürzung 'USB'?", answers: [ { text: "Universal Serial Bus", isCorrect: true, socialScore: 1 }, { text: "Universal System Block", isCorrect: false, socialScore: 1 }, { text: "United States of Bytes", isCorrect: false, socialScore: 0 }, { text: "Unbedingt Stecker Benutzen", isCorrect: false, socialScore: 0 } ] },
+            { category: "Technik", question: "Was misst ein Geigerzähler?", answers: [ { text: "Radioaktive Strahlung", isCorrect: true, socialScore: 1 }, { text: "Die Lautstärke einer Geige", isCorrect: false, socialScore: 0 }, { text: "Die Luftfeuchtigkeit", isCorrect: false, socialScore: 1 }, { text: "Die Laune von Herrn Geiger", isCorrect: false, socialScore: -1 } ] },
+            
+            // Kategorie: Allgemeinwissen
+            { category: "Allgemeinwissen", question: "Wer schrieb 'Romeo und Julia'?", answers: [ { text: "William Shakespeare", isCorrect: true, socialScore: 1 }, { text: "Goethe", isCorrect: false, socialScore: 1 }, { "text": "Ein verliebter Dichter", isCorrect: false, socialScore: 0 }, { "text": "Irgendein alter Engländer", isCorrect: false, socialScore: 0 } ] },
+            { category: "Allgemeinwissen", question: "In welcher Stadt steht der Schiefe Turm?", answers: [ { text: "Pisa", isCorrect: true, socialScore: 1 }, { text: "Rom", isCorrect: false, socialScore: 1 }, { text: "Berlin", isCorrect: false, socialScore: 0 }, { text: "Dort, wo die Bauarbeiter betrunken waren.", isCorrect: false, socialScore: -1 } ] },
+            { category: "Allgemeinwissen", question: "Welcher Künstler malte die 'Mona Lisa'?", answers: [ { text: "Leonardo da Vinci", isCorrect: true, socialScore: 1 }, { text: "Vincent van Gogh", isCorrect: false, socialScore: 1 }, { text: "Pablo Picasso", isCorrect: false, socialScore: 1 }, { text: "Ein Italiener mit einem guten Pinsel.", isCorrect: false, socialScore: 0 } ] },
+            { category: "Allgemeinwissen", question: "Wie viele Planeten hat unser Sonnensystem?", answers: [ { text: "Acht", isCorrect: true, socialScore: 1 }, { text: "Neun (Pluto zählt!)", isCorrect: false, socialScore: 1 }, { text: "Zehn", isCorrect: false, socialScore: 1 }, { text: "Genug, um im Kreis zu fliegen.", isCorrect: false, socialScore: 0 } ] },
+            { category: "Allgemeinwissen", question: "Was ist die chemische Formel für Wasser?", answers: [ { text: "H₂O", isCorrect: true, socialScore: 1 }, { text: "CO₂", isCorrect: false, socialScore: 1 }, { text: "O₂", isCorrect: false, socialScore: 1 }, { text: "Nass", isCorrect: false, socialScore: 0 } ] },
+            { category: "Allgemeinwissen", question: "Welches Instrument hat 88 Tasten?", answers: [ { text: "Klavier", isCorrect: true, socialScore: 1 }, { text: "Gitarre", isCorrect: false, socialScore: 1 }, { text: "Geige", isCorrect: false, socialScore: 1 }, { text: "Ein sehr großes Keyboard", isCorrect: false, socialScore: 0 } ] },
+            { category: "Allgemeinwissen", question: "Wie viele Seiten hat ein Würfel?", answers: [ { text: "Sechs", isCorrect: true, socialScore: 1 }, { text: "Zwölf", isCorrect: false, socialScore: 1 }, { text: "So viele, wie ich Augen würfle.", isCorrect: false, socialScore: 0 }, { text: "Kommt drauf an, wie man ihn wirft.", isCorrect: false, socialScore: -1 } ] },
+            { category: "Allgemeinwissen", question: "In welcher Sportart kämpft man um den 'Stanley Cup'?", answers: [ { text: "Eishockey", isCorrect: true, socialScore: 1 }, { text: "Fußball", isCorrect: false, socialScore: 1 }, { text: "Basketball", isCorrect: false, socialScore: 1 }, { text: "Tassen-Stapeln", isCorrect: false, socialScore: 0 } ] },
+
+            // Kategorie: Geschichte
+            { category: "Geschichte", question: "Wann fiel die Berliner Mauer?", answers: [ { text: "1989", isCorrect: true, socialScore: 1 }, { text: "1991", isCorrect: false, socialScore: 1 }, { text: "Als David Hasselhoff 'Looking for Freedom' sang.", isCorrect: false, socialScore: 0 }, { text: "1945", isCorrect: false, socialScore: 1 } ] },
+            { category: "Geschichte", question: "Wer entdeckte Amerika (für die Europäer)?", answers: [ { text: "Christoph Kolumbus", isCorrect: true, socialScore: 1 }, { text: "Vasco da Gama", isCorrect: false, socialScore: 1 }, { text: "Die Wikinger", isCorrect: false, socialScore: 1 }, { text: "Ein Seefahrer, der sich verfahren hat.", isCorrect: false, socialScore: 0 } ] },
+            { category: "Geschichte", question: "In welchem Jahrhundert war die Französische Revolution?", answers: [ { text: "Im 18. Jahrhundert", isCorrect: true, socialScore: 1 }, { text: "Im 17. Jahrhundert", isCorrect: false, socialScore: 1 }, { text: "Im 19. Jahrhundert", isCorrect: false, socialScore: 1 }, { text: "Als die Leute keine Baguettes mehr hatten.", isCorrect: false, socialScore: 0 } ] },
+            { category: "Geschichte", question: "Wer war der erste Mensch auf dem Mond?", answers: [ { text: "Neil Armstrong", isCorrect: true, socialScore: 1 }, { text: "Buzz Aldrin", isCorrect: false, socialScore: 1 }, { text: "Juri Gagarin", isCorrect: false, socialScore: 1 }, { text: "Ein Studiogast", isCorrect: false, socialScore: 0 } ] },
+            { category: "Geschichte", question: "Wo hatten die Olympischen Spiele ihren Ursprung?", answers: [ { text: "Im antiken Griechenland", isCorrect: true, socialScore: 1 }, { text: "Im Römischen Reich", isCorrect: false, socialScore: 1 }, { text: "In Ägypten", isCorrect: false, socialScore: 1 }, { text: "Auf dem Berg Olymp", isCorrect: false, socialScore: 0 } ] },
+            { category: "Geschichte", question: "Womit haben die Ritter im Mittelalter gekämpft?", answers: [ { text: "Mit Schwertern und Lanzen", isCorrect: true, socialScore: 1 }, { text: "Mit Laserpistolen", isCorrect: false, socialScore: 0 }, { text: "Mit fiesen Worten", isCorrect: false, socialScore: -1 }, { text: "Nur mit ihrem guten Aussehen", isCorrect: false, socialScore: 0 } ] },
+            { category: "Geschichte", question: "Welches Reich wurde von Julius Caesar regiert?", answers: [ { text: "Das Römische Reich", isCorrect: true, socialScore: 1 }, { text: "Das Griechische Reich", isCorrect: false, socialScore: 1 }, { text: "Das Ägyptische Reich", isCorrect: false, socialScore: 1 }, { text: "Ein Salat-Imperium", isCorrect: false, socialScore: 0 } ] },
+
+            // Weitere Fragen, um auf eine große Menge zu kommen
+            { category: "Geografie & Welt", question: "Welcher Ozean ist der größte?", answers: [ { text: "Pazifischer Ozean", isCorrect: true, socialScore: 1 }, { text: "Atlantischer Ozean", isCorrect: false, socialScore: 1 }, { text: "Indischer Ozean", isCorrect: false, socialScore: 1 }, { text: "Der Ozean aus dem Film 'Findet Nemo'", isCorrect: false, socialScore: 0 } ] },
+            { category: "Biologie & Natur", question: "Woraus bestehen Wolken?", answers: [ { text: "Aus winzigen Wassertröpfchen oder Eiskristallen", isCorrect: true, socialScore: 1 }, { text: "Aus Zuckerwatte", isCorrect: false, socialScore: 0 }, { text: "Aus Rauch von Fabriken", isCorrect: false, socialScore: 1 }, { text: "Aus den Träumen von Engeln", isCorrect: false, socialScore: 0 } ] },
+            { category: "Allgemeinwissen", question: "Was ist ein 'Dutzend'?", answers: [ { text: "Zwölf Stück", isCorrect: true, socialScore: 1 }, { text: "Zehn Stück", isCorrect: false, socialScore: 1 }, { text: "Hundert Stück", isCorrect: false, socialScore: 1 }, { text: "Wenn man müde ist", isCorrect: false, socialScore: -1 } ] },
+            { category: "Soziales & Moral", question: "Dein kleiner Bruder hat Angst im Dunkeln. Wie reagierst du?", answers: [ { text: "Ich mache ein kleines Nachtlicht an und bleibe kurz bei ihm.", isCorrect: true, socialScore: 2 }, { text: "Ich sage ihm, er soll kein Angsthase sein.", isCorrect: false, socialScore: -1 }, { text: "Ich erschrecke ihn extra.", isCorrect: false, socialScore: -2 }, { text: "Ich ignoriere ihn und schließe meine Tür.", isCorrect: false, socialScore: -1 } ] },
+            { category: "Technik", question: "Was macht ein 3D-Drucker?", answers: [ { text: "Er baut Objekte Schicht für Schicht auf.", isCorrect: true, socialScore: 1 }, { text: "Er druckt Bilder, die aus dem Papier kommen.", isCorrect: false, socialScore: 1 }, { text: "Er kann echtes Essen ausdrucken.", isCorrect: false, socialScore: 0 }, { text: "Er druckt in der dritten Dimension von Raum und Zeit.", isCorrect: false, socialScore: 0 } ] },
+            { category: "Geschichte", question: "Wer hat die Glühbirne kommerziell erfolgreich gemacht?", answers: [ { text: "Thomas Alva Edison", isCorrect: true, socialScore: 1 }, { text: "Benjamin Franklin", isCorrect: false, socialScore: 1 }, { text: "Albert Einstein", isCorrect: false, socialScore: 1 }, { text: "Ein Mann, der Angst im Dunkeln hatte.", isCorrect: false, socialScore: 0 } ] },
+            { category: "Biologie & Natur", question: "Welche Farbe hat das Blut von Insekten?", answers: [ { text: "Gelblich oder grünlich", isCorrect: true, socialScore: 1 }, { text: "Rot", isCorrect: false, socialScore: 1 }, { text: "Blau", isCorrect: false, socialScore: 1 }, { text: "Durchsichtig", isCorrect: false, socialScore: 1 } ] },
+            { category: "Geografie & Welt", question: "Welches ist das bevölkerungsreichste Land der Welt?", answers: [ { text: "Indien", isCorrect: true, socialScore: 1 }, { text: "China", isCorrect: false, socialScore: 1 }, { text: "USA", isCorrect: false, socialScore: 1 }, { text: "Das Land mit den meisten Betten", isCorrect: false, socialScore: 0 } ] },
+            { category: "Allgemeinwissen", question: "Wie nennt man die Angst vor Spinnen?", answers: [ { text: "Arachnophobie", isCorrect: true, socialScore: 1 }, { text: "Klaustrophobie", isCorrect: false, socialScore: 1 }, { text: "Spinnen-Hass", isCorrect: false, socialScore: 0 }, { text: "Gesunder Menschenverstand", isCorrect: false, socialScore: 0 } ] }
+        ];
+
+        // --- DOM-Elemente ---
+        const screens = {
+            start: document.getElementById('start-screen'),
+            quiz: document.getElementById('quiz-screen'),
+            result: document.getElementById('result-screen'),
+            review: document.getElementById('review-screen')
+        };
+        const startBtn = document.getElementById('start-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const reviewBtn = document.getElementById('review-btn');
+        const backToResultsBtn = document.getElementById('back-to-results-btn');
+        const questionTextEl = document.getElementById('question-text');
+        const questionCategoryEl = document.getElementById('question-category');
+        const questionCounterEl = document.getElementById('question-counter');
+        const answerButtonsEl = document.getElementById('answer-buttons');
+        const highScoreDisplay = document.getElementById('high-score-display');
+        const newHighScoreEl = document.getElementById('new-high-score');
+        // ... (weitere Ergebnis-Elemente)
+        const iqTitleEl = document.getElementById('iq-title'), iqDescEl = document.getElementById('iq-description'), iqProgressEl = document.getElementById('iq-progress');
+        const socialTitleEl = document.getElementById('social-title'), socialDescEl = document.getElementById('social-description'), socialProgressEl = document.getElementById('social-progress');
+        const reviewListEl = document.getElementById('review-list');
+
+        // --- Soundeffekte (direkt eingebettet) ---
+        const sounds = {
+            correct: new Audio("data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU2LjM2LjEwMAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIADAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV6urq6urq6urq6urq6urq6urq6urq6urq////////////////////////////////8AAAAATGF2YzU2LjQxAAAAAAAAAAAAAAAAAnalyticalcUgAAAAA0gAAADQAAAAnEVFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/84Q0ARKSAYq2Q3sAYAAABpQAAAAIAAAPLAwUALA4PEhMAFRgWGR8gIiUoKiwtMDc6PD5BR0tSWmJnaGqFhYeIubu8vLzLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vL/84Q0ARMA4CLZDezZkxx1KjYzAAMDGh03Nza21zIyc5OEAADywsMDQ4PEhQXGRofICEkKCkrLC0xNDk7Pj9CR0tSW15lZ2lrb3J3u8LDxcvMzc7P0NHS19ja3uDi5e3y8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vL/84Q0PLACgXKJYyeaADgAALKkAAAANAAD8uNhAADBMTGxsbGtrbXNzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3P/84Q0P0ANEUo9jIAAAPu4AAAAwAADyqEDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMA=="),
+            wrong: new Audio("data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU2LjM2LjEwMAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIADAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV6urq6urq6urq6urq6urq6urq6urq6urq////////////////////////////////8AAAAATGF2YzU2LjQxAAAAAAAAAAAAAAAAAnalyticalcUgAAAAA0gAAADQAAAAnEVFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/84Q0ARKSAYq2Q3sAYAAABpQAAAAIAAAPLBAUALA4PEhMAFRgWGR8gIiUoKiwtMDc6PD5BR0tSWmJnaGqFhYeIubu8vLzLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vL/84Q0ARMA4CLZDezZkxx1KjYzAAMDGh03Nza21zIyc5OEAADywsMDQ4PEhQXGRofICEkKCkrLC0xNDk7Pj9CR0tSW15lZ2hpgoOEhYiKjI6UmZqfoaKkp6yws7W2t7q+wMHCw8XKy8zNzs/Q0dLU1tfa29zd3uDi4uPk5ufo6err7O7w8fLz9PX29/j5+vv8/f7/8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vL/84Q0PLACgXKJYyeaADgAALKkAAAANAAD8uNhAADBMTGxsbGtrbXNzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3P/84Q0P0ANEUo9jIAAAPu4AAAAwAADyqEDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMA=="),
+            click: new Audio("data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU2LjM2LjEwMAAAAAAAAAAAAAAA//OEAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAABIADAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDV1dXV1dXV1dXV1dXV1dXV1dXV1dXV1dXV6urq6urq6urq6urq6urq6urq6urq6urq////////////////////////////////8AAAAATGF2YzU2LjQxAAAAAAAAAAAAAAAAAnalyticalcUgAAAAA0gAAADQAAAAnEVFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/84Q0ARKSAYq2Q3sAYAAABpQAAAAIAAAPLBAUALA4PEhMAFRgWGR8gIiUoKiwtMDc6PD5BR0tSWmJnaGqFhYeIubu8vLzLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vL/84Q0ARMA4CLZDezZkxx1KjYzAAMDGh03Nza21zIyc5OEAADywsMDQ4PEhQXGRofICEkKCkrLC0xNDk7Pj9CR0tSW15lZ2hpgoOEhYiKjI6UmZqfoaKkp6yws7W2t7q+wMHCw8XKy8zNzs/Q0dLU1tfa29zd3uDi4uPk5ufo6err7O7w8fLz9PX29/j5+vv8/f7/8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vLy8vL/84Q0PLACgXKJYyeaADgAALKkAAAANAAD8uNhAADBMTGxsbGtrbXNzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3Nzc3P/84Q0P0ANEUo9jIAAAPu4AAAAwAADyqEDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMA==")
+        };
+        
+        // --- Spielstatus-Variablen ---
+        let shuffledQuestions, currentQuestionIndex, gameHistory;
+        let intelligenceScore, socialScore;
+
+        // --- Event Listeners ---
+        startBtn.addEventListener('click', startGame);
+        restartBtn.addEventListener('click', startGame);
+        reviewBtn.addEventListener('click', showReviewScreen);
+        backToResultsBtn.addEventListener('click', () => switchScreen('result'));
+
+        // --- Highscore-Logik ---
+        function getHighScore() { return parseInt(localStorage.getItem('quizHighScore')) || 0; }
+        function saveHighScore(score) { localStorage.setItem('quizHighScore', score); }
+
+        function switchScreen(screenName) {
+            for (const screen in screens) {
+                screens[screen].classList.add('hide');
+            }
+            screens[screenName].classList.remove('hide');
+            screens[screenName].classList.add('fade-in');
+        }
+
+        function startGame() {
+            sounds.click.play();
+            switchScreen('quiz');
+            
+            intelligenceScore = 0;
+            socialScore = 0;
+            gameHistory = [];
+            shuffledQuestions = allQuestions.sort(() => Math.random() - 0.5).slice(0, 10);
+            currentQuestionIndex = 0;
+            
+            setNextQuestion();
+        }
+
+        function setNextQuestion() {
+            resetState();
+            if (currentQuestionIndex < shuffledQuestions.length) {
+                screens.quiz.classList.remove('fade-out');
+                screens.quiz.classList.add('fade-in');
+                showQuestion(shuffledQuestions[currentQuestionIndex]);
+            } else {
+                showResults();
+            }
+        }
+        
+        function showQuestion(qData) {
+            questionCategoryEl.textContent = qData.category;
+            questionTextEl.textContent = qData.question;
+            questionCounterEl.textContent = `Frage ${currentQuestionIndex + 1} von ${shuffledQuestions.length}`;
+            
+            const shuffledAnswers = [...qData.answers].sort(() => Math.random() - 0.5);
+
+            shuffledAnswers.forEach(answer => {
+                const button = document.createElement('button');
+                button.innerHTML = `<span>${answer.text}</span><span class="icon"></span>`;
+                button.classList.add('btn');
+                button.dataset.correct = answer.isCorrect;
+                button.dataset.social = answer.socialScore;
+                button.dataset.text = answer.text;
+                button.addEventListener('click', selectAnswer, { once: true });
+                answerButtonsEl.appendChild(button);
+            });
+        }
+
+        function resetState() {
+            while (answerButtonsEl.firstChild) {
+                answerButtonsEl.removeChild(answerButtonsEl.firstChild);
+            }
+        }
+
+        function selectAnswer(e) {
+            const selectedBtn = e.currentTarget;
+            const isCorrect = selectedBtn.dataset.correct === 'true';
+            
+            // Punktvergabe
+            if (isCorrect) {
+                intelligenceScore++;
+                sounds.correct.play();
+            } else {
+                sounds.wrong.play();
+            }
+            socialScore += parseInt(selectedBtn.dataset.social);
+            
+            // Spielverlauf für Review speichern
+            gameHistory.push({
+                question: shuffledQuestions[currentQuestionIndex].question,
+                answers: shuffledQuestions[currentQuestionIndex].answers,
+                selectedAnswer: selectedBtn.dataset.text,
+                isCorrect: isCorrect
+            });
+
+            // Visuelles Feedback
+            Array.from(answerButtonsEl.children).forEach(button => {
+                button.disabled = true;
+                const iconSpan = button.querySelector('.icon');
+                if (button.dataset.correct === 'true') {
+                    button.classList.add('correct');
+                    iconSpan.textContent = '✓';
+                } else {
+                    button.classList.add('wrong');
+                    iconSpan.textContent = '✗';
+                }
+            });
+            
+            // Nächste Frage oder Ergebnis
+            setTimeout(() => {
+                currentQuestionIndex++;
+                screens.quiz.classList.add('fade-out');
+                screens.quiz.classList.remove('fade-in');
+                setTimeout(setNextQuestion, 1800);
+            }, 1800);
+        }
+        
+        function showResults() {
+            switchScreen('result');
+            
+            // Highscore prüfen und speichern
+            const oldHighScore = getHighScore();
+            if (intelligenceScore > oldHighScore) {
+                saveHighScore(intelligenceScore);
+                newHighScoreEl.classList.remove('hide');
+            } else {
+                newHighScoreEl.classList.add('hide');
+            }
+
+            // Intelligenz-Auswertung
+            const iqPercent = (intelligenceScore / shuffledQuestions.length) * 100;
+            iqProgressEl.style.width = '0%';
+            setTimeout(() => { iqProgressEl.style.width = `${iqPercent}%`; iqProgressEl.textContent = `${Math.round(iqPercent)}%`; }, 100);
+            
+            // ... (Titel und Beschreibungen bleiben gleich)
+            if (intelligenceScore >= 9) { iqTitleEl.innerText = "Intelligenzbestie"; iqDescEl.innerText = "Wow! Dein Wissen ist absolut beeindruckend."; }
+            else if (intelligenceScore >= 7) { iqTitleEl.innerText = "Schlauer Fuchs"; iqDescEl.innerText = "Du bist sehr klug und hast ein breites Allgemeinwissen."; }
+            else if (intelligenceScore >= 5) { iqTitleEl.innerText = "Durchschnitts-Denker"; iqDescEl.innerText = "Du hast ein solides Grundwissen."; }
+            else if (intelligenceScore >= 3) { iqTitleEl.innerText = "Nachhilfe-Kandidat"; iqDescEl.innerText = "Dein Wissen hat noch einige Lücken."; }
+            else { iqTitleEl.innerText = "Komplett hoffnungslos"; iqDescEl.innerText = "Oje, das war wohl nicht dein Tag."; }
+            
+            // Sozial-Auswertung
+            const maxSocialScore = shuffledQuestions.reduce((sum, q) => sum + Math.max(...q.answers.map(a => a.socialScore)), 0);
+            const minSocialScore = shuffledQuestions.reduce((sum, q) => sum + Math.min(...q.answers.map(a => a.socialScore)), 0);
+            const socialPercent = Math.max(0, Math.min(100, ((socialScore - minSocialScore) / (maxSocialScore - minSocialScore)) * 100));
+            socialProgressEl.style.width = '0%';
+            setTimeout(() => { socialProgressEl.style.width = `${socialPercent}%`; socialProgressEl.textContent = `${Math.round(socialPercent)}%`; }, 100);
+
+            // ... (Titel und Beschreibungen bleiben gleich)
+            if (socialPercent >= 85) { socialTitleEl.innerText = "Bester Mitmensch"; socialDescEl.innerText = "Du hast ein riesiges Herz und einen ausgeprägten Sinn für Gerechtigkeit."; }
+            else if (socialPercent >= 65) { socialTitleEl.innerText = "Echter Teamplayer"; socialDescEl.innerText = "Auf dich kann man sich verlassen. Du bist fair und hilfsbereit."; }
+            else if (socialPercent >= 40) { socialTitleEl.innerText = "Unbeschriebenes Blatt"; socialDescEl.innerText = "Du bist meistens fair, denkst aber manchmal zuerst an dich."; }
+            else if (socialPercent >= 20) { socialTitleEl.innerText = "Leichter Egoist"; socialDescEl.innerText = "Du schaust oft auf deinen eigenen Vorteil."; }
+            else { socialTitleEl.innerText = "Völlig asozial"; socialDescEl.innerText = "Dein Verhalten ist oft rücksichtslos."; }
+        }
+
+        function showReviewScreen() {
+            sounds.click.play();
+            switchScreen('review');
+            reviewListEl.innerHTML = ''; // Liste leeren
+            
+            gameHistory.forEach(item => {
+                const li = document.createElement('li');
+                li.classList.add('review-item');
+                let answersHtml = '';
+                const correctAnswerText = item.answers.find(a => a.isCorrect).text;
+
+                // Erstelle HTML für die gegebene Antwort
+                if (item.isCorrect) {
+                    answersHtml += `<span class="review-answer user-correct">Deine Antwort: ${item.selectedAnswer} ✓</span>`;
+                } else {
+                    answersHtml += `<span class="review-answer user-wrong">Deine Antwort: ${item.selectedAnswer} ✗</span>`;
+                    answersHtml += `<span class="review-answer correct-answer">Richtige Antwort: ${correctAnswerText}</span>`;
+                }
+                
+                li.innerHTML = `<strong>${item.question}</strong>${answersHtml}`;
+                reviewListEl.appendChild(li);
+            });
+        }
+
+        // Highscore beim Laden der Seite anzeigen
+        highScoreDisplay.textContent = `Dein Highscore: ${getHighScore()}`;
+    </script>
+</body>
+</html>
