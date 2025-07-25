@@ -1,0 +1,208 @@
+{
+  // ============================================
+  // MANIFEST.JSON - Das "Personalausweis" Ihrer PWA
+  // ============================================
+  // Diese Datei MUSS manifest.json heißen und im Root-Verzeichnis liegen!
+
+  // PFLICHTFELD: Der vollständige Name der App
+  // Wird bei der Installation und in App-Listen angezeigt
+  "name": "Meine Progressive Web App - Vollständiger Name",
+
+  // PFLICHTFELD: Kurzer Name (max. 12 Zeichen ideal)
+  // Wird unter dem App-Icon auf dem Homescreen angezeigt
+  "short_name": "Meine PWA",
+
+  // Beschreibung der App (optional aber empfohlen)
+  // Wird in App Stores und bei der Installation angezeigt
+  "description": "Eine fantastische PWA die offline funktioniert und sich wie eine native App anfühlt",
+
+  // KRITISCH: Start-URL - wo die App startet
+  // "./" = relativ zum Manifest, "/" = absolut vom Root
+  "start_url": "./index.html",
+
+  // KRITISCH: Scope - bestimmt welche URLs zur App gehören
+  // "./" = alles im gleichen Verzeichnis und darunter
+  "scope": "./",
+
+  // KRITISCH: Display Mode - wie soll die App aussehen?
+  // "standalone" = wie native App (EMPFOHLEN)
+  // "fullscreen" = ohne jegliche Browser-UI
+  // "minimal-ui" = minimale Browser-Kontrollen
+  // "browser" = normaler Browser-Tab
+  "display": "standalone",
+
+  // Bildschirm-Orientierung
+  // "portrait" = Hochformat (empfohlen für mobile Apps)
+  // "landscape" = Querformat
+  // "any" = beide erlaubt
+  "orientation": "portrait",
+
+  // Theme Color - färbt die Browser-/Status-Leiste
+  // MUSS ein gültiger HEX-Farbcode sein!
+  "theme_color": "#2196F3",
+
+  // Background Color - Splash Screen Hintergrund beim App-Start
+  "background_color": "#ffffff",
+
+  // KRITISCH: Icons - MINDESTENS 192x192 und 512x512 erforderlich!
+  "icons": [
+    {
+      "src": "images/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"  // "any" = normales Icon
+    },
+    {
+      "src": "images/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "images/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "images/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "images/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      // WICHTIG: 192x192 ist MINIMUM für Android!
+      "src": "images/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"  // "maskable" = kann zugeschnitten werden
+    },
+    {
+      "src": "images/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      // WICHTIG: 512x512 ist ERFORDERLICH für Play Store!
+      "src": "images/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+
+  // Shortcuts - Schnellzugriffe vom App-Icon (Android)
+  "shortcuts": [
+    {
+      "name": "Neuer Eintrag",
+      "short_name": "Neu",
+      "description": "Schnell einen neuen Eintrag erstellen",
+      "url": "./index.html?action=new",
+      "icons": [{ "src": "images/shortcut-new.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Einstellungen",
+      "short_name": "Settings",
+      "description": "App-Einstellungen öffnen",
+      "url": "./index.html?action=settings",
+      "icons": [{ "src": "images/shortcut-settings.png", "sizes": "96x96" }]
+    }
+  ],
+
+  // Screenshots für App Stores (optional)
+  "screenshots": [
+    {
+      "src": "images/screenshot-1.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",  // "narrow" = Smartphone
+      "label": "Hauptansicht der App"
+    },
+    {
+      "src": "images/screenshot-2.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide",    // "wide" = Tablet/Desktop
+      "label": "Desktop-Ansicht"
+    }
+  ],
+
+  // Kategorien für App Stores
+  "categories": ["productivity", "utilities", "lifestyle"],
+
+  // Sprache und Textrichtung
+  "lang": "de-DE",
+  "dir": "ltr",  // "ltr" = left-to-right, "rtl" = right-to-left
+
+  // Verwandte Apps (falls native Apps existieren)
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=com.example.app",
+      "id": "com.example.app"
+    }
+  ],
+  // Soll die native App bevorzugt werden?
+  "prefer_related_applications": false,
+
+  // Share Target - App kann Inhalte empfangen
+  "share_target": {
+    "action": "/share-target",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url",
+      "files": [{
+        "name": "media",
+        "accept": ["image/*", "video/*"]
+      }]
+    }
+  },
+
+  // Protocol Handlers - App kann bestimmte URLs öffnen
+  "protocol_handlers": [
+    {
+      "protocol": "web+myapp",
+      "url": "/open?url=%s"
+    }
+  ],
+
+  // File Handlers - App kann bestimmte Dateitypen öffnen
+  "file_handlers": [
+    {
+      "action": "/open-file",
+      "accept": {
+        "text/plain": [".txt"],
+        "application/json": [".json"]
+      }
+    }
+  ],
+
+  // Display Override - Neue Display-Modi (experimentell)
+  "display_override": ["window-controls-overlay", "minimal-ui"],
+
+  // Edge Side Panel - Für Microsoft Edge
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+
+  // Launch Handler - Kontrolle über App-Start
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+
+  // ID - Eindeutige Identifikation (wichtig für Updates)
+  "id": "/?source=pwa",
+
+  // IARC Rating - Alterseinstufung
+  "iarc_rating_id": "e58c174a-81d2-5c3c-32cc-34b8de4a52e9"
+}

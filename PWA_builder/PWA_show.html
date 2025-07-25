@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- ========================================
+         SCHRITT 1: META-TAGS FÜR PWA
+         Diese Tags sind ESSENTIELL für eine PWA!
+         ======================================== -->
+
+    <!-- Titel der App - erscheint in Browser-Tabs -->
+    <title>PWA Komplett-Anleitung</title>
+
+    <!-- KRITISCH: Link zur manifest.json - ohne diese funktioniert KEINE PWA! -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- iOS-spezifische Meta-Tags (Apple unterstützt manifest.json nur teilweise) -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PWA Guide">
+
+    <!-- Theme-Color: Färbt die Browser-Leiste auf Android -->
+    <meta name="theme-color" content="#2196F3">
+
+    <!-- Icons für verschiedene Geräte -->
+    <link rel="icon" type="image/png" sizes="32x32" href="images/icon-32x32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="images/icon-180x180.png">
+
+    <style>
+        /* ========================================
+           SCHRITT 2: CSS STYLING
+           Modernes, responsive Design
+           ======================================== */
+
+        :root {
+            --primary-color: #2196F3;
+            --secondary-color: #1976D2;
+            --success-color: #4CAF50;
+            --danger-color: #f44336;
+            --bg-color: #f5f5f5;
+            --text-color: #333;
+            --card-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        /* Header mit Install-Button */
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        /* Install Button - wird nur angezeigt wenn Installation möglich ist */
+        .install-button {
+            background: white;
+            color: var(--primary-color);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            display: none; /* Standardmäßig versteckt */
+            transition: transform 0.2s;
+        }
+
+        .install-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        /* Hauptinhalt */
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        /* Info-Karten */
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .card h2 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+        }
+
+        .code-block {
+            background: #f8f8f8;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 1rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .status-online {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .status-offline {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .feature-item {
+            background: #f0f7ff;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .feature-item h3 {
+            color: var(--secondary-color);
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Buttons */
+        .btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: var(--secondary-color);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.25rem;
+            }
+
+            .header-content {
+                text-align: center;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Notification Banner */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: none;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateX(-50%) translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ========================================
+         SCHRITT 3: HTML STRUKTUR
+         ======================================== -->
+
+    <header>
+        <div class="header-content">
+            <h1>🚀 PWA Komplett-Anleitung</h1>
+
+            <!-- Install Button - wird via JavaScript gesteuert -->
+            <button id="installButton" class="install-button">
+                App installieren
+            </button>
+
+            <!-- Online/Offline Status -->
+            <div id="connectionStatus" class="status-indicator status-online">
+                <span class="status-dot">●</span>
+                <span>Online</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Willkommens-Karte -->
+        <div class="card">
+            <h2>Willkommen zur PWA Komplett-Anleitung!</h2>
+            <p>Diese Seite zeigt Ihnen GENAU, wie eine Progressive Web App funktioniert und wie Sie sie installieren können.</p>
+            <p><strong>Was ist eine PWA?</strong> Eine Web-App, die sich wie eine native App verhält!</p>
+        </div>
+
+        <!-- PWA Features -->
+        <div class="card">
+            <h2>Was macht diese Seite zur PWA?</h2>
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <h3>📱 Installierbar</h3>
+                    <p>Kann auf dem Homescreen installiert werden</p>
+                </div>
+                <div class="feature-item">
+                    <h3>📡 Offline-fähig</h3>
+                    <p>Funktioniert auch ohne Internet</p>
+                </div>
+                <div class="feature-item">
+                    <h3>🔔 Push-Benachrichtigungen</h3>
+                    <p>Kann Nachrichten senden</p>
+                </div>
+                <div class="feature-item">
+                    <h3>⚡ Schnell</h3>
+                    <p>Lädt Ressourcen aus dem Cache</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Technische Details -->
+        <div class="card">
+            <h2>Die 3 Säulen einer PWA</h2>
+
+            <h3>1. Die manifest.json Datei</h3>
+            <p>Diese Datei sagt dem Browser, wie die App heißt, welche Icons sie hat und wie sie sich verhalten soll:</p>
+            <div class="code-block">
+{
+  "name": "Meine PWA App",
+  "short_name": "PWA App",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "theme_color": "#2196F3",
+  "background_color": "#ffffff",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
+            </div>
+
+            <h3>2. Der Service Worker</h3>
+            <p>Ein JavaScript, das im Hintergrund läuft und Netzwerk-Anfragen abfängt:</p>
+            <div class="code-block">
+// Installiert sich selbst
+self.addEventListener('install', event => {
+  // Cached wichtige Dateien
+});
+
+// Fängt alle Anfragen ab
+self.addEventListener('fetch', event => {
+  // Entscheidet: Cache oder Netzwerk?
+});
+            </div>
+
+            <h3>3. HTTPS</h3>
+            <p>PWAs funktionieren NUR über HTTPS (außer localhost)!</p>
+        </div>
+
+        <!-- Installation Guide -->
+        <div class="card">
+            <h2>So installieren Sie diese PWA</h2>
+
+            <div id="installInstructions">
+                <p>Die Installations-Methode hängt von Ihrem Browser ab:</p>
+
+                <h3>Chrome/Edge (Desktop & Android):</h3>
+                <ol>
+                    <li>Klicken Sie auf den "App installieren" Button oben</li>
+                    <li>Oder: Menü (3 Punkte) → "App installieren"</li>
+                </ol>
+
+                <h3>Safari (iOS):</h3>
+                <ol>
+                    <li>Tippen Sie auf das Teilen-Symbol</li>
+                    <li>Wählen Sie "Zum Home-Bildschirm"</li>
+                </ol>
+
+                <h3>Firefox:</h3>
+                <p>Benötigt ein Add-on für Desktop, auf Android direkt möglich</p>
+            </div>
+        </div>
+
+        <!-- Test-Funktionen -->
+        <div class="card">
+            <h2>PWA Funktionen testen</h2>
+
+            <button class="btn" onclick="testNotification()">
+                🔔 Push-Benachrichtigung testen
+            </button>
+
+            <button class="btn btn-success" onclick="testCache()">
+                💾 Cache Status prüfen
+            </button>
+
+            <button class="btn btn-danger" onclick="clearCache()">
+                🗑️ Cache leeren
+            </button>
+
+            <div id="testResults" style="margin-top: 1rem;"></div>
+        </div>
+
+        <!-- Debug Info -->
+        <div class="card">
+            <h2>Debug-Informationen</h2>
+            <div id="debugInfo">
+                <p>Lade Informationen...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Banner -->
+    <div id="notification" class="notification"></div>
+
+    <!-- ========================================
+         SCHRITT 4: JAVASCRIPT - Das Herzstück!
+         ======================================== -->
+    <script>
+        // ==========================================
+        // TEIL 1: Service Worker Registration
+        // Dies ist DER WICHTIGSTE Teil für eine PWA!
+        // ==========================================
+
+        if ('serviceWorker' in navigator) {
+            // Service Worker wird NACH dem Laden der Seite registriert
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(registration => {
+                        console.log('✅ Service Worker registriert:', registration.scope);
+                        showNotification('Service Worker erfolgreich registriert!', 'success');
+
+                        // Update gefunden?
+                        registration.addEventListener('updatefound', () => {
+                            console.log('🔄 Neuer Service Worker gefunden!');
+                        });
+                    })
+                    .catch(error => {
+                        console.error('❌ Service Worker Registrierung fehlgeschlagen:', error);
+                        showNotification('Service Worker konnte nicht registriert werden!', 'error');
+                    });
+            });
+
+            // Service Worker Nachrichten empfangen
+            navigator.serviceWorker.addEventListener('message', event => {
+                console.log('📨 Nachricht vom Service Worker:', event.data);
+            });
+        } else {
+            console.warn('⚠️ Service Worker werden nicht unterstützt!');
+            document.getElementById('debugInfo').innerHTML +=
+                '<p style="color: red;">Service Worker werden von diesem Browser nicht unterstützt!</p>';
+        }
+
+        // ==========================================
+        // TEIL 2: Install Prompt (beforeinstallprompt)
+        // Das ist DER Schlüssel für die Installation!
+        // ==========================================
+
+        let deferredPrompt; // Speichert das Install-Event
+        const installButton = document.getElementById('installButton');
+
+        // Dieses Event wird ausgelöst, BEVOR der Browser seinen eigenen Install-Banner zeigt
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('🎯 beforeinstallprompt Event gefeuert!');
+
+            // Verhindere das automatische Banner
+            e.preventDefault();
+
+            // Speichere das Event für später
+            deferredPrompt = e;
+
+            // Zeige unseren eigenen Install-Button
+            installButton.style.display = 'block';
+
+            showNotification('Diese App kann installiert werden!', 'success');
+
+            // Debug Info
+            updateDebugInfo('Install-Prompt verfügbar: JA');
+        });
+
+        // Install-Button Klick-Handler
+        installButton.addEventListener('click', async () => {
+            if (!deferredPrompt) {
+                console.log('❌ Kein Install-Prompt verfügbar');
+                return;
+            }
+
+            // Zeige das Install-Prompt
+            deferredPrompt.prompt();
+
+            // Warte auf die Nutzer-Entscheidung
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`👤 Nutzer-Entscheidung: ${outcome}`);
+
+            if (outcome === 'accepted') {
+                showNotification('App wird installiert! 🎉', 'success');
+            } else {
+                showNotification('Installation abgebrochen', 'info');
+            }
+
+            // Prompt kann nur einmal verwendet werden
+            deferredPrompt = null;
+            installButton.style.display = 'none';
+        });
+
+        // App wurde installiert
+        window.addEventListener('appinstalled', () => {
+            console.log('✅ PWA wurde installiert!');
+            showNotification('App erfolgreich installiert! 🎊', 'success');
+            installButton.style.display = 'none';
+
+            // Tracking (optional)
+            if ('ga' in window) {
+                ga('send', 'event', 'PWA', 'installed');
+            }
+        });
+
+        // ==========================================
+        // TEIL 3: Online/Offline Detection
+        // ==========================================
+
+        function updateOnlineStatus() {
+            const statusElement = document.getElementById('connectionStatus');
+            const isOnline = navigator.onLine;
+
+            statusElement.className = `status-indicator status-${isOnline ? 'online' : 'offline'}`;
+            statusElement.innerHTML = `
+                <span class="status-dot">●</span>
+                <span>${isOnline ? 'Online' : 'Offline'}</span>
+            `;
+
+            showNotification(
+                isOnline ? 'Wieder online! 🌐' : 'Offline - App funktioniert trotzdem! 📴',
+                isOnline ? 'success' : 'warning'
+            );
+        }
+
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+
+        // ==========================================
+        // TEIL 4: Push Notifications
+        // ==========================================
+
+        async function testNotification() {
+            // Prüfe ob Notifications unterstützt werden
+            if (!('Notification' in window)) {
+                alert('Dieser Browser unterstützt keine Benachrichtigungen');
+                return;
+            }
+
+            // Frage nach Erlaubnis
+            const permission = await Notification.requestPermission();
+
+            if (permission === 'granted') {
+                // Zeige Notification
+                const notification = new Notification('PWA Test Benachrichtigung', {
+                    body: 'Dies ist eine Test-Benachrichtigung Ihrer PWA!',
+                    icon: '/images/icon-192x192.png',
+                    badge: '/images/icon-72x72.png',
+                    vibrate: [200, 100, 200],
+                    data: { timestamp: new Date() }
+                });
+
+                notification.onclick = () => {
+                    console.log('Notification geklickt!');
+                    window.focus();
+                };
+            } else {
+                alert(`Benachrichtigungen ${permission === 'denied' ? 'wurden verweigert' : 'sind nicht erlaubt'}`);
+            }
+        }
+
+        // ==========================================
+        // TEIL 5: Cache Management
+        // ==========================================
+
+        async function testCache() {
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = '<div class="loading"></div> Prüfe Cache...';
+
+            try {
+                // Liste alle Caches
+                const cacheNames = await caches.keys();
+
+                let html = '<h3>Cache Status:</h3>';
+
+                if (cacheNames.length === 0) {
+                    html += '<p>Keine Caches gefunden</p>';
+                } else {
+                    for (const name of cacheNames) {
+                        const cache = await caches.open(name);
+                        const keys = await cache.keys();
+                        html += `<p><strong>${name}:</strong> ${keys.length} Einträge</p>`;
+                    }
+                }
+
+                // Storage Quota
+                if ('storage' in navigator && 'estimate' in navigator.storage) {
+                    const estimate = await navigator.storage.estimate();
+                    const percentUsed = (estimate.usage / estimate.quota * 100).toFixed(2);
+                    html += `<p><strong>Speicher:</strong> ${formatBytes(estimate.usage)} von ${formatBytes(estimate.quota)} (${percentUsed}%)</p>`;
+                }
+
+                resultsDiv.innerHTML = html;
+            } catch (error) {
+                resultsDiv.innerHTML = `<p style="color: red;">Fehler: ${error.message}</p>`;
+            }
+        }
+
+        async function clearCache() {
+            if (!confirm('Wirklich alle Caches löschen?')) return;
+
+            const resultsDiv = document.getElementById('testResults');
+            resultsDiv.innerHTML = '<div class="loading"></div> Lösche Caches...';
+
+            try {
+                const cacheNames = await caches.keys();
+                await Promise.all(cacheNames.map(name => caches.delete(name)));
+
+                resultsDiv.innerHTML = '<p style="color: green;">✅ Alle Caches gelöscht!</p>';
+
+                // Service Worker Update erzwingen
+                if ('serviceWorker' in navigator) {
+                    const registration = await navigator.serviceWorker.ready;
+                    registration.update();
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<p style="color: red;">Fehler: ${error.message}</p>`;
+            }
+        }
+
+        // ==========================================
+        // TEIL 6: Debug & Helper Functions
+        // ==========================================
+
+        function updateDebugInfo(additionalInfo = '') {
+            const debugDiv = document.getElementById('debugInfo');
+
+            const debugData = {
+                'Browser': navigator.userAgent.match(/(Chrome|Safari|Firefox|Edge)/)?.[0] || 'Unbekannt',
+                'PWA Modus': window.matchMedia('(display-mode: standalone)').matches ? 'Ja' : 'Nein',
+                'Service Worker': 'serviceWorker' in navigator ? 'Unterstützt' : 'Nicht unterstützt',
+                'HTTPS': location.protocol === 'https:' ? 'Ja' : location.hostname === 'localhost' ? 'Localhost (OK)' : 'Nein ⚠️',
+                'Manifest': document.querySelector('link[rel="manifest"]') ? 'Vorhanden' : 'Fehlt ⚠️'
+            };
+
+            let html = '<table style="width: 100%;">';
+            for (const [key, value] of Object.entries(debugData)) {
+                html += `<tr><td><strong>${key}:</strong></td><td>${value}</td></tr>`;
+            }
+            if (additionalInfo) {
+                html += `<tr><td colspan="2">${additionalInfo}</td></tr>`;
+            }
+            html += '</table>';
+
+            debugDiv.innerHTML = html;
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.display = 'block';
+
+            // Farben je nach Typ
+            const colors = {
+                success: '#4CAF50',
+                error: '#f44336',
+                warning: '#ff9800',
+                info: '#2196F3'
+            };
+            notification.style.backgroundColor = colors[type] || colors.info;
+
+            // Auto-hide nach 3 Sekunden
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // ==========================================
+        // TEIL 7: Browser-spezifische Erkennung
+        // ==========================================
+
+        function detectBrowser() {
+            const ua = navigator.userAgent;
+            let browserInfo = 'Unbekannt';
+
+            if (/Chrome/.test(ua) && !/Edge/.test(ua)) {
+                browserInfo = 'Chrome - Beste PWA Unterstützung!';
+            } else if (/Safari/.test(ua) && !/Chrome/.test(ua)) {
+                browserInfo = 'Safari - Eingeschränkte PWA Unterstützung';
+                if (/iPhone|iPad|iPod/.test(ua)) {
+                    browserInfo += ' (iOS)';
+                }
+            } else if (/Firefox/.test(ua)) {
+                browserInfo = 'Firefox - Teilweise PWA Unterstützung';
+            } else if (/Edge/.test(ua)) {
+                browserInfo = 'Edge - Gute PWA Unterstützung!';
+            }
+
+            return browserInfo;
+        }
+
+        // ==========================================
+        // INIT: Beim Laden ausführen
+        // ==========================================
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDebugInfo();
+            updateOnlineStatus();
+
+            // Zeige Browser-Info
+            const browserInfo = detectBrowser();
+            console.log('🌐 Browser:', browserInfo);
+
+            // Prüfe ob bereits als PWA läuft
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                showNotification('App läuft im Standalone-Modus! 🚀', 'success');
+                installButton.style.display = 'none';
+            }
+
+            // iOS Spezial-Behandlung
+            const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+            if (isIOS && !window.navigator.standalone) {
+                const iosInstructions = document.createElement('div');
+                iosInstructions.className = 'card';
+                iosInstructions.innerHTML = `
+                    <h2>📱 iOS Installation</h2>
+                    <p>Auf iOS Geräten:</p>
+                    <ol>
+                        <li>Tippen Sie auf das Teilen-Symbol (Quadrat mit Pfeil)</li>
+                        <li>Scrollen Sie nach unten</li>
+                        <li>Tippen Sie auf "Zum Home-Bildschirm"</li>
+                        <li>Tippen Sie auf "Hinzufügen"</li>
+                    </ol>
+                `;
+                document.querySelector('.container').insertBefore(
+                    iosInstructions,
+                    document.querySelector('.card')
+                );
+            }
+        });
+    </script>
+
+    <!-- ========================================
+         INLINE MANIFEST.JSON
+         Normalerweise eine separate Datei!
+         ======================================== -->
+    <script>
+        // Dieser Code erstellt die manifest.json dynamisch
+        // NORMALERWEISE ist das eine SEPARATE DATEI!
+        const manifestData = {
+            "name": "PWA Komplett-Anleitung",
+            "short_name": "PWA Guide",
+            "description": "Eine vollständige Anleitung zur PWA-Entwicklung",
+            "start_url": "./index.html",
+            "scope": "./",
+            "display": "standalone",
+            "orientation": "portrait",
+            "theme_color": "#2196F3",
+            "background_color": "#ffffff",
+            "icons": [
+                {
+                    "src": "images/icon-72x72.png",
+                    "sizes": "72x72",
+                    "type": "image/png",
+                    "purpose": "any"
+                },
+                {
+                    "src": "images/icon-96x96.png",
+                    "sizes": "96x96",
+                    "type": "image/png",
+                    "purpose": "any"
+                },
+                {
+                    "src": "images/icon-128x128.png",
+                    "sizes": "128x128",
+                    "type": "image/png",
+                    "purpose": "any"
+                },
+                {
+                    "src": "images/icon-144x144.png",
+                    "sizes": "144x144",
+                    "type": "image/png",
+                    "purpose": "any"
+                },
+                {
+                    "src": "images/icon-152x152.png",
+                    "sizes": "152x152",
+                    "type": "image/png",
+                    "purpose": "any"
+                },
+                {
+                    "src": "images/icon-192x192.png",
+                    "sizes": "192x192",
+                    "type": "image/png",
+                    "purpose": "any maskable"
+                },
+                {
+                    "src": "images/icon-384x384.png",
+                    "sizes": "384x384",
+                    "type": "image/png",
+                    "purpose": "any"
+                },
+                {
+                    "src": "images/icon-512x512.png",
+                    "sizes": "512x512",
+                    "type": "image/png",
+                    "purpose": "any maskable"
+                }
+            ],
+            "categories": ["education", "productivity"],
+            "lang": "de-DE",
+            "dir": "ltr"
+        };
+
+        // Erstelle Blob URL für Manifest
+        const manifestBlob = new Blob([JSON.stringify(manifestData, null, 2)], {
+            type: 'application/manifest+json'
+        });
+        const manifestURL = URL.createObjectURL(manifestBlob);
+
+        // Aktualisiere Link-Tag
+        document.querySelector('link[rel="manifest"]').href = manifestURL;
+    </script>
+
+    <!-- ========================================
+         INLINE SERVICE WORKER
+         Normalerweise eine separate Datei!
+         ======================================== -->
+    <script>
+        // Service Worker Code als String
+        const serviceWorkerCode = `
+// ==========================================
+// SERVICE WORKER - Das Herzstück der PWA!
+// ==========================================
+
+const CACHE_NAME = 'pwa-guide-v1';
+const urlsToCache = [
+    './',
+    './index.html',
+    './manifest.json',
+    // Fügen Sie hier alle wichtigen Dateien hinzu
+];
+
+// ==========================================
+// INSTALL EVENT - Wird EINMAL ausgeführt
+// ==========================================
+self.addEventListener('install', event => {
+    console.log('[Service Worker] Installing...');
+
+    event.waitUntil(
+        caches.open(CACHE_NAME)
+            .then(cache => {
+                console.log('[Service Worker] Caching app shell');
+                return cache.addAll(urlsToCache);
+            })
+            .then(() => {
+                console.log('[Service Worker] Skip waiting');
+                return self.skipWaiting(); // Sofort aktivieren
+            })
+    );
+});
+
+// ==========================================
+// ACTIVATE EVENT - Aufräumen alter Caches
+// ==========================================
+self.addEventListener('activate', event => {
+    console.log('[Service Worker] Activating...');
+
+    event.waitUntil(
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames.map(cacheName => {
+                    if (cacheName !== CACHE_NAME) {
+                        console.log('[Service Worker] Deleting old cache:', cacheName);
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
+        }).then(() => {
+            console.log('[Service Worker] Claiming clients');
+            return self.clients.claim(); // Sofort übernehmen
+        })
+    );
+});
+
+// ==========================================
+// FETCH EVENT - Herzstück der Offline-Funktion
+// ==========================================
+self.addEventListener('fetch', event => {
+    console.log('[Service Worker] Fetching:', event.request.url);
+
+    event.respondWith(
+        caches.match(event.request)
+            .then(response => {
+                // Cache hit - return response
+                if (response) {
+                    console.log('[Service Worker] Found in cache:', event.request.url);
+                    return response;
+                }
+
+                // Clone the request
+                const fetchRequest = event.request.clone();
+
+                return fetch(fetchRequest).then(response => {
+                    // Check if valid response
+                    if (!response || response.status !== 200 || response.type !== 'basic') {
+                        return response;
+                    }
+
+                    // Clone the response
+                    const responseToCache = response.clone();
+
+                    caches.open(CACHE_NAME)
+                        .then(cache => {
+                            cache.put(event.request, responseToCache);
+                        });
+
+                    return response;
+                });
+            })
+            .catch(() => {
+                // Offline fallback
+                console.log('[Service Worker] Offline, returning cached page');
+                return caches.match('./index.html');
+            })
+    );
+});
+
+// ==========================================
+// PUSH EVENT - Für Push Notifications
+// ==========================================
+self.addEventListener('push', event => {
+    console.log('[Service Worker] Push received');
+
+    const title = 'PWA Guide';
+    const options = {
+        body: event.data ? event.data.text() : 'Neue Nachricht!',
+        icon: 'images/icon-192x192.png',
+        badge: 'images/icon-72x72.png'
+    };
+
+    event.waitUntil(
+        self.registration.showNotification(title, options)
+    );
+});
+
+// ==========================================
+// MESSAGE EVENT - Kommunikation mit App
+// ==========================================
+self.addEventListener('message', event => {
+    console.log('[Service Worker] Message received:', event.data);
+
+    if (event.data.action === 'skipWaiting') {
+        self.skipWaiting();
+    }
+});
+`;
+
+        // Erstelle Blob URL für Service Worker
+        const swBlob = new Blob([serviceWorkerCode], { type: 'application/javascript' });
+        const swURL = URL.createObjectURL(swBlob);
+
+        // Überschreibe die Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            // Unregister existing service worker first
+            navigator.serviceWorker.getRegistrations().then(registrations => {
+                registrations.forEach(registration => registration.unregister());
+            }).then(() => {
+                // Register new service worker from blob
+                return navigator.serviceWorker.register(swURL);
+            }).then(registration => {
+                console.log('✅ Inline Service Worker registriert!');
+            }).catch(error => {
+                console.error('❌ Inline Service Worker Fehler:', error);
+            });
+        }
+    </script>
+</body>
+</html>

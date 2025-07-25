@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- ==========================================
+         GEHEIMNIS #1: VOLLSTÄNDIGE META-TAG SAMMLUNG
+         Nicht nur die Basics - JEDES Detail zählt!
+         ========================================== -->
+
+    <title>PWA Ultimate Guide - Alle Tricks erklärt</title>
+
+    <!-- KRITISCH: manifest.json Link -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- iOS SPEZIAL: Apple unterstützt manifest.json nur teilweise,
+         daher MÜSSEN wir redundante Meta-Tags setzen! -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PWA Ultimate">
+
+    <!-- TRICK: Mehrere Apple Touch Icons für ALLE iOS Geräte -->
+    <link rel="apple-touch-icon" sizes="180x180" href="images/icon-180x180.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="images/icon-180x180.png"> <!-- iPad Pro -->
+    <link rel="apple-touch-icon" sizes="152x152" href="images/icon-152x152.png">
+    <link rel="apple-touch-icon" href="images/icon-192x192.png"> <!-- Fallback ohne size -->
+
+    <!-- Theme Color für Android Browser-Leiste -->
+    <meta name="theme-color" content="#40127c">
+
+    <!-- ALLE Icon-Varianten für maximale Kompatibilität -->
+    <link rel="icon" type="image/png" sizes="16x16" href="images/icon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/icon-32x32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="images/icon-192x192.png">
+
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #40127c 0%, #1a0129 100%);
+            --success-gradient: linear-gradient(135deg, #11998e 0%, #179246 100%);
+            --bg-primary: #ffffff;
+            --bg-secondary: #c0d4e7;
+            --text-primary: #1a2325;
+            --text-secondary: #4a5568;
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --radius-md: 8px;
+            --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        header {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: var(--shadow-md);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        /* TRICK: Install Button wird durch komplexe Logik gesteuert */
+        #installPwaButton {
+            background: white;
+            color: var(--primary-gradient);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 600;
+            display: none; /* Standardmäßig versteckt */
+            transition: all var(--transition-normal);
+        }
+
+        #installPwaButton:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-md);
+        }
+
+        .card h2 {
+            color: #40127c;
+            margin-bottom: 1rem;
+        }
+
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 1rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+        }
+
+        .connection-status {
+            background: var(--success-gradient);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+            font-size: 0.8rem;
+            display: none;
+            animation: slideDownFade 0.3s ease-out;
+        }
+
+        .connection-status.offline {
+            background: linear-gradient(135deg, #f85032 0%, #e73827 100%);
+            display: block;
+        }
+
+        .connection-status.online {
+            display: block;
+        }
+
+        /* GEHEIMNIS: Custom Install Banner zusätzlich zum Button */
+        #customInstallBanner {
+            display: none;
+            background: var(--primary-gradient);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            z-index: 1050;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+            animation: slideUpBanner 0.5s ease-out forwards;
+        }
+
+        @keyframes slideUpBanner {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes slideDownFade {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .btn {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all var(--transition-normal);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-success {
+            background: var(--success-gradient);
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .feature-item {
+            background: #f0f7ff;
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            border-left: 4px solid #40127c;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            display: none;
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        #pwaInstallSection {
+            padding: 1.5rem;
+            background-color: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            margin-top: 1rem;
+            box-shadow: var(--shadow-md);
+        }
+
+        #pwaInstallInstructions {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: var(--bg-primary);
+            border: 1px solid #e0e0e0;
+            border-radius: var(--radius-md);
+            text-align: left;
+        }
+
+        .debug-info {
+            font-family: monospace;
+            font-size: 0.85rem;
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 4px;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            h1 {
+                font-size: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ==========================================
+         GEHEIMNIS #2: CUSTOM INSTALL BANNER
+         Zusätzlich zum normalen Install-Button!
+         ========================================== -->
+    <div id="customInstallBanner">
+        <div style="max-width: 800px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+            <span style="text-align: left;">Installieren Sie diese App für Offline-Zugriff und ein besseres Erlebnis!</span>
+            <div>
+                <button id="customInstallBannerButton" class="btn btn-success" style="margin-right: 10px;">
+                    <i class="fas fa-download"></i> Jetzt installieren
+                </button>
+                <button id="customInstallBannerDismiss" style="background: transparent; border: 1px solid white; color: white; padding: 0.5rem; cursor: pointer;">
+                    &times;
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <header>
+        <div class="header-content">
+            <h1>🚀 PWA Ultimate Guide - Alle Geheimnisse</h1>
+
+            <!-- Der Haupt-Install-Button -->
+            <button id="installPwaButton" class="btn" style="display: none;">
+                <i class="fas fa-download"></i> App installieren
+            </button>
+
+            <!-- Connection Status - wichtig für Offline-Feedback -->
+            <div class="connection-status" id="connectionStatus">
+                <i class="fas fa-wifi"></i> <span id="connectionText">Online</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <h2>🔥 Die ultimativen PWA-Geheimnisse dieser App</h2>
+            <p>Diese PWA verwendet <strong>ALLE Tricks</strong> um überall installierbar zu sein!</p>
+        </div>
+
+        <div class="card">
+            <h2>🧠 Das Geheimnis: PWAStrategyRouter</h2>
+            <p>Diese App erkennt AUTOMATISCH Ihren Browser und passt die Installations-Strategie an:</p>
+            <div class="feature-grid">
+                <div class="feature-item">
+                    <h3>Chrome/Edge</h3>
+                    <p>AutomaticInstallStrategy mit beforeinstallprompt</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Safari iOS</h3>
+                    <p>IOSManualStrategy mit speziellen Anleitungen</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Firefox Desktop</h3>
+                    <p>FirefoxDesktopStrategy mit Add-on Hinweisen</p>
+                </div>
+                <div class="feature-item">
+                    <h3>Andere Browser</h3>
+                    <p>FallbackStrategy mit angepassten Instruktionen</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🎯 Die 7 Säulen dieser PWA</h2>
+            <ol>
+                <li><strong>Browser-Detection:</strong> Erkennt Chrome, Edge, Safari, Firefox, Samsung, Opera</li>
+                <li><strong>Doppelte Event-Handler:</strong> Global UND in Strategy-Klassen</li>
+                <li><strong>Multiple UI-Elemente:</strong> Header-Button + Banner + Settings</li>
+                <li><strong>Safari Cache-Limits:</strong> Automatisches Eviction bei 50MB</li>
+                <li><strong>Timestamp-basiertes Caching:</strong> API-Responses mit Alter-Tracking</li>
+                <li><strong>iOS Spezial-Meta-Tags:</strong> Alle Apple-Touch-Icon Größen</li>
+                <li><strong>Intelligente Cache-Strategien:</strong> Je nach URL-Pattern</li>
+            </ol>
+        </div>
+
+        <div class="card">
+            <h2>💡 Browser-spezifische Tricks</h2>
+            <div class="code-block">
+// TRICK 1: Browser-Erkennung
+const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+const isSafari = /Safari/.test(ua) && !/Chrome/.test(ua);
+const isChromiumBased = /Chrome/.test(ua) || /Chromium/.test(ua);
+
+// TRICK 2: Mehrfache Event-Listener
+window.deferredPrompt = e; // Global speichern
+this.deferredPrompt = e;   // In Strategy speichern
+
+// TRICK 3: Safari-spezifisches Cache-Management
+if (isSafari() && usage > SAFARI_CACHE_LIMIT_BYTES) {
+    await evictOldCacheItems(API_CACHE, 10);
+}
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🔧 Service Worker Spezial-Features</h2>
+            <ul>
+                <li><strong>Cache-Größen-Limits:</strong> 40MB für Safari (unter 50MB Limit)</li>
+                <li><strong>FIFO + Timestamp Eviction:</strong> Intelligentes Cache-Cleanup</li>
+                <li><strong>Separate Caches:</strong> static-v1 und api-v1</li>
+                <li><strong>Offline HTML Generation:</strong> Dynamische Offline-Seite</li>
+                <li><strong>API Response Wrapping:</strong> Timestamps für Cache-Alter</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>📱 Manifest.json Power-Features</h2>
+            <ul>
+                <li><strong>16 verschiedene Icon-Größen:</strong> Von 16x16 bis 512x512</li>
+                <li><strong>"any maskable" Purpose:</strong> Adaptive Icons für Android</li>
+                <li><strong>Shortcuts:</strong> Quick Actions vom Homescreen</li>
+                <li><strong>Share Target:</strong> App kann Inhalte empfangen</li>
+                <li><strong>Protocol Handlers:</strong> Eigene URL-Schemes (geo:)</li>
+                <li><strong>Edge Side Panel:</strong> Microsoft Edge Integration</li>
+                <li><strong>IARC Rating:</strong> Alterseinstufung für Stores</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>🚀 Live Demo - Ihr Browser</h2>
+            <div id="browserInfo" class="debug-info">
+                <p>Analysiere Browser...</p>
+            </div>
+            <div id="strategyInfo" class="debug-info" style="margin-top: 1rem;">
+                <p>Ermittle beste Installations-Strategie...</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>⚙️ Einstellungen - Dynamische Installation</h2>
+            <div id="settingsContent">
+                <!-- Wird dynamisch gefüllt -->
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📊 Debug Information</h2>
+            <div id="debugInfo" class="debug-info">
+                <p>Lade Debug-Informationen...</p>
+            </div>
+            <button class="btn" onclick="testCacheSystem()">Cache System testen</button>
+            <button class="btn btn-success" onclick="showNotification('Test Notification!', 'success')">Test Notification</button>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <!-- ==========================================
+         GEHEIMNIS #3: DER ULTIMATIVE JAVASCRIPT CODE
+         Mit ALLEN Tricks für maximale Kompatibilität
+         ========================================== -->
+    <script>
+        // ==========================================
+        // SCHRITT 1: Browser Detection (Der Schlüssel!)
+        // ==========================================
+        function detectBrowserPWASupport() {
+            const ua = navigator.userAgent;
+            const vendor = navigator.vendor || "";
+
+            const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+
+            let isSafari = false;
+            if (isIOS) {
+                // Safari auf iOS: WebKit basiert, nicht Chrome (CriOS), Firefox (FxiOS), oder Edge (EdgiOS)
+                isSafari = /AppleWebKit/.test(ua) && !/CriOS/.test(ua) && !/FxiOS/.test(ua) && !/EdgiOS/.test(ua);
+            } else {
+                // Desktop Safari: Enthält "Safari" aber nicht andere Browser-Kennungen
+                isSafari = /Safari/.test(ua) && !/Chrome/.test(ua) && !/Chromium/.test(ua) && !/Edg/.test(ua) && !/OPR\//.test(ua) && !/SamsungBrowser/.test(ua);
+            }
+
+            const isChromiumBased = (/Chrome/.test(ua) || /Chromium/.test(ua)) && !/Edg/.test(ua) && !isSafari && !/OPR\//.test(ua) && !/SamsungBrowser/.test(ua);
+            const isChrome = isChromiumBased;
+            const isEdge = /Edg/.test(ua);
+            const isFirefox = /Firefox/.test(ua) && !/Seamonkey/.test(ua);
+            const isSamsungBrowser = /SamsungBrowser/.test(ua);
+            const isOpera = (/OPR\//.test(ua) || /Opera/.test(ua)) && !isEdge;
+            const isAndroid = /Android/.test(ua);
+
+            return {
+                isIOS,
+                isSafari,
+                isChrome,
+                isChromiumBased,
+                isEdge,
+                isFirefox,
+                isSamsungBrowser,
+                isOpera,
+                isAndroid,
+                isDesktop: !isAndroid && !isIOS,
+                supportsBeforeInstallPrompt: 'BeforeInstallPromptEvent' in window,
+                isInStandaloneMode: window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
+            };
+        }
+
+        // ==========================================
+        // SCHRITT 2: Strategy Pattern für Browser
+        // ==========================================
+        class AutomaticInstallStrategy {
+            constructor() {
+                this.deferredPrompt = null;
+                console.log("AutomaticInstallStrategy für Chrome/Edge aktiviert");
+            }
+
+            async initialize(router) {
+                this.router = router;
+
+                // TRICK: Eigener Event Listener zusätzlich zum globalen
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    console.log('beforeinstallprompt in AutomaticStrategy gefangen');
+                    e.preventDefault();
+                    this.deferredPrompt = e;
+                    window.deferredPrompt = e; // DOPPELT speichern!
+                    this.router.updateInstallButtonVisibility(true);
+                    this.router.setupSettingsInstallButton();
+                });
+
+                window.addEventListener('appinstalled', () => {
+                    console.log('App wurde installiert!');
+                    this.deferredPrompt = null;
+                });
+            }
+
+            async install() {
+                if (this.deferredPrompt) {
+                    this.deferredPrompt.prompt();
+                    const { outcome } = await this.deferredPrompt.userChoice;
+                    console.log(`User Antwort: ${outcome}`);
+                    this.deferredPrompt = null;
+                    window.deferredPrompt = null;
+                    this.router.updateInstallButtonVisibility(false);
+                    this.router.setupSettingsInstallButton();
+                }
+            }
+        }
+
+        class IOSManualStrategy {
+            constructor() {
+                console.log("IOSManualStrategy für Safari aktiviert");
+            }
+
+            initialize(router) {
+                console.log('iOS benötigt manuelle Installation');
+            }
+
+            getInstallInstructionsHTML() {
+                return `
+                    <h4><i class="fab fa-apple"></i> App auf iOS installieren:</h4>
+                    <ol>
+                        <li>Öffnen Sie diese Seite in <strong>Safari</strong> (andere Browser funktionieren nicht!)</li>
+                        <li>Tippen Sie auf das <strong>Teilen-Symbol</strong> <i class="fas fa-share-square"></i></li>
+                        <li>Scrollen Sie nach unten zu "<strong>Zum Home-Bildschirm</strong>"</li>
+                        <li>Tippen Sie auf "<strong>Hinzufügen</strong>"</li>
+                    </ol>
+                `;
+            }
+        }
+
+        class FirefoxDesktopStrategy {
+            constructor() {
+                console.log("FirefoxDesktopStrategy aktiviert");
+            }
+
+            initialize(router) {
+                console.log('Firefox Desktop benötigt Extension');
+            }
+
+            getInstallInstructionsHTML() {
+                const pwasForFirefoxLink = "https://addons.mozilla.org/firefox/addon/pwas-for-firefox/";
+
+                // Desktop Entry für Linux
+                const desktopContent = '[Desktop Entry]\\n' +
+                    'Version=1.0\\n' +
+                    'Type=Application\\n' +
+                    'Name=PWA Ultimate Guide\\n' +
+                    'Exec=firefox --new-window --url="' + window.location.href + '"\\n' +
+                    'Icon=' + window.location.origin + '/images/icon-512x512.png\\n' +
+                    'Categories=Utility;';
+
+                const desktopBlob = new Blob([desktopContent], { type: 'application/x-desktop' });
+                const desktopUrl = URL.createObjectURL(desktopBlob);
+
+                // Batch für Windows
+                const batchContent = '@echo off\\nstart firefox --new-window --url="' + window.location.href + '"';
+                const batBlob = new Blob([batchContent], { type: 'text/plain' });
+                const batUrl = URL.createObjectURL(batBlob);
+
+                return `
+                    <h4><i class="fab fa-firefox-browser"></i> Firefox Desktop Installation:</h4>
+                    <strong>Option 1: Browser Extension (Empfohlen)</strong>
+                    <ol>
+                        <li>Installieren Sie: <a href="${pwasForFirefoxLink}" target="_blank" class="btn btn-sm">PWAsForFirefox</a></li>
+                        <li>Firefox neu starten</li>
+                        <li>Diese Seite erneut besuchen</li>
+                    </ol>
+                    <strong>Option 2: Desktop-Verknüpfung</strong>
+                    <div>
+                        <a href="${desktopUrl}" download="PWAGuide.desktop" class="btn btn-sm">Linux (.desktop)</a>
+                        <a href="${batUrl}" download="PWAGuide.bat" class="btn btn-sm">Windows (.bat)</a>
+                    </div>
+                `;
+            }
+        }
+
+        class FallbackStrategy {
+            constructor(browserInfo) {
+                this.browserInfo = browserInfo;
+                console.log("FallbackStrategy für:", browserInfo);
+            }
+
+            initialize(router) {
+                console.log('Fallback Strategy aktiviert');
+            }
+
+            getInstallInstructionsHTML() {
+                let instructions = '<h4>Manuelle Installation:</h4>';
+
+                if (this.browserInfo.isFirefox && this.browserInfo.isAndroid) {
+                    instructions += '<p>Firefox Android: Menü → "Installieren"</p>';
+                } else if (this.browserInfo.isSamsungBrowser) {
+                    instructions += '<p>Samsung Internet: Menü → "Seite hinzufügen zu" → "Startbildschirm"</p>';
+                } else if (this.browserInfo.isOpera) {
+                    instructions += '<p>Opera: Menü → "Startbildschirm"</p>';
+                } else if (this.browserInfo.isChromiumBased) {
+                    instructions += '<p>Chromium: Menü → "App installieren" oder "Verknüpfung erstellen"</p>';
+                } else {
+                    instructions += '<p>Browser-Menü → "Zum Startbildschirm hinzufügen"</p>';
+                }
+
+                return instructions;
+            }
+        }
+
+        // ==========================================
+        // SCHRITT 3: PWAStrategyRouter (Das Gehirn!)
+        // ==========================================
+        class PWAStrategyRouter {
+            constructor() {
+                this.browserInfo = detectBrowserPWASupport();
+                this.strategy = null;
+                this.installButtonInHeader = document.getElementById('installPwaButton');
+                this.customInstallBannerEl = document.getElementById('customInstallBanner');
+                this.selectStrategy();
+                console.log("PWAStrategyRouter initialisiert:", this.browserInfo);
+            }
+
+            selectStrategy() {
+                // TRICK: Nutze isChromiumBased für breitere Kompatibilität
+                if (this.browserInfo.supportsBeforeInstallPrompt &&
+                    (this.browserInfo.isChromiumBased || this.browserInfo.isEdge ||
+                     (this.browserInfo.isFirefox && this.browserInfo.isAndroid) ||
+                     this.browserInfo.isSamsungBrowser || this.browserInfo.isOpera)) {
+                    this.strategy = new AutomaticInstallStrategy();
+                } else if (this.browserInfo.isSafari && this.browserInfo.isIOS) {
+                    this.strategy = new IOSManualStrategy();
+                } else if (this.browserInfo.isFirefox && this.browserInfo.isDesktop) {
+                    this.strategy = new FirefoxDesktopStrategy();
+                } else {
+                    this.strategy = new FallbackStrategy(this.browserInfo);
+                }
+            }
+
+            async execute() {
+                console.log('PWAStrategyRouter: Führe Strategie aus...');
+
+                if (this.strategy && typeof this.strategy.initialize === 'function') {
+                    await this.strategy.initialize(this);
+                }
+
+                // TRICK: Prüfe mehrere Quellen für deferredPrompt
+                const hasDeferredPrompt = (this.strategy instanceof AutomaticInstallStrategy && this.strategy.deferredPrompt != null)
+                                       || (window.deferredPrompt != null);
+
+                this.updateInstallButtonVisibility(this.browserInfo.supportsBeforeInstallPrompt && hasDeferredPrompt && !this.browserInfo.isInStandaloneMode);
+
+                this.setupSettingsInstallButton();
+                this.setupCustomBanner();
+
+                // Browser Info anzeigen
+                this.displayBrowserInfo();
+            }
+
+            updateInstallButtonVisibility(show) {
+                const isStandalone = this.browserInfo.isInStandaloneMode;
+
+                // Header Button
+                if (this.installButtonInHeader) {
+                    this.installButtonInHeader.style.display = (show && !isStandalone) ? 'inline-flex' : 'none';
+                }
+
+                // Custom Banner
+                if (this.customInstallBannerEl) {
+                    const canShowBanner = show && !isStandalone &&
+                        (this.strategy instanceof AutomaticInstallStrategy ||
+                         (this.strategy instanceof FallbackStrategy && this.browserInfo.supportsBeforeInstallPrompt));
+
+                    if (canShowBanner) {
+                        const promptAvailable = (this.strategy instanceof AutomaticInstallStrategy && this.strategy.deferredPrompt)
+                                             || window.deferredPrompt;
+                        this.customInstallBannerEl.style.display = promptAvailable ? 'block' : 'none';
+                    } else {
+                        this.customInstallBannerEl.style.display = 'none';
+                    }
+                }
+            }
+
+            setupCustomBanner() {
+                const bannerInstallBtn = document.getElementById('customInstallBannerButton');
+                const bannerDismissBtn = document.getElementById('customInstallBannerDismiss');
+
+                if (bannerInstallBtn) {
+                    bannerInstallBtn.addEventListener('click', async () => {
+                        console.log('Custom Banner Install geklickt');
+
+                        if (this.strategy instanceof AutomaticInstallStrategy && this.strategy.deferredPrompt) {
+                            await this.strategy.install();
+                        } else if (window.deferredPrompt) {
+                            window.deferredPrompt.prompt();
+                            const { outcome } = await window.deferredPrompt.userChoice;
+                            console.log(`Banner Install Ergebnis: ${outcome}`);
+                            window.deferredPrompt = null;
+                            this.customInstallBannerEl.style.display = 'none';
+                            this.updateInstallButtonVisibility(false);
+                        }
+                    });
+                }
+
+                if (bannerDismissBtn) {
+                    bannerDismissBtn.addEventListener('click', () => {
+                        this.customInstallBannerEl.style.display = 'none';
+                        console.log('Banner geschlossen');
+                    });
+                }
+            }
+
+            setupSettingsInstallButton() {
+                const settingsContent = document.getElementById('settingsContent');
+                if (!settingsContent) return;
+
+                let installSection = document.getElementById('pwaInstallSection');
+                if (installSection) installSection.remove();
+
+                installSection = document.createElement('div');
+                installSection.id = 'pwaInstallSection';
+
+                if (this.browserInfo.isInStandaloneMode) {
+                    installSection.innerHTML = '<p>✅ App ist bereits installiert!</p>';
+                } else {
+                    let buttonText = "App installieren & Offline nutzen";
+
+                    if (this.strategy instanceof IOSManualStrategy) {
+                        buttonText = "iOS Installationsanleitung";
+                    } else if (this.strategy instanceof FirefoxDesktopStrategy) {
+                        buttonText = "Firefox Desktop Anleitung";
+                    } else if (this.strategy instanceof FallbackStrategy) {
+                        buttonText = "Installationshinweise für Ihren Browser";
+                    }
+
+                    installSection.innerHTML = `
+                        <h3>App-Installation</h3>
+                        <button id="settingsInstallPwaButton" class="btn btn-success" style="width: 100%; margin-bottom: 1rem;">
+                            <i class="fas fa-download"></i> ${buttonText}
+                        </button>
+                        <div id="pwaInstallInstructions" style="display: none;"></div>
+                    `;
+
+                    settingsContent.appendChild(installSection);
+
+                    const settingsBtn = document.getElementById('settingsInstallPwaButton');
+                    const instructionsDiv = document.getElementById('pwaInstallInstructions');
+
+                    if (settingsBtn && instructionsDiv) {
+                        settingsBtn.onclick = () => {
+                            const prompt = (this.strategy instanceof AutomaticInstallStrategy && this.strategy.deferredPrompt)
+                                        || window.deferredPrompt;
+
+                            if (prompt) {
+                                prompt.prompt();
+                                prompt.userChoice.then(result => {
+                                    console.log(`Settings Install: ${result.outcome}`);
+                                    if (this.strategy instanceof AutomaticInstallStrategy) {
+                                        this.strategy.deferredPrompt = null;
+                                    }
+                                    window.deferredPrompt = null;
+                                    this.updateInstallButtonVisibility(false);
+                                    this.setupSettingsInstallButton();
+                                });
+                            } else {
+                                // Zeige Anleitungen
+                                if (this.strategy && typeof this.strategy.getInstallInstructionsHTML === 'function') {
+                                    instructionsDiv.innerHTML = this.strategy.getInstallInstructionsHTML();
+                                    instructionsDiv.style.display = instructionsDiv.style.display === 'block' ? 'none' : 'block';
+                                }
+                            }
+                        };
+                    }
+                }
+            }
+
+            displayBrowserInfo() {
+                const browserInfoEl = document.getElementById('browserInfo');
+                const strategyInfoEl = document.getElementById('strategyInfo');
+
+                if (browserInfoEl) {
+                    let info = '<h4>Ihr Browser:</h4>';
+                    info += `<p>User Agent: ${navigator.userAgent}</p>`;
+                    info += `<p>Browser erkannt als: `;
+
+                    if (this.browserInfo.isChrome) info += 'Chrome';
+                    else if (this.browserInfo.isEdge) info += 'Edge';
+                    else if (this.browserInfo.isSafari) info += 'Safari';
+                    else if (this.browserInfo.isFirefox) info += 'Firefox';
+                    else if (this.browserInfo.isSamsungBrowser) info += 'Samsung Internet';
+                    else if (this.browserInfo.isOpera) info += 'Opera';
+                    else info += 'Unbekannt';
+
+                    if (this.browserInfo.isIOS) info += ' (iOS)';
+                    else if (this.browserInfo.isAndroid) info += ' (Android)';
+                    else if (this.browserInfo.isDesktop) info += ' (Desktop)';
+
+                    info += '</p>';
+                    info += `<p>PWA Support: ${this.browserInfo.supportsBeforeInstallPrompt ? '✅ Ja' : '❌ Nein'}</p>`;
+                    info += `<p>Standalone Mode: ${this.browserInfo.isInStandaloneMode ? '✅ Ja' : '❌ Nein'}</p>`;
+
+                    browserInfoEl.innerHTML = info;
+                }
+
+                if (strategyInfoEl) {
+                    let strategyName = 'Unbekannt';
+                    if (this.strategy instanceof AutomaticInstallStrategy) strategyName = 'AutomaticInstallStrategy (Chrome/Edge)';
+                    else if (this.strategy instanceof IOSManualStrategy) strategyName = 'IOSManualStrategy (Safari iOS)';
+                    else if (this.strategy instanceof FirefoxDesktopStrategy) strategyName = 'FirefoxDesktopStrategy';
+                    else if (this.strategy instanceof FallbackStrategy) strategyName = 'FallbackStrategy';
+
+                    strategyInfoEl.innerHTML = `<h4>Gewählte Strategie:</h4><p>${strategyName}</p>`;
+                }
+            }
+        }
+
+        // ==========================================
+        // SCHRITT 4: Service Worker Registration
+        // ==========================================
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(registration => {
+                        console.log('✅ Service Worker registriert:', registration.scope);
+                        showNotification('Service Worker aktiv!', 'success');
+
+                        registration.addEventListener('updatefound', () => {
+                            console.log('🔄 Service Worker Update gefunden');
+                        });
+                    })
+                    .catch(error => {
+                        console.error('❌ Service Worker Fehler:', error);
+                        showNotification('Service Worker Fehler!', 'error');
+                    });
+            });
+
+            // Message Handler
+            navigator.serviceWorker.addEventListener('message', event => {
+                console.log('📨 Nachricht vom Service Worker:', event.data);
+            });
+        }
+
+        // ==========================================
+        // SCHRITT 5: Globale Event Handler
+        // ==========================================
+        let deferredPrompt; // Globale Variable
+
+        // TRICK: Globaler Handler zusätzlich zu Strategy
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('Global beforeinstallprompt gefangen');
+            window.deferredPrompt = e; // Global speichern
+
+            // Falls Router noch nicht ready
+            if (!(window.pwaRouterInstance && window.pwaRouterInstance.strategy instanceof AutomaticInstallStrategy)) {
+                e.preventDefault();
+                const installBtn = document.getElementById('installPwaButton');
+                if (installBtn) {
+                    installBtn.style.display = 'inline-flex';
+                }
+            }
+        });
+
+        // Header Install Button Handler
+        const installPwaButton = document.getElementById('installPwaButton');
+        if (installPwaButton) {
+            installPwaButton.addEventListener('click', async () => {
+                console.log('Header Install Button geklickt');
+
+                const router = window.pwaRouterInstance;
+                const strategy = router ? router.strategy : null;
+
+                const promptToUse = (strategy instanceof AutomaticInstallStrategy && strategy.deferredPrompt)
+                                 || window.deferredPrompt;
+
+                if (promptToUse) {
+                    promptToUse.prompt();
+                    try {
+                        const { outcome } = await promptToUse.userChoice;
+                        console.log(`Install Ergebnis: ${outcome}`);
+
+                        if (outcome === 'accepted') {
+                            showNotification('App wird installiert! 🎉', 'success');
+                        }
+                    } catch (error) {
+                        console.error('Fehler bei Installation:', error);
+                    }
+
+                    // Cleanup
+                    if (strategy instanceof AutomaticInstallStrategy) {
+                        strategy.deferredPrompt = null;
+                    }
+                    window.deferredPrompt = null;
+
+                    if (router) {
+                        router.updateInstallButtonVisibility(false);
+                        router.setupSettingsInstallButton();
+                    }
+                } else {
+                    // Zeige Settings mit Anleitung
+                    showNotification('Öffne Einstellungen für Installationsanleitung', 'info');
+                }
+            });
+        }
+
+        // App Installed Handler
+        window.addEventListener('appinstalled', () => {
+            console.log('✅ App wurde installiert!');
+
+            // Cleanup
+            window.deferredPrompt = null;
+            if (window.pwaRouterInstance && window.pwaRouterInstance.strategy instanceof AutomaticInstallStrategy) {
+                window.pwaRouterInstance.strategy.deferredPrompt = null;
+            }
+
+            if (window.pwaRouterInstance) {
+                window.pwaRouterInstance.browserInfo.isInStandaloneMode = true;
+                window.pwaRouterInstance.updateInstallButtonVisibility(false);
+                window.pwaRouterInstance.setupSettingsInstallButton();
+            }
+
+            showNotification('App erfolgreich installiert! 🎊', 'success');
+        });
+
+        // ==========================================
+        // SCHRITT 6: Online/Offline Detection
+        // ==========================================
+        function updateConnectionStatus() {
+            const statusEl = document.getElementById('connectionStatus');
+            const textEl = document.getElementById('connectionText');
+
+            if (navigator.onLine) {
+                statusEl.className = 'connection-status online';
+                textEl.textContent = 'Online';
+                statusEl.style.display = 'block';
+
+                setTimeout(() => {
+                    if (statusEl.classList.contains('online')) {
+                        statusEl.style.display = 'none';
+                    }
+                }, 3000);
+            } else {
+                statusEl.className = 'connection-status offline';
+                textEl.textContent = 'Offline';
+                statusEl.style.display = 'block';
+            }
+        }
+
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+
+        // ==========================================
+        // SCHRITT 7: Helper Functions
+        // ==========================================
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.display = 'block';
+
+            const colors = {
+                success: '#4CAF50',
+                error: '#f44336',
+                warning: '#ff9800',
+                info: '#2196F3'
+            };
+
+            notification.style.backgroundColor = colors[type] || colors.info;
+
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        async function testCacheSystem() {
+            const debugEl = document.getElementById('debugInfo');
+            debugEl.innerHTML = '<p>Teste Cache System...</p>';
+
+            try {
+                const cacheNames = await caches.keys();
+                let html = '<h4>Cache Status:</h4>';
+
+                for (const name of cacheNames) {
+                    const cache = await caches.open(name);
+                    const keys = await cache.keys();
+                    html += `<p>${name}: ${keys.length} Einträge</p>`;
+                }
+
+                // Storage Estimate
+                if ('storage' in navigator && 'estimate' in navigator.storage) {
+                    const estimate = await navigator.storage.estimate();
+                    const mb = (estimate.usage / 1024 / 1024).toFixed(2);
+                    const percent = ((estimate.usage / estimate.quota) * 100).toFixed(2);
+                    html += `<p>Speicher: ${mb}MB (${percent}%)</p>`;
+                }
+
+                debugEl.innerHTML = html;
+                showNotification('Cache Test abgeschlossen', 'success');
+            } catch (error) {
+                debugEl.innerHTML = `<p style="color: red;">Fehler: ${error.message}</p>`;
+                showNotification('Cache Test fehlgeschlagen', 'error');
+            }
+        }
+
+        // ==========================================
+        // SCHRITT 8: Initialisierung
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM geladen, initialisiere PWA System...');
+
+            // Router initialisieren
+            window.pwaRouterInstance = new PWAStrategyRouter();
+            window.pwaRouterInstance.execute();
+
+            // Connection Status
+            updateConnectionStatus();
+
+            // Debug Info
+            const debugEl = document.getElementById('debugInfo');
+            if (debugEl) {
+                let debugInfo = '<h4>System Check:</h4>';
+                debugInfo += `<p>HTTPS: ${location.protocol === 'https:' ? '✅' : location.hostname === 'localhost' ? '✅ (localhost)' : '❌'}</p>`;
+                debugInfo += `<p>Service Worker: ${'serviceWorker' in navigator ? '✅' : '❌'}</p>`;
+                debugInfo += `<p>Manifest: ${document.querySelector('link[rel="manifest"]') ? '✅' : '❌'}</p>`;
+                debugInfo += `<p>Standalone: ${window.matchMedia('(display-mode: standalone)').matches ? '✅' : '❌'}</p>`;
+                debugEl.innerHTML = debugInfo;
+            }
+
+            // Spezial-Check für iOS
+            const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+            if (isIOS && !window.navigator.standalone) {
+                console.log('iOS erkannt - zeige spezielle Hinweise');
+                showNotification('iOS: Nutzen Sie das Teilen-Menü zum Installieren', 'info');
+            }
+        });
+
+        // ==========================================
+        // SCHRITT 9: Manifest & Service Worker Inline
+        // ==========================================
+
+        // Manifest dynamisch erstellen (normalerweise separate Datei!)
+        const manifestData = {
+            "name": "PWA Ultimate Guide - Alle Tricks",
+            "short_name": "PWA Guide",
+            "description": "Die vollständigste PWA Anleitung mit allen Tricks",
+            "start_url": "./index.html",
+            "scope": "./",
+            "display": "standalone",
+            "orientation": "portrait",
+            "theme_color": "#40127c",
+            "background_color": "#ffffff",
+            "id": "/?source=pwa",
+            "categories": ["education", "productivity"],
+            "lang": "de-DE",
+            "dir": "ltr",
+            "prefer_related_applications": false,
+            "iarc_rating_id": "e58c174a-81d2-5c3c-32cc-34b8de4a52e9",
+            "icons": [
+                // ALLE Größen für maximale Kompatibilität
+                { "src": "icon-16x16.png", "sizes": "16x16", "type": "image/png", "purpose": "any" },
+                { "src": "icon-32x32.png", "sizes": "32x32", "type": "image/png", "purpose": "any" },
+                { "src": "icon-72x72.png", "sizes": "72x72", "type": "image/png", "purpose": "any" },
+                { "src": "icon-96x96.png", "sizes": "96x96", "type": "image/png", "purpose": "any" },
+                { "src": "icon-128x128.png", "sizes": "128x128", "type": "image/png", "purpose": "any" },
+                { "src": "icon-144x144.png", "sizes": "144x144", "type": "image/png", "purpose": "any" },
+                { "src": "icon-152x152.png", "sizes": "152x152", "type": "image/png", "purpose": "any" },
+                { "src": "icon-192x192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+                { "src": "icon-384x384.png", "sizes": "384x384", "type": "image/png", "purpose": "any" },
+                { "src": "icon-512x512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+            ],
+            "shortcuts": [
+                {
+                    "name": "Neue Funktion",
+                    "short_name": "Neu",
+                    "url": "./index.html?action=new",
+                    "icons": [{ "src": "icon-96x96.png", "sizes": "96x96" }]
+                }
+            ],
+            "share_target": {
+                "action": "/share-target",
+                "method": "GET",
+                "params": { "title": "title", "text": "text", "url": "url" }
+            },
+            "protocol_handlers": [
+                { "protocol": "geo", "url": "/index.html?coordinates=%s" }
+            ],
+            "edge_side_panel": {
+                "preferred_width": 400
+            }
+        };
+
+        // Service Worker Code mit Safari Cache Management
+        const serviceWorkerCode = `
+// Safari Cache Limits
+const CACHE_NAME = 'pwa-guide-v1';
+const API_CACHE = 'pwa-guide-api-v1';
+const SAFARI_CACHE_LIMIT_BYTES = 40 * 1024 * 1024; // 40MB
+
+function isSafari() {
+    return /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+}
+
+async function getCacheUsage() {
+    if (navigator.storage && navigator.storage.estimate) {
+        const estimate = await navigator.storage.estimate();
+        return estimate.usage || 0;
+    }
+    return 0;
+}
+
+async function evictOldCacheItems(cacheName, count) {
+    const cache = await caches.open(cacheName);
+    const requests = await cache.keys();
+
+    if (cacheName === API_CACHE) {
+        // Timestamp-basierte Eviction für API Cache
+        let itemsWithTime = [];
+        for (const request of requests) {
+            const response = await cache.match(request);
+            if (response) {
+                try {
+                    const data = await response.json();
+                    itemsWithTime.push({ request, timestamp: data.timestamp || 0 });
+                } catch (e) {
+                    itemsWithTime.push({ request, timestamp: 0 });
+                }
+            }
+        }
+        itemsWithTime.sort((a, b) => a.timestamp - b.timestamp);
+        const toEvict = itemsWithTime.slice(0, count);
+        for (const item of toEvict) {
+            await cache.delete(item.request);
+        }
+    } else {
+        // FIFO für Static Cache
+        const toEvict = requests.slice(0, count);
+        for (const request of toEvict) {
+            await cache.delete(request);
+        }
+    }
+}
+
+async function ensureCacheLimits() {
+    if (!isSafari()) return;
+
+    const usage = await getCacheUsage();
+    if (usage > SAFARI_CACHE_LIMIT_BYTES) {
+        await evictOldCacheItems(API_CACHE, 10);
+        const newUsage = await getCacheUsage();
+        if (newUsage > SAFARI_CACHE_LIMIT_BYTES) {
+            await evictOldCacheItems(CACHE_NAME, 5);
+        }
+    }
+}
+
+// Install Event
+self.addEventListener('install', event => {
+    event.waitUntil(
+        caches.open(CACHE_NAME).then(cache => {
+            return cache.addAll(['./', './index.html', './manifest.json']);
+        }).then(() => self.skipWaiting())
+    );
+});
+
+// Activate Event
+self.addEventListener('activate', event => {
+    event.waitUntil(
+        caches.keys().then(names => {
+            return Promise.all(
+                names.map(name => {
+                    if (name !== CACHE_NAME && name !== API_CACHE) {
+                        return caches.delete(name);
+                    }
+                })
+            );
+        }).then(() => self.clients.claim())
+    );
+});
+
+// Fetch Event mit intelligenten Strategien
+self.addEventListener('fetch', event => {
+    const url = new URL(event.request.url);
+
+    if (url.pathname.startsWith('/api/')) {
+        // API: Network First mit Timestamp Wrapping
+        event.respondWith(
+            fetch(event.request).then(response => {
+                if (response.ok) {
+                    return response.json().then(data => {
+                        const wrapped = {
+                            data: data,
+                            timestamp: Date.now(),
+                            url: event.request.url
+                        };
+                        const cache = caches.open(API_CACHE);
+                        cache.then(c => {
+                            ensureCacheLimits();
+                            c.put(event.request, new Response(JSON.stringify(wrapped)));
+                        });
+                        return new Response(JSON.stringify(data), {
+                            headers: response.headers
+                        });
+                    });
+                }
+                return response;
+            }).catch(() => {
+                return caches.match(event.request).then(response => {
+                    if (response) {
+                        return response.json().then(wrapped => {
+                            const age = Date.now() - wrapped.timestamp;
+                            return new Response(JSON.stringify(wrapped.data), {
+                                headers: {
+                                    'X-Cache': 'HIT',
+                                    'X-Cache-Age': Math.floor(age / 1000)
+                                }
+                            });
+                        });
+                    }
+                    return new Response('{"error":"offline"}', {
+                        status: 503,
+                        headers: {'Content-Type': 'application/json'}
+                    });
+                });
+            })
+        );
+    } else {
+        // Static: Cache First
+        event.respondWith(
+            caches.match(event.request).then(response => {
+                if (response) {
+                    // Update im Hintergrund
+                    fetch(event.request).then(networkResponse => {
+                        if (networkResponse.ok) {
+                            caches.open(CACHE_NAME).then(cache => {
+                                ensureCacheLimits();
+                                cache.put(event.request, networkResponse);
+                            });
+                        }
+                    });
+                    return response;
+                }
+                return fetch(event.request).then(response => {
+                    if (response.ok) {
+                        const responseClone = response.clone();
+                        caches.open(CACHE_NAME).then(cache => {
+                            ensureCacheLimits();
+                            cache.put(event.request, responseClone);
+                        });
+                    }
+                    return response;
+                }).catch(() => {
+                    // Offline Fallback
+                    return new Response('<h1>Offline</h1>', {
+                        headers: {'Content-Type': 'text/html'}
+                    });
+                });
+            })
+        );
+    }
+});
+
+// Message Handler
+self.addEventListener('message', event => {
+    if (event.data.type === 'CACHE_URLS') {
+        event.waitUntil(
+            caches.open(CACHE_NAME).then(cache => {
+                return cache.addAll(event.data.urls);
+            })
+        );
+    }
+});
+`;
+
+        // Erstelle Blob URLs (nur für Demo!)
+        const manifestBlob = new Blob([JSON.stringify(manifestData, null, 2)], { type: 'application/manifest+json' });
+        const manifestURL = URL.createObjectURL(manifestBlob);
+        document.querySelector('link[rel="manifest"]').href = manifestURL;
+
+        const swBlob = new Blob([serviceWorkerCode], { type: 'application/javascript' });
+        const swURL = URL.createObjectURL(swBlob);
+
+        // Service Worker von Blob registrieren (nur für Demo!)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(regs => {
+                regs.forEach(reg => reg.unregister());
+            }).then(() => {
+                return navigator.serviceWorker.register(swURL);
+            }).catch(error => {
+                console.error('Inline SW Fehler:', error);
+            });
+        }
+    </script>
+</body>
+</html>
